@@ -1,4 +1,6 @@
+import LoginRegister from "@/Pages/LoginRegister";
 import { routeLists } from "@/Routes/routeLists";
+import { UserOutlined } from "@ant-design/icons";
 import { Button, Flex, Layout, Menu } from "antd";
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
@@ -29,17 +31,20 @@ const menuItems = [
   },
 ];
 const Navbar = () => {
+  const [isLoginModalOpen, setISLoginModalOpen] = useState(false);
   const [activeMenu, setActiveMenu] = useState("/");
   const navigate = useNavigate();
 
   const location = useLocation();
 
-  console.log("activeMenu", activeMenu);
-  console.log("location", location);
-
   useEffect(() => {
     setActiveMenu(location.pathname);
   }, [location]);
+
+  const handleCloseLoginModal = () => {
+    setISLoginModalOpen(false);
+  };
+
   return (
     <>
       {" "}
@@ -72,10 +77,19 @@ const Navbar = () => {
             />
           </div>
           <div>
-            <Button>Login</Button>
+            <Button
+              icon={<UserOutlined />}
+              onClick={() => setISLoginModalOpen(true)}
+            >
+              Login/Register
+            </Button>
           </div>
         </Flex>
       </Header>
+      <LoginRegister
+        isLoginModalOpen={isLoginModalOpen}
+        handleCloseLoginModal={handleCloseLoginModal}
+      />
     </>
   );
 };

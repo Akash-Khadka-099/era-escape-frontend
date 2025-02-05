@@ -19,7 +19,7 @@ const cardData = [
     shortDescription:
       "Kalinchowk is a good , peace  and natural places based in relgious",
     imageSrc:
-      "https://hikeontreks.com/wp-content/uploads/2020/01/Kalinchowk-Tour-2020-Pilgrimage-Trip-to-Kalinchowk-Bhagwati.jpg",
+      "https://www.speedynepal.com/public/images/upload/package/slider/kalinchowk-speedy.jpg",
   },
   {
     title: "Gosaikunda",
@@ -40,7 +40,7 @@ const cardData = [
     shortDescription:
       "Kalinchowk is a good , peace  and natural places based in relgious",
     imageSrc:
-      "https://hikeontreks.com/wp-content/uploads/2020/01/Kalinchowk-Tour-2020-Pilgrimage-Trip-to-Kalinchowk-Bhagwati.jpg",
+      "https://www.speedynepal.com/public/images/upload/package/slider/kalinchowk-speedy.jpg",
   },
 ];
 
