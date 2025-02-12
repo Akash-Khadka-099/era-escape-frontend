@@ -1,8 +1,11 @@
 import { Button } from "antd";
 import "./CardComponent.scss"; // Create this CSS file for custom styles
 import PropTypes from "prop-types";
+import { useNavigate } from "react-router-dom";
+import { routeLists } from "@/Routes/routeLists";
 
 const CardComponent = ({ title, shortDescription, imageSrc }) => {
+  const navigate = useNavigate();
   return (
     <main className="d-flex flex-column justify-content-center align-items-center  ">
       <article className="card">
@@ -19,7 +22,12 @@ const CardComponent = ({ title, shortDescription, imageSrc }) => {
             <h2 className="card__title">{title}</h2>
             <p className="card__description">{shortDescription}</p>
           </div>
-          <Button className="card__button">Read more</Button>
+          <Button
+            onClick={() => navigate(routeLists.package)}
+            className="card__button"
+          >
+            View Options
+          </Button>
         </div>
       </article>
     </main>

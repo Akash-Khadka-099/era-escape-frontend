@@ -6,6 +6,7 @@ import Footer from "@/components/Footer";
 import { Route, Routes } from "react-router-dom";
 import { routeLists } from "@/Routes/routeLists";
 import Package from "@/Pages/Packages";
+import PackageDetail from "@/Pages/Packages/PackageDetail";
 
 const App = () => {
   return (
@@ -23,6 +24,10 @@ const App = () => {
             <Routes>
               <Route path={routeLists.dashboard} element={<Dashboard />} />
               <Route path={routeLists.package} element={<Package />} />
+              <Route
+                path={routeLists.packageDetail}
+                element={<PackageDetail />}
+              />
             </Routes>
           </div>
           <Footer />

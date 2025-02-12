@@ -1,3 +1,4 @@
+import { routeLists } from "@/Routes/routeLists";
 import {
   ArrowRightOutlined,
   LeftOutlined,
@@ -7,11 +8,14 @@ import { Button, Carousel, Flex, Image, Rate, Typography } from "antd";
 import PropTypes from "prop-types";
 import { useRef, useState } from "react";
 import { IoIosCheckmarkCircle } from "react-icons/io";
+import { useNavigate } from "react-router-dom";
 
 const desc = ["terrible", "bad", "normal", "good", "wonderful"];
 
 const PackageCards = ({ rating, imageLists = [], featuresLists = [] }) => {
   const [value, setValue] = useState(rating);
+
+  const navigate = useNavigate();
 
   const carouselRef = useRef(null);
   return (
@@ -103,7 +107,10 @@ const PackageCards = ({ rating, imageLists = [], featuresLists = [] }) => {
               {featuresLists?.map((item) => (
                 <div key={item}>
                   <IoIosCheckmarkCircle color="#41a831" />
-                  <span className="px-2  text-secondary" style={{ fontSize: "14px" }}>
+                  <span
+                    className="px-2  text-secondary"
+                    style={{ fontSize: "14px" }}
+                  >
                     {item}
                   </span>
                 </div>
@@ -122,6 +129,7 @@ const PackageCards = ({ rating, imageLists = [], featuresLists = [] }) => {
                 icon={<ArrowRightOutlined />}
                 type="text"
                 iconPosition="end"
+                onClick={() => navigate(routeLists.packageDetail)}
               >
                 More
               </Button>
