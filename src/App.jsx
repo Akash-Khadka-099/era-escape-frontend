@@ -1,17 +1,17 @@
 import Navbar from "@/components/Navbar";
 import Dashboard from "@/Pages/Dashboard";
-import AppProvder from "@/Provider/AppProvder";
 import { Flex } from "antd";
 import Footer from "@/components/Footer";
 import { Route, Routes } from "react-router-dom";
 import { routeLists } from "@/Routes/routeLists";
 import Package from "@/Pages/Packages";
 import PackageDetail from "@/Pages/Packages/PackageDetail";
+import AppProvider from "@/Provider/AppProvider";
 
 const App = () => {
   return (
     <>
-      <AppProvder>
+      <AppProvider>
         <Flex vertical style={{ minHeight: "100vh" }}>
           <Navbar />
           <div
@@ -32,7 +32,7 @@ const App = () => {
           </div>
           <Footer />
         </Flex>
-      </AppProvder>
+      </AppProvider>
     </>
   );
 };
