@@ -1,9 +1,10 @@
 import LoginRegister from "@/Pages/LoginRegister";
 import { routeLists } from "@/Routes/routeLists";
+import useAuthStore from "@/store/authStore";
 import { UserOutlined } from "@ant-design/icons";
-import { Button, Flex, Layout, Menu } from "antd";
-import { useEffect, useState } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
+import { Button, Dropdown, Flex, Layout, Menu } from "antd";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 
@@ -30,16 +31,24 @@ const menuItems = [
     ],
   },
 ];
+
+const dropdownMenu = [
+  {
+    label: "1st menu item",
+    key: "1",
+    icon: <UserOutlined />,
+  },
+  {
+    label: "2nd menu item",
+    key: "2",
+    icon: <UserOutlined />,
+  },
+];
 const Navbar = () => {
   const [isLoginModalOpen, setISLoginModalOpen] = useState(false);
-  const [activeMenu, setActiveMenu] = useState("/");
   const navigate = useNavigate();
 
-  const location = useLocation();
-
-  useEffect(() => {
-    setActiveMenu(location.pathname);
-  }, [location]);
+  const { user, isAuthenticated } = useAuthStore();
 
   const handleCloseLoginModal = () => {
     setISLoginModalOpen(false);
@@ -69,21 +78,33 @@ const Navbar = () => {
               mode="horizontal"
               style={{ lineHeight: "64px", background: "#fff" }}
               items={menuItems}
-              selectedKeys={[activeMenu]}
               onClick={(e) => {
                 navigate(e.key);
-                setActiveMenu(e.key);
               }}
             />
           </div>
-          <div>
-            <Button
-              icon={<UserOutlined />}
-              onClick={() => setISLoginModalOpen(true)}
-            >
-              Login/Register
-            </Button>
-          </div>
+          {isAuthenticated ? (
+            <Flex align="center">
+              <Dropdown.Button
+                trigger={["click"]}
+                menu={{ items: dropdownMenu }}
+                placement="bottomRight"
+                icon={<UserOutlined />}
+                onClick={(e) => console.log("e", e)}
+              >
+                {user?.name || ""}
+              </Dropdown.Button>
+            </Flex>
+          ) : (
+            <div>
+              <Button
+                icon={<UserOutlined />}
+                onClick={() => setISLoginModalOpen(true)}
+              >
+                Login/Register
+              </Button>
+            </div>
+          )}
         </Flex>
       </Header>
       <LoginRegister

@@ -1,7 +1,8 @@
 import { useLoginUser } from "@/services/loginService";
-import { Button, Col, Form, Input, Row } from "antd";
+import { Button, Col, Form, Input, message, Row } from "antd";
+import PropTypes from "prop-types";
 
-const LoginForm = () => {
+const LoginForm = ({ handleCloseLoginModal }) => {
   const [form] = Form.useForm();
 
   const { mutateAsync, isPending } = useLoginUser();
@@ -11,7 +12,8 @@ const LoginForm = () => {
       const loginResponse = await mutateAsync({ ...values });
 
       if (loginResponse?.status == 201) {
-        console.log("loginResponse", loginResponse);
+        message.success("Login successfull!");
+        handleCloseLoginModal();
       }
     } catch (error) {
       console.error(error);
@@ -53,6 +55,10 @@ const LoginForm = () => {
       </Form>
     </>
   );
+};
+
+LoginForm.propTypes = {
+  handleCloseLoginModal: PropTypes.func,
 };
 
 export default LoginForm;

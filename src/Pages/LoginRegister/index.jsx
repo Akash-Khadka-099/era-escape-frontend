@@ -30,7 +30,7 @@ const LoginRegister = ({ isLoginModalOpen, handleCloseLoginModal }) => {
           src={"/images/login.png"}
         />
         <div className="my-4">
-          {isLoginPage ? <LoginForm /> : <RegisterForm />}
+          {isLoginPage ? <LoginForm  handleCloseLoginModal={handleCloseLoginModal}/> : <RegisterForm />}
         </div>
       </Modal>
     </>

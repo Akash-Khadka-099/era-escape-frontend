@@ -4,4 +4,5 @@ export const apiEndpoints = {
     create: "/api/users",
   },
   login: "/api/login",
+  logout: "/api/logout",
 };

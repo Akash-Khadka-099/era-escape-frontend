@@ -7,8 +7,37 @@ import { routeLists } from "@/Routes/routeLists";
 import Package from "@/Pages/Packages";
 import PackageDetail from "@/Pages/Packages/PackageDetail";
 import AppProvider from "@/Provider/AppProvider";
+import axios from "axios";
+import { useEffect, useState } from "react";
+import useAuthStore from "@/store/authStore";
 
 const App = () => {
+  const { setAccessToken } = useAuthStore();
+  const [isLoading, setIsLoading] = useState(true);
+
+  useEffect(() => {
+    const initializeAuth = async () => {
+      try {
+        const { data } = await axios.post(
+          `${import.meta.env.VITE_API_URL}/refresh`,
+          null,
+          { withCredentials: true }
+        );
+        setAccessToken(data.access_token);
+      } catch (error) {
+        console.error("Unable to refresh token:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
+
+    initializeAuth();
+  }, [setAccessToken]);
+
+  if (isLoading) {
+    return <div>Loading...</div>;
+  }
+
   return (
     <>
       <AppProvider>
