@@ -1,5 +1,5 @@
+import { menuItems } from "@/components/Navbar/navbarItems";
 import LoginRegister from "@/Pages/LoginRegister";
-import { routeLists } from "@/Routes/routeLists";
 import useAuthStore from "@/store/authStore";
 import { UserOutlined } from "@ant-design/icons";
 import { Button, Dropdown, Flex, Layout, Menu } from "antd";
@@ -7,30 +7,6 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
-
-const menuItems = [
-  {
-    key: "/",
-    label: "Home",
-  },
-  {
-    key: routeLists.package,
-    label: "Packages",
-  },
-  {
-    label: "Teams",
-    children: [
-      {
-        key: "dev",
-        label: "Development Teams",
-      },
-      {
-        key: "market",
-        label: "Marketting Teams",
-      },
-    ],
-  },
-];
 
 const dropdownMenu = [
   {

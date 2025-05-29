@@ -1,11 +1,11 @@
 import PropTypes from "prop-types";
 
-const MiddleContentWrapper = ({ children, extraStyles, extraClassNames }) => {
+const AdminWrappers = ({ children, extraStyles, extraClassNames }) => {
   return (
     <div
-      className={`mx-auto p-3 py-5 ${extraClassNames}`}
+      className={`mx-auto my-3  ${extraClassNames}`}
       style={{
-        width: "max(85%, 1400px)",
+        width: "max(95%, 1400px)",
         overflow: "hidden",
         ...extraStyles,
       }}
@@ -15,10 +15,10 @@ const MiddleContentWrapper = ({ children, extraStyles, extraClassNames }) => {
   );
 };
 
-MiddleContentWrapper.propTypes = {
+AdminWrappers.propTypes = {
   children: PropTypes.node,
   extraStyles: PropTypes.object,
   extraClassNames: PropTypes.string,
 };
 
-export default MiddleContentWrapper;
+export default AdminWrappers;

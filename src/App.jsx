@@ -10,10 +10,14 @@ import AppProvider from "@/Provider/AppProvider";
 import axios from "axios";
 import { useEffect, useState } from "react";
 import useAuthStore from "@/store/authStore";
+import OrganizationPackages from "@/Pages/OrganizationPages/OrganizationPackages";
+import AddOrganizationPackage from "@/Pages/OrganizationPages/OrganizationPackages/AddOrganizationPackage";
 
 const App = () => {
-  const { setAccessToken } = useAuthStore();
+  const { setAccessToken, user } = useAuthStore();
   const [isLoading, setIsLoading] = useState(true);
+
+  console.log("user details", user);
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -56,6 +60,18 @@ const App = () => {
               <Route
                 path={routeLists.packageDetail}
                 element={<PackageDetail />}
+              />
+              <Route
+                path="/organization-package-list"
+                element={<OrganizationPackages />}
+              />
+              <Route
+                path="/organization-package/add"
+                element={<AddOrganizationPackage />}
+              />
+              <Route
+                path="/organization-package/edit/:packageSlug"
+                element={<AddOrganizationPackage />}
               />
             </Routes>
           </div>

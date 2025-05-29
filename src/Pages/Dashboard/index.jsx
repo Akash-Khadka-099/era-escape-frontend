@@ -92,7 +92,7 @@ const Dashboard = () => {
         }}
       >
         <Flex style={{ width: "100%" }} align="center" justify="center">
-          <AnimatedWelcomeText text="welcome to the world of Jokers" />
+          <AnimatedWelcomeText text="welcome to the world of Tour" />
         </Flex>
         <div className={"py-2"} style={{ width: "50%" }}>
           <Lottie
