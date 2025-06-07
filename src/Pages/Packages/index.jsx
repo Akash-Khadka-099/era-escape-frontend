@@ -1,10 +1,13 @@
 import PackageCards from "@/components/Cards/PackageCards";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
+import CustomPackageSearch from "@/components/CustomPackageSearch";
+import { useSearchPackageLists } from "@/services/searchPackageLists";
 import {
   Button,
   Col,
   Flex,
   Form,
+  message,
   Radio,
   Row,
   Select,
@@ -12,28 +15,78 @@ import {
   Typography,
 } from "antd";
 import { useForm } from "antd/es/form/Form";
-import { useState } from "react";
+import { useCallback, useEffect, useState } from "react";
+import Lottie from "react-lottie";
+import NoDataFound from "@/assets/JsonAnimation/noDataFound.json";
+import CustomPagination from "@/components/CustomPagination";
 
 const { Option } = Select;
 const { Text } = Typography;
 
 const featuresLists = ["Beautiful  views", "Peaceful gardens", "Discounts"];
 
-const imageLists = [
-  "https://www.speedynepal.com/public/images/upload/package/slider/kalinchowk-speedy.jpg",
-  "https://cdn.pixabay.com/photo/2023/06/20/06/00/mountain-8076119_640.jpg",
-  "https://powertraveller.com/wp-content/uploads/2024/09/5_from-kathmandu-2-night-3-days-kalinchowk-snow-trek-2.jpg",
-];
+// const imageLists = [
+//   "https://www.speedynepal.com/public/images/upload/package/slider/kalinchowk-speedy.jpg",
+//   "https://cdn.pixabay.com/photo/2023/06/20/06/00/mountain-8076119_640.jpg",
+//   "https://powertraveller.com/wp-content/uploads/2024/09/5_from-kathmandu-2-night-3-days-kalinchowk-snow-trek-2.jpg",
+// ];
 
 const Packages = () => {
+  const [listedPackages, setListedPackages] = useState([]);
+  const [packageSearchValue, setPackageSearchValue] = useState("");
   const [priceRange, setPriceRange] = useState([500, 5000]);
   const [form] = useForm();
+
+  const { mutateAsync, isPending } = useSearchPackageLists();
+
+  useEffect(() => {
+    mutateAsync({
+      q: "",
+    }).then((response) => {
+      if (response?.status == 200) {
+        setListedPackages(response?.data || []);
+      }
+    });
+  }, []);
 
   const onSubmitHandler = async (data) => {
     console.log("form data", data);
   };
+
+  const onSearchHandler = useCallback(async () => {
+    try {
+      const searchResponse = await mutateAsync({
+        q: packageSearchValue,
+      });
+
+      if (searchResponse?.status == 200) {
+        setListedPackages(searchResponse?.data || []);
+      }
+    } catch (error) {
+      message.error("Error occured while searching packages");
+      console.error(error);
+    }
+  }, [packageSearchValue]);
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: NoDataFound,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
   return (
     <>
+      <Flex justify="center" align="center">
+        <div style={{ width: "clamp(400px, 600px, 80%)" }}>
+          <CustomPackageSearch
+            setSearchValue={setPackageSearchValue}
+            onSearchHandler={onSearchHandler}
+            isLoading={isPending}
+          />
+        </div>
+      </Flex>
       <MiddleContentWrapper>
         <Row gutter={16}>
           <Col span={6}>
@@ -104,16 +157,54 @@ const Packages = () => {
             </div>
           </Col>
           <Col span={18}>
-            <Flex vertical gap={20}>
-              {Array.from({ length: 4 })?.map((_, index) => (
-                <PackageCards
-                  key={index}
-                  rating={3}
-                  imageLists={imageLists}
-                  featuresLists={featuresLists}
-                />
-              ))}
-            </Flex>
+            {!isPending && !listedPackages?.data?.length ? (
+              <>
+                <Flex
+                  vertical
+                  align="center"
+                  className="mt-4"
+                  justify="center"
+                  style={{ width: "80%" }}
+                >
+                  <Lottie
+                    options={defaultOptions}
+                    height={200}
+                    width={300}
+                    style={{
+                      minHeight: 300,
+                    }}
+                  />
+                  <Typography.Title level={5} type="secondary">
+                    {`Sorry, we don’t have any tour packages that fit your search right now`}
+                  </Typography.Title>
+                </Flex>
+              </>
+            ) : (
+              <>
+                <Flex vertical gap={20}>
+                  {listedPackages?.data?.map((item, index) => (
+                    <PackageCards
+                      key={index}
+                      rating={3}
+                      packageDetail={item}
+                      featuresLists={featuresLists}
+                    />
+                  ))}
+                </Flex>
+                <div
+                  style={{
+                    marginTop: "1rem",
+                  }}
+                >
+                  <CustomPagination
+                    paginationDetail={{
+                      ...listedPackages?.pagination,
+                      pageSize: listedPackages?.pagination?.limit,
+                    }}
+                  />
+                </div>
+              </>
+            )}
           </Col>
         </Row>
       </MiddleContentWrapper>

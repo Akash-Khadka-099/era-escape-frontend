@@ -23,6 +23,7 @@ import {
 } from "@ant-design/icons";
 import { useState } from "react";
 import moment from "moment";
+import { useParams } from "react-router-dom";
 
 const { Panel } = Collapse;
 const { Text } = Typography;
@@ -97,6 +98,9 @@ const images = [
 const PackageDetail = () => {
   const [form] = Form.useForm();
   const [guests, setGuests] = useState(1);
+  const { package_slug } = useParams();
+
+  console.log("package_slug", package_slug);
 
   const handleGuestsChange = (value) => {
     setGuests(value);

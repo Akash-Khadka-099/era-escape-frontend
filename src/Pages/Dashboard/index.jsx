@@ -12,6 +12,7 @@ import Lottie from "react-lottie";
 import TravelAnimation from "@/assets/JsonAnimation/travelAnimation.json";
 import "animate.css";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
+import DashboardSearch from "@/components/DashboardSearch";
 
 const cardData = [
   {
@@ -91,8 +92,16 @@ const Dashboard = () => {
           width: "inherit",
         }}
       >
-        <Flex style={{ width: "100%" }} align="center" justify="center">
+        <Flex
+          vertical
+          style={{ width: "100%" }}
+          align="center"
+          justify="center"
+        >
           <AnimatedWelcomeText text="welcome to the world of Tour" />
+          <div style={{ width: "500px" }}>
+            <DashboardSearch />
+          </div>
         </Flex>
         <div className={"py-2"} style={{ width: "50%" }}>
           <Lottie

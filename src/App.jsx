@@ -58,7 +58,7 @@ const App = () => {
               <Route path={routeLists.dashboard} element={<Dashboard />} />
               <Route path={routeLists.package} element={<Package />} />
               <Route
-                path={routeLists.packageDetail}
+                path={"/package-details/:package_slug"}
                 element={<PackageDetail />}
               />
               <Route
