@@ -20,10 +20,15 @@ import {
   CarOutlined,
   UserOutlined,
   HomeOutlined,
+  CheckCircleOutlined,
+  ArrowRightOutlined,
+  CloseOutlined,
 } from "@ant-design/icons";
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import moment from "moment";
 import { useParams } from "react-router-dom";
+import { useFetchPackageBySlug } from "@/services/packageService";
+import parse from "html-react-parser";
 
 const { Panel } = Collapse;
 const { Text } = Typography;
@@ -38,73 +43,23 @@ const travelPackages = [
   { title: "Sumo Vehicle", icon: <CarOutlined /> },
 ];
 
-const tripPlans = [
-  {
-    day: "Day 1",
-    details:
-      "Drive to Kalinchowk, visit Kalinchowk Bhagwati temple, and enjoy the scenic views. Overnight stay at a local lodge.",
-  },
-  {
-    day: "Day 2",
-    details:
-      "Explore the surrounding hills, enjoy snowfall (if season allows), and relax at the lodge with a warm meal.",
-  },
-  {
-    day: "Day 3",
-    details:
-      "Return journey with stopovers at Charikot for local sightseeing and snacks.",
-  },
-];
-
-const images = [
-  {
-    src: "https://picsum.photos/id/0/367/267",
-    alt: "Kalinchowk View 1",
-  },
-  {
-    src: "https://picsum.photos/id/29/367/267",
-    alt: "Kalinchowk View 2",
-  },
-  {
-    src: "https://picsum.photos/id/7/367/267",
-    alt: "Kalinchowk Hotel Room 1",
-  },
-  {
-    src: "https://picsum.photos/id/10/367/267",
-    alt: "Kalinchowk View 3",
-  },
-  {
-    src: "https://picsum.photos/id/24/367/267",
-    alt: "Kalinchowk Hotel Room 2",
-  },
-  {
-    src: "https://fastly.picsum.photos/id/26/4209/2769.jpg?hmac=vcInmowFvPCyKGtV7Vfh7zWcA_Z0kStrPDW3ppP0iGI",
-    alt: "Kalinchowk View 4",
-  },
-  {
-    src: "https://picsum.photos/id/28/367/267",
-    alt: "Kalinchowk View 5",
-  },
-  {
-    src: "https://picsum.photos/id/23/367/267",
-    alt: "Kalinchowk Temple",
-  },
-  {
-    src: "https://fastly.picsum.photos/id/16/2500/1667.jpg?hmac=uAkZwYc5phCRNFTrV_prJ_0rP0EdwJaZ4ctje2bY7aE",
-    alt: "Kalinchowk Hotel Room 3",
-  },
-];
-
 const PackageDetail = () => {
   const [form] = Form.useForm();
   const [guests, setGuests] = useState(1);
   const { package_slug } = useParams();
 
-  console.log("package_slug", package_slug);
+  const { data } = useFetchPackageBySlug(package_slug);
 
   const handleGuestsChange = (value) => {
     setGuests(value);
   };
+
+  const packageImages = useMemo(() => {
+    return data?.images?.map((item, index) => ({
+      src: `${import.meta.env.VITE_API_URL}/${item?.path}`,
+      alt: `${data?.title} image ${index + 1}`,
+    }));
+  }, [data]);
 
   const handleSubmit = (values) => {
     console.log("Booking details:", values);
@@ -112,48 +67,49 @@ const PackageDetail = () => {
   return (
     <MiddleContentWrapper>
       <div className="mb-5">
-        <Typography.Title level={2}> Kalinchowk Plan</Typography.Title>
-        <Image.PreviewGroup items={images}>
+        <Typography.Title level={2}> {data?.title}</Typography.Title>
+
+        <Image.PreviewGroup items={packageImages}>
           <Row gutter={4}>
             <Col span={4}>
               <Image
-                src={images[0].src}
-                alt={images[0].alt}
+                src={packageImages?.[0]?.src}
+                alt={packageImages?.[0]?.alt}
                 style={{ width: "100%", height: "200px", objectFit: "cover" }}
               />
             </Col>
             <Col span={4}>
               <Image
-                src={images[1].src}
-                alt={images[1].alt}
+                src={packageImages?.[1]?.src}
+                alt={packageImages?.[1]?.alt}
                 style={{ width: "100%", height: "200px", objectFit: "cover" }}
               />
             </Col>
             <Col span={4}>
               <Image
-                src={images[2].src}
-                alt={images[2].alt}
+                src={packageImages?.[2]?.src}
+                alt={packageImages?.[2]?.alt}
                 style={{ width: "100%", height: "200px", objectFit: "cover" }}
               />
             </Col>
             <Col span={4}>
               <Image
-                src={images[3].src}
-                alt={images[3].alt}
+                src={packageImages?.[3]?.src}
+                alt={packageImages?.[3]?.alt}
                 style={{ width: "100%", height: "200px", objectFit: "cover" }}
               />
             </Col>
             <Col span={4}>
               <Image
-                src={images[4].src}
-                alt={images[4].alt}
+                src={packageImages?.[4]?.src}
+                alt={packageImages?.[4]?.alt}
                 style={{ width: "100%", height: "200px", objectFit: "cover" }}
               />
             </Col>
             <Col span={4}>
               <Image
-                src={images[5].src}
-                alt={images[5].alt}
+                src={packageImages?.[5]?.src}
+                alt={packageImages?.[5]?.alt}
                 style={{ width: "100%", height: "200px", objectFit: "cover" }}
               />
             </Col>
@@ -176,17 +132,17 @@ const PackageDetail = () => {
                   lineHeight: "1.6",
                 }}
               >
-                <span>Hosted by Nepal Travel</span>
-                <br />
+                <span>Hosted by {data?.organizationId?.organizationName} </span>
+                {/* <br />
                 <Typography.Text>
                   5 years of travelling experience
-                </Typography.Text>
+                </Typography.Text> */}
               </div>
             </Flex>
           </div>
           <Divider />
           <div style={{ maxWidth: "80%", textAlign: "justify" }}>
-            <p>
+            <Typography.Text>
               {`Kalinchowk is a popular hilltop destination in Nepal, known for
               its breathtaking mountain views, snowfall in winter, and the
               revered Kalinchowk Bhagwati Temple. Located in Dolakha district at
@@ -196,7 +152,7 @@ const PackageDetail = () => {
               cable car service providing easy access to the summit. The area is
               also a gateway to Rolwaling Valley and is famous for its cultural
               and natural beauty.`}
-            </p>
+            </Typography.Text>
           </div>
           <Divider />
           <div>
@@ -218,11 +174,125 @@ const PackageDetail = () => {
             </Row>
           </div>
           <Divider />
-          <Typography.Title level={4}>Plans</Typography.Title>
+          {data?.highlightLists?.length ? (
+            <>
+              <div>
+                <Typography.Title level={4}>Highlights</Typography.Title>
+                <List
+                  bordered={false}
+                  size="small"
+                  dataSource={data?.highlightLists}
+                  renderItem={(item) => (
+                    <List.Item
+                      style={{
+                        border: "none",
+                      }}
+                    >
+                      <ArrowRightOutlined
+                        style={{ color: "green", marginRight: 8 }}
+                      />
+                      {item}
+                    </List.Item>
+                  )}
+                />
+              </div>
+              <Divider />
+            </>
+          ) : (
+            ""
+          )}
+          {/* cost includes from here  */}
+          {data?.costIncludesList?.length ? (
+            <>
+              <div>
+                <Typography.Title level={4}>Cost Includes </Typography.Title>
+                <List
+                  bordered={false}
+                  size="small"
+                  dataSource={data?.costIncludesList}
+                  renderItem={(item) => (
+                    <List.Item
+                      style={{
+                        border: "none",
+                      }}
+                    >
+                      <CheckCircleOutlined
+                        style={{ color: "green", marginRight: 8 }}
+                      />
+                      {item}
+                    </List.Item>
+                  )}
+                />
+              </div>
+              <Divider />
+            </>
+          ) : (
+            ""
+          )}
+
+          {/* cost excludes lists from here  */}
+
+          {data?.costExcludesList?.length ? (
+            <>
+              <div>
+                <Typography.Title level={4}>Cost Excludes </Typography.Title>
+                <List
+                  bordered={false}
+                  size="small"
+                  dataSource={data?.costExcludesList}
+                  renderItem={(item) => (
+                    <List.Item
+                      style={{
+                        border: "none",
+                      }}
+                    >
+                      <CloseOutlined style={{ color: "red", marginRight: 8 }} />
+                      {item}
+                    </List.Item>
+                  )}
+                />
+              </div>
+              <Divider />
+            </>
+          ) : (
+            ""
+          )}
+          {/* notes from here  */}
+          {data?.notesList?.length ? (
+            <>
+              <div>
+                <Typography.Title level={4}>
+                  Notes and suggestions to travellers{" "}
+                </Typography.Title>
+                <List
+                  bordered={false}
+                  size="small"
+                  dataSource={data?.notesList}
+                  renderItem={(item) => (
+                    <List.Item
+                      style={{
+                        border: "none",
+                      }}
+                    >
+                      <ArrowRightOutlined
+                        style={{ color: "blue", marginRight: 8 }}
+                      />
+                      {item}
+                    </List.Item>
+                  )}
+                />
+              </div>
+              <Divider />
+            </>
+          ) : (
+            ""
+          )}
+
+          <Typography.Title level={4}>Itineraries</Typography.Title>
           <Collapse bordered={false} accordion style={{ marginTop: 20 }}>
-            {tripPlans.map((plan, index) => (
-              <Panel header={plan.day} key={index}>
-                <p>{plan.details}</p>
+            {data?.itinerary?.map((item, index) => (
+              <Panel header={item?.title} key={index}>
+                {parse(item?.description)}
               </Panel>
             ))}
           </Collapse>

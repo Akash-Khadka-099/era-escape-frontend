@@ -3,6 +3,7 @@ import { AutoComplete, Input } from "antd";
 import PropTypes from "prop-types";
 
 const CustomPackageSearch = ({
+  searchValue,
   setSearchValue,
   onSearchHandler,
   isLoading = false,
@@ -14,7 +15,7 @@ const CustomPackageSearch = ({
         onChange={(e) => setSearchValue(e)}
         className="w-100 my-3"
         // options={destination_options}
-
+        value={searchValue}
         size="large"
         dropdownMatchSelectWidth={false}
       >
@@ -36,6 +37,7 @@ const CustomPackageSearch = ({
 };
 
 CustomPackageSearch.propTypes = {
+  searchValue: PropTypes.string,
   setSearchValue: PropTypes.func,
   onSearchHandler: PropTypes.func,
   isLoading: PropTypes.bool,

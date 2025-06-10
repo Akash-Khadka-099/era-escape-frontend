@@ -19,29 +19,33 @@ import { useCallback, useEffect, useState } from "react";
 import Lottie from "react-lottie";
 import NoDataFound from "@/assets/JsonAnimation/noDataFound.json";
 import CustomPagination from "@/components/CustomPagination";
+import { useSearchParams } from "react-router-dom";
 
 const { Option } = Select;
 const { Text } = Typography;
 
 const featuresLists = ["Beautiful  views", "Peaceful gardens", "Discounts"];
 
-// const imageLists = [
-//   "https://www.speedynepal.com/public/images/upload/package/slider/kalinchowk-speedy.jpg",
-//   "https://cdn.pixabay.com/photo/2023/06/20/06/00/mountain-8076119_640.jpg",
-//   "https://powertraveller.com/wp-content/uploads/2024/09/5_from-kathmandu-2-night-3-days-kalinchowk-snow-trek-2.jpg",
-// ];
-
 const Packages = () => {
   const [listedPackages, setListedPackages] = useState([]);
   const [packageSearchValue, setPackageSearchValue] = useState("");
+  const [successSearchValue, setSuccessSearchValue] = useState("");
   const [priceRange, setPriceRange] = useState([500, 5000]);
   const [form] = useForm();
+  // const { search } = useLocation();
+
+  const [searchParams, setSearchParams] = useSearchParams();
+
+  const searchQuery = searchParams.get("search");
 
   const { mutateAsync, isPending } = useSearchPackageLists();
 
   useEffect(() => {
+    if (searchQuery) {
+      setPackageSearchValue(searchQuery);
+    }
     mutateAsync({
-      q: "",
+      q: searchQuery || "",
     }).then((response) => {
       if (response?.status == 200) {
         setListedPackages(response?.data || []);
@@ -53,20 +57,26 @@ const Packages = () => {
     console.log("form data", data);
   };
 
-  const onSearchHandler = useCallback(async () => {
-    try {
-      const searchResponse = await mutateAsync({
-        q: packageSearchValue,
-      });
+  const onSearchHandler = useCallback(
+    async (value) => {
+      try {
+        const searchResponse = await mutateAsync({
+          q: value,
+        });
 
-      if (searchResponse?.status == 200) {
-        setListedPackages(searchResponse?.data || []);
+        if (searchResponse?.status == 200) {
+          setListedPackages(searchResponse?.data || []);
+          setSuccessSearchValue(value);
+          searchParams.set("search", value);
+          setSearchParams(searchParams);
+        }
+      } catch (error) {
+        message.error("Error occured while searching packages");
+        console.error(error);
       }
-    } catch (error) {
-      message.error("Error occured while searching packages");
-      console.error(error);
-    }
-  }, [packageSearchValue]);
+    },
+    [packageSearchValue]
+  );
 
   const defaultOptions = {
     loop: true,
@@ -81,12 +91,14 @@ const Packages = () => {
       <Flex justify="center" align="center">
         <div style={{ width: "clamp(400px, 600px, 80%)" }}>
           <CustomPackageSearch
+            searchValue={packageSearchValue}
             setSearchValue={setPackageSearchValue}
             onSearchHandler={onSearchHandler}
             isLoading={isPending}
           />
         </div>
       </Flex>
+
       <MiddleContentWrapper>
         <Row gutter={16}>
           <Col span={6}>
@@ -157,6 +169,20 @@ const Packages = () => {
             </div>
           </Col>
           <Col span={18}>
+            {successSearchValue ? (
+              <div
+                style={{
+                  marginBottom: "1rem",
+                }}
+              >
+                <Typography.Title level={3} type="secondary">
+                  {" "}
+                  Search Result For : {successSearchValue}
+                </Typography.Title>
+              </div>
+            ) : (
+              ""
+            )}
             {!isPending && !listedPackages?.data?.length ? (
               <>
                 <Flex

@@ -2,10 +2,12 @@ import { useMemo, useState } from "react";
 import { AutoComplete, Input, Avatar, Flex, Button } from "antd";
 import { ArrowRightOutlined, SearchOutlined } from "@ant-design/icons";
 import { useSearchDashboardDestination } from "@/services/searchDestinationService";
+import { useNavigate } from "react-router-dom";
 
 const DashboardSearch = () => {
   const [searchValue, setSearchValue] = useState(null);
   //   const [options, setOptions] = useState([]);
+  const navigate = useNavigate();
 
   const { data } = useSearchDashboardDestination({
     q: searchValue,
@@ -54,11 +56,14 @@ const DashboardSearch = () => {
     <AutoComplete
       className="w-100 my-3"
       options={destination_options}
-      onSearch={(value) => setSearchValue(value)}
+      onChange={(value) => {
+        setSearchValue(value);
+      }}
       size="large"
       dropdownMatchSelectWidth={false}
     >
       <Input.Search
+        onSearch={() => navigate(`packages?search=${searchValue}`)}
         placeholder="Search Destinations"
         style={{ height: "60px", borderRadius: "1.2rem", fontSize: "1rem" }}
         size="large"
