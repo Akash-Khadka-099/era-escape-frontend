@@ -101,3 +101,9 @@ export function removeFalsyValuesHandler(obj) {
     return obj;
   }
 }
+
+
+export function capitalizeFirstWord(str) {
+  if (!str) return '';
+  return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}

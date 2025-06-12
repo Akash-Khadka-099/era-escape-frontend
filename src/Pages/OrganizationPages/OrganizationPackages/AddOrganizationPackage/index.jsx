@@ -5,6 +5,7 @@ import CustomSingleImageUpload from "@/components/forms/CustomFileUpload/CustomS
 import CustomUploadMultipleFiles from "@/components/forms/CustomFileUpload/CustomUploadMultipleFiles";
 import CustomInput from "@/components/forms/CustomInput";
 import CustomSelect from "@/components/forms/CustomSelect/CustomSelect";
+import CustomSlider from "@/components/forms/CustomSlider";
 import CustomSwitch from "@/components/forms/CustomSwitch";
 import {
   packageRoomOptions,
@@ -50,6 +51,7 @@ const initialValues = {
   minTourists: 1,
   numGuides: 0,
   numPorters: 0,
+  ageRange: [5, 80],
 };
 
 const AddOrganizationPackage = () => {
@@ -128,6 +130,7 @@ const AddOrganizationPackage = () => {
         tripMapImage: acceptedMapImage,
         images: fileList,
         organizationId: user?.organizationId,
+        ageRange: values?.ageRange?.map((item) => parseInt(item)),
       };
 
       if (packageSlug) {
@@ -354,19 +357,6 @@ const AddOrganizationPackage = () => {
                   </Tooltip>
                 </Col>
                 <Col lg={6} md={8} sm={12} xs={24}>
-                  <Tooltip
-                    title={"If insurance is required for users"}
-                    placement="topLeft"
-                  >
-                    <Form.Item
-                      label={"Is Insurance required"}
-                      name={"insuranceRequired"}
-                    >
-                      <CustomSwitch />
-                    </Form.Item>
-                  </Tooltip>
-                </Col>
-                <Col lg={6} md={8} sm={12} xs={24}>
                   <Form.Item
                     label={"Preferred seasons"}
                     name={"preferSeasons"}
@@ -383,6 +373,60 @@ const AddOrganizationPackage = () => {
                     />
                   </Form.Item>
                 </Col>
+                <Col lg={6} md={8} sm={12} xs={24}>
+                  <Form.Item
+                    label={"Age Range"}
+                    name={"ageRange"}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Age range is required",
+                      },
+                      {
+                        validator: (_, value) => {
+                          if (!value || value.length !== 2) {
+                            return Promise.reject(
+                              "Please select a valid age range"
+                            );
+                          }
+                          const [minAge, maxAge] = value;
+                          if (maxAge - minAge < 10) {
+                            return Promise.reject(
+                              "Age range must be at least 10 years apart"
+                            );
+                          }
+                          return Promise.resolve();
+                        },
+                      },
+                    ]}
+                  >
+                    <CustomSlider
+                      min={0}
+                      max={120}
+                      range={true}
+                      marks={{
+                        5: "5Y",
+                        18: "18Y",
+                        40: "40Y",
+                        80: "80Y",
+                      }}
+                    />
+                  </Form.Item>
+                </Col>
+                <Col lg={6} md={8} sm={12} xs={24}>
+                  <Tooltip
+                    title={"If insurance is required for users"}
+                    placement="topLeft"
+                  >
+                    <Form.Item
+                      label={"Is Insurance required"}
+                      name={"insuranceRequired"}
+                    >
+                      <CustomSwitch />
+                    </Form.Item>
+                  </Tooltip>
+                </Col>
+
                 <Col lg={12} md={12} sm={24} xs={24}>
                   <Tooltip
                     title={
@@ -407,6 +451,24 @@ const AddOrganizationPackage = () => {
                       />
                     </Form.Item>
                   </Tooltip>
+                </Col>
+                <Col lg={12} md={12} sm={24} xs={24}>
+                  <Form.Item
+                    label={"Description"}
+                    name={"description"}
+                    rules={[
+                      {
+                        required: true,
+                        message: "Short overview about package is required",
+                      },
+                    ]}
+                  >
+                    <CustomInput
+                      placeholder={"Short overview about package"}
+                      type="textarea"
+                      rows={3}
+                    />
+                  </Form.Item>
                 </Col>
               </Row>
             </CustomCard>

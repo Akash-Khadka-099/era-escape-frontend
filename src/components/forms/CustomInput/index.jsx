@@ -12,7 +12,7 @@ const CustomInput = ({ type = "text", placeholder, ...props }) => {
   return (
     <>
       {type == "textarea" ? (
-        <Input.TextArea placeholder={placeholder} {...props} />
+        <Input.TextArea  placeholder={placeholder} {...props} />
       ) : (
         <Input type={type} placeholder={placeholder} {...props} />
       )}

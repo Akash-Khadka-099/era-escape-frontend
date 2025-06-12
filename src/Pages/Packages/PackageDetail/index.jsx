@@ -12,14 +12,12 @@ import {
   List,
   Row,
   Select,
+  Tag,
+  Tooltip,
   Typography,
 } from "antd";
 import {
-  WifiOutlined,
-  CoffeeOutlined,
-  CarOutlined,
   UserOutlined,
-  HomeOutlined,
   CheckCircleOutlined,
   ArrowRightOutlined,
   CloseOutlined,
@@ -29,19 +27,21 @@ import moment from "moment";
 import { useParams } from "react-router-dom";
 import { useFetchPackageBySlug } from "@/services/packageService";
 import parse from "html-react-parser";
+import { RiMapPinUserFill } from "react-icons/ri";
+import { FaUser } from "react-icons/fa6";
+import { FaUserFriends } from "react-icons/fa";
+import { FaUserShield } from "react-icons/fa6";
+import { RiSecurePaymentFill } from "react-icons/ri";
+import { capitalizeFirstWord } from "@/utils/helper";
+import { FaCloudMeatball } from "react-icons/fa6";
+import { GiSurferVan } from "react-icons/gi";
+import { LuHotel } from "react-icons/lu";
+import { MdManageAccounts } from "react-icons/md";
+import { GiMoon } from "react-icons/gi";
 
 const { Panel } = Collapse;
 const { Text } = Typography;
 const { RangePicker } = DatePicker;
-
-const travelPackages = [
-  { title: "WiFi", icon: <WifiOutlined /> },
-  { title: "Snacks", icon: <CoffeeOutlined /> },
-  { title: "Breakfast", icon: <CoffeeOutlined /> },
-  { title: "Night Stay", icon: <HomeOutlined /> },
-  { title: "Guide", icon: <UserOutlined /> },
-  { title: "Sumo Vehicle", icon: <CarOutlined /> },
-];
 
 const PackageDetail = () => {
   const [form] = Form.useForm();
@@ -64,10 +64,88 @@ const PackageDetail = () => {
   const handleSubmit = (values) => {
     console.log("Booking details:", values);
   };
+
+  const shortDetails = useMemo(() => {
+    return [
+      {
+        title: `Age Range (${data?.ageRange?.[0]}-${data?.ageRange?.[1]})`,
+        value: data?.ageRange?.length,
+        icon: <MdManageAccounts size={20} />,
+      },
+      {
+        title: `Night/Days (${data?.totalNights}/${data?.totalNights + 1})`,
+        tooltip: "Total Night and Days in package (Night / Days)",
+        value: data?.totalNights,
+        icon: <GiMoon size={16} />,
+      },
+      {
+        title: `Min Traveller (${data?.minTourists})`,
+        value: data?.minTourists,
+        icon: <FaUser size={16} />,
+      },
+      {
+        title: `Max Traveller (${data?.maxTourists})`,
+        value: data?.maxTourists,
+        icon: <FaUserFriends size={18} />,
+      },
+      {
+        title: `Guide (${data?.numGuides})`,
+        value: data?.numGuides,
+        icon: <RiMapPinUserFill size={20} />,
+      },
+      {
+        title: `Porter (${data?.numPorters})`,
+        tooltip:
+          "No. of porters can be assigned based on the number of travelers.",
+        value: data?.numPorters,
+        icon: <FaUserShield size={18} />,
+      },
+      {
+        title: `Insurance Required `,
+        value: data?.insuranceRequired,
+        tooltip: "Insurance is required for this package",
+        icon: <RiSecurePaymentFill size={18} />,
+      },
+      {
+        title: `Preferred Seasons (${data?.preferSeasons
+          ?.map((item) => capitalizeFirstWord(item))
+          ?.join(", ")})`,
+        value: data?.preferSeasons?.length,
+        icon: <FaCloudMeatball size={16} />,
+      },
+      {
+        title: data?.vehicleType
+          ?.map((item) => capitalizeFirstWord(item))
+          ?.join(", "),
+        value: data?.vehicleType?.length,
+        tooltip: "Avaliable vehicles  for the package",
+        icon: <GiSurferVan size={18} />,
+      },
+      {
+        title: `Rooms types (${data?.roomType
+          ?.map((item) => capitalizeFirstWord(item))
+          ?.join(", ")})`,
+        value: data?.roomType?.length,
+        tooltip: "Rooms available for the package",
+        icon: <LuHotel size={20} />,
+      },
+    ]?.filter((item) => item?.value);
+  }, [data]);
   return (
     <MiddleContentWrapper>
       <div className="mb-5">
         <Typography.Title level={2}> {data?.title}</Typography.Title>
+        {data?.tags?.length ? (
+          <div style={{ margin: "8px 0" }}>
+            {data?.tags?.map((item, index) => (
+              <Tag key={index} color="green">
+                #{item}
+              </Tag>
+            ))}
+          </div>
+        ) : (
+          ""
+        )}
 
         <Image.PreviewGroup items={packageImages}>
           <Row gutter={4}>
@@ -140,40 +218,50 @@ const PackageDetail = () => {
               </div>
             </Flex>
           </div>
+
           <Divider />
           <div style={{ maxWidth: "80%", textAlign: "justify" }}>
-            <Typography.Text>
-              {`Kalinchowk is a popular hilltop destination in Nepal, known for
-              its breathtaking mountain views, snowfall in winter, and the
-              revered Kalinchowk Bhagwati Temple. Located in Dolakha district at
-              an altitude of 3,842 meters, it offers stunning panoramas of the
-              Himalayas, including Langtang, Gaurishankar, and Everest. It's a
-              favorite spot for pilgrims, trekkers, and snow lovers, with a
-              cable car service providing easy access to the summit. The area is
-              also a gateway to Rolwaling Valley and is famous for its cultural
-              and natural beauty.`}
-            </Typography.Text>
+            <Typography.Title level={4}>Short Overview</Typography.Title>
+            <Typography.Text>{data?.description}</Typography.Text>
           </div>
           <Divider />
-          <div>
-            <Typography.Title level={4}>
-              Services and Facilities
-            </Typography.Title>
-            <Row gutter={[16, 16]}>
-              {travelPackages.map((item, index) => (
-                <Col span={12} key={index}>
-                  <List.Item style={{ listStyle: "none" }}>
-                    <List.Item.Meta
-                      style={{ display: "flex", gap: "1rem" }}
-                      avatar={item.icon}
-                      description={item.title}
-                    />
-                  </List.Item>
-                </Col>
-              ))}
-            </Row>
-          </div>
-          <Divider />
+          {shortDetails?.length ? (
+            <>
+              <div
+                style={{
+                  background: "#f3f6ec",
+                  padding: "1rem",
+                  borderRadius: "8px",
+                }}
+              >
+                <Typography.Title level={4}>
+                  Package Essentials
+                </Typography.Title>
+                <Row gutter={[16, 16]}>
+                  {shortDetails?.map((item, index) => (
+                    <Col span={12} key={index}>
+                      <Tooltip
+                        title={item?.tooltip || ""}
+                        placement="topLeft"
+                        color="#85906d"
+                      >
+                        <List.Item style={{ listStyle: "none" }}>
+                          <List.Item.Meta
+                            style={{ display: "flex", gap: "1rem" }}
+                            avatar={item?.icon}
+                            description={item?.title}
+                          />
+                        </List.Item>
+                      </Tooltip>
+                    </Col>
+                  ))}
+                </Row>
+              </div>
+              <Divider />
+            </>
+          ) : (
+            ""
+          )}
           {data?.highlightLists?.length ? (
             <>
               <div>
