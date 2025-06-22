@@ -47,3 +47,14 @@
     transform: translateY(0);
   }
 }
+
+/* @media (min-width: 576px) { */
+.sticky-card {
+  position: sticky;
+  position: -webkit-sticky;
+  height: 100%;
+  top: 2rem;
+  color: red;
+  background: green;
+}
+/* } */

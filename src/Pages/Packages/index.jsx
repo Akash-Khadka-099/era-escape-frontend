@@ -3,14 +3,13 @@ import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrap
 import CustomPackageSearch from "@/components/CustomPackageSearch";
 import { useSearchPackageLists } from "@/services/searchPackageLists";
 import {
+  Affix,
   Button,
   Col,
   Flex,
   Form,
   message,
-  Radio,
   Row,
-  Select,
   Slider,
   Typography,
 } from "antd";
@@ -21,17 +20,21 @@ import NoDataFound from "@/assets/JsonAnimation/noDataFound.json";
 import CustomPagination from "@/components/CustomPagination";
 import { useSearchParams } from "react-router-dom";
 
-const { Option } = Select;
 const { Text } = Typography;
 
 const featuresLists = ["Beautiful  views", "Peaceful gardens", "Discounts"];
 
 const Packages = () => {
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 5,
+  });
+  const [form] = useForm();
   const [listedPackages, setListedPackages] = useState([]);
   const [packageSearchValue, setPackageSearchValue] = useState("");
   const [successSearchValue, setSuccessSearchValue] = useState("");
-  const [priceRange, setPriceRange] = useState([500, 5000]);
-  const [form] = useForm();
+  // const [priceRange, setPriceRange] = useState([500, 5000]);
+  const [totalNightRange, setTotalNightRange] = useState([1, 20]);
   // const { search } = useLocation();
 
   const [searchParams, setSearchParams] = useSearchParams();
@@ -46,16 +49,29 @@ const Packages = () => {
     }
     mutateAsync({
       q: searchQuery || "",
+      page: pagination?.page,
+      limit: pagination?.pageSize,
     }).then((response) => {
       if (response?.status == 200) {
         setListedPackages(response?.data || []);
       }
     });
-  }, []);
+  }, [pagination]);
 
-  const onSubmitHandler = async (data) => {
-    console.log("form data", data);
-  };
+  const onSubmitHandler = useCallback(async () => {
+    try {
+      const filterPackageResponse = await mutateAsync({
+        q: searchQuery,
+        minNights: totalNightRange?.[0],
+        maxNights: totalNightRange?.[1],
+      });
+      if (filterPackageResponse?.status == 200) {
+        setListedPackages(filterPackageResponse?.data || []);
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  }, [searchQuery, totalNightRange]);
 
   const onSearchHandler = useCallback(
     async (value) => {
@@ -102,23 +118,27 @@ const Packages = () => {
       <MiddleContentWrapper>
         <Row gutter={16}>
           <Col span={6}>
-            <div
-              className="text-center py-3"
-              style={{
-                minHeight: "100%",
-                border: "1px solid rgba(0,0,0,0.3)",
-                borderRadius: "8px",
-              }}
-            >
-              <Typography.Title level={4}>Filters</Typography.Title>
-              <Form
-                className="p-5"
-                layout="vertical"
-                form={form}
-                onFinish={onSubmitHandler}
+            <Affix offsetTop={100}>
+              <div
+                className="text-center py-3"
+                style={{
+                  height: "clamp(500px, 600px, 100%)",
+                  border: "1px solid rgba(0,0,0,0.3)",
+                  borderRadius: "8px",
+                }}
               >
-                {/* Price Range */}
-                <Form.Item label="Price Range" name="price">
+                <Typography.Title level={4}>Filters</Typography.Title>
+                <Form
+                  className="p-5"
+                  layout="vertical"
+                  form={form}
+                  onFinish={onSubmitHandler}
+                  initialValues={{
+                    totalNightRange: [1, 20],
+                  }}
+                >
+                  {/* Price Range */}
+                  {/* <Form.Item label="Price Range" name="price">
                   <Slider
                     range
                     min={100}
@@ -130,10 +150,29 @@ const Packages = () => {
                   <Text type="secondary">
                     Price Range: Rs{priceRange[0]} - Rs{priceRange[1]}
                   </Text>
-                </Form.Item>
+                </Form.Item> */}
 
-                {/* Duration */}
-                <Form.Item label="Duration (days)" name="duration">
+                  <Form.Item
+                    label={"Total Night's Range"}
+                    name={"totalNightRange"}
+                    valuePropName="value"
+                  >
+                    <Slider
+                      min={1}
+                      max={20}
+                      // defaultValue={[1, 20]}
+                      range={true}
+                      onChange={(value) => setTotalNightRange(value)}
+                    />
+
+                    <Text type="secondary">
+                      Total Night Range: {totalNightRange?.[0]} -{" "}
+                      {totalNightRange?.[1]}
+                    </Text>
+                  </Form.Item>
+
+                  {/* Duration */}
+                  {/* <Form.Item label="Duration (days)" name="duration">
                   <Select placeholder="Select duration" allowClear>
                     <Option value="1">1 Day</Option>
                     <Option value="3">3 Days</Option>
@@ -141,32 +180,33 @@ const Packages = () => {
                     <Option value="7">7 Days</Option>
                     <Option value="custom">Custom</Option>
                   </Select>
-                </Form.Item>
+                </Form.Item> */}
 
-                {/* Travel Type */}
-                <Form.Item label="Travel Type" name="travelType">
+                  {/* Travel Type */}
+                  {/* <Form.Item label="Travel Type" name="travelType">
                   <Select placeholder="Select type" allowClear>
                     <Option value="solo">Solo</Option>
                     <Option value="family">Family</Option>
                     <Option value="business">Business</Option>
                     <Option value="honeymoon">Honeymoon</Option>
                   </Select>
-                </Form.Item>
+                </Form.Item> */}
 
-                {/* Guide Option */}
-                <Form.Item label="With Guide?" name="withGuide">
+                  {/* Guide Option */}
+                  {/* <Form.Item label="With Guide?" name="withGuide">
                   <Radio.Group>
                     <Radio value="yes">With Guide</Radio>
                     <Radio value="no">Without Guide</Radio>
                   </Radio.Group>
-                </Form.Item>
+                </Form.Item> */}
 
-                {/* Submit Button */}
-                <Button type="primary" htmlType="submit" block>
-                  Apply Filters
-                </Button>
-              </Form>
-            </div>
+                  {/* Submit Button */}
+                  <Button type="primary" htmlType="submit" block>
+                    Apply Filters
+                  </Button>
+                </Form>
+              </div>
+            </Affix>
           </Col>
           <Col span={18}>
             {successSearchValue ? (
@@ -223,8 +263,15 @@ const Packages = () => {
                   }}
                 >
                   <CustomPagination
+                    onChange={(value) =>
+                      setPagination((oldState) => ({
+                        ...oldState,
+                        page: value,
+                      }))
+                    }
                     paginationDetail={{
-                      ...listedPackages?.pagination,
+                      page: listedPackages?.pagination?.page,
+                      totalData: listedPackages?.pagination?.total,
                       pageSize: listedPackages?.pagination?.limit,
                     }}
                   />

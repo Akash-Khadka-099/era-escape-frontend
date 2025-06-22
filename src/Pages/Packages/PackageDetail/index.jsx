@@ -1,17 +1,16 @@
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import {
+  Affix,
   Avatar,
   Button,
   Col,
   Collapse,
-  DatePicker,
   Divider,
   Flex,
   Form,
   Image,
   List,
   Row,
-  Select,
   Tag,
   Tooltip,
   Typography,
@@ -23,8 +22,7 @@ import {
   CloseOutlined,
 } from "@ant-design/icons";
 import { useMemo, useState } from "react";
-import moment from "moment";
-import { useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router-dom";
 import { useFetchPackageBySlug } from "@/services/packageService";
 import parse from "html-react-parser";
 import { RiMapPinUserFill } from "react-icons/ri";
@@ -40,22 +38,20 @@ import { MdManageAccounts } from "react-icons/md";
 import { GiMoon } from "react-icons/gi";
 import { FaCheckCircle } from "react-icons/fa";
 import PackageCancellationPolicyModal from "@/Pages/Packages/PackageDetail/PackageCancellationPolicyModal";
+import CustomInput from "@/components/forms/CustomInput";
+import CustomDatePicker from "@/components/forms/CustomDatePicker";
+import dayjs from "dayjs";
 
 const { Panel } = Collapse;
 const { Text } = Typography;
-const { RangePicker } = DatePicker;
 
 const PackageDetail = () => {
   const [isCancelPolicyOpen, setIsCancelPolicyOpen] = useState(false);
   const [form] = Form.useForm();
-  const [guests, setGuests] = useState(1);
   const { package_slug } = useParams();
+  const navigate = useNavigate();
 
   const { data } = useFetchPackageBySlug(package_slug);
-
-  const handleGuestsChange = (value) => {
-    setGuests(value);
-  };
 
   const packageImages = useMemo(() => {
     return data?.images?.map((item, index) => ({
@@ -66,6 +62,9 @@ const PackageDetail = () => {
 
   const handleSubmit = (values) => {
     console.log("Booking details:", values);
+    navigate(
+      `/package-booking/${package_slug}?bookedDate=${values?.bookedDate}&numberOfTravelers=${values?.numberOfTravelers}`
+    );
   };
 
   const shortDetails = useMemo(() => {
@@ -138,7 +137,7 @@ const PackageDetail = () => {
     <>
       {" "}
       <MiddleContentWrapper>
-        <div className="mb-5">
+        <div>
           <Typography.Title level={2}> {data?.title}</Typography.Title>
           {data?.tags?.length ? (
             <div style={{ margin: "8px 0" }}>
@@ -151,56 +150,81 @@ const PackageDetail = () => {
           ) : (
             ""
           )}
-
-          <Image.PreviewGroup items={packageImages}>
-            <Row gutter={4}>
-              <Col span={4}>
-                <Image
-                  src={packageImages?.[0]?.src}
-                  alt={packageImages?.[0]?.alt}
-                  style={{ width: "100%", height: "200px", objectFit: "cover" }}
-                />
-              </Col>
-              <Col span={4}>
-                <Image
-                  src={packageImages?.[1]?.src}
-                  alt={packageImages?.[1]?.alt}
-                  style={{ width: "100%", height: "200px", objectFit: "cover" }}
-                />
-              </Col>
-              <Col span={4}>
-                <Image
-                  src={packageImages?.[2]?.src}
-                  alt={packageImages?.[2]?.alt}
-                  style={{ width: "100%", height: "200px", objectFit: "cover" }}
-                />
-              </Col>
-              <Col span={4}>
-                <Image
-                  src={packageImages?.[3]?.src}
-                  alt={packageImages?.[3]?.alt}
-                  style={{ width: "100%", height: "200px", objectFit: "cover" }}
-                />
-              </Col>
-              <Col span={4}>
-                <Image
-                  src={packageImages?.[4]?.src}
-                  alt={packageImages?.[4]?.alt}
-                  style={{ width: "100%", height: "200px", objectFit: "cover" }}
-                />
-              </Col>
-              <Col span={4}>
-                <Image
-                  src={packageImages?.[5]?.src}
-                  alt={packageImages?.[5]?.alt}
-                  style={{ width: "100%", height: "200px", objectFit: "cover" }}
-                />
-              </Col>
-            </Row>
-          </Image.PreviewGroup>
         </div>
         <Row gutter={[16, 16]}>
           <Col span={16}>
+            <div className="my-2 mb-4">
+              <Image.PreviewGroup items={packageImages}>
+                <Row gutter={4}>
+                  <Col span={6}>
+                    <Image
+                      src={packageImages?.[0]?.src}
+                      alt={packageImages?.[0]?.alt}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <Image
+                      src={packageImages?.[1]?.src}
+                      alt={packageImages?.[1]?.alt}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <Image
+                      src={packageImages?.[2]?.src}
+                      alt={packageImages?.[2]?.alt}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <Image
+                      src={packageImages?.[3]?.src}
+                      alt={packageImages?.[3]?.alt}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Col>
+                  {/* <Col span={6}>
+                    <Image
+                      src={packageImages?.[4]?.src}
+                      alt={packageImages?.[4]?.alt}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Col>
+                  <Col span={6}>
+                    <Image
+                      src={packageImages?.[5]?.src}
+                      alt={packageImages?.[5]?.alt}
+                      style={{
+                        width: "100%",
+                        height: "200px",
+                        objectFit: "cover",
+                      }}
+                    />
+                  </Col> */}
+                </Row>
+              </Image.PreviewGroup>
+            </div>
             <div>
               <Flex align="center" gap={16}>
                 {" "}
@@ -396,105 +420,104 @@ const PackageDetail = () => {
             </Collapse>
           </Col>
           <Col span={8}>
-            <div
-              style={{
-                maxWidth: 500,
-                margin: "auto",
-                padding: 24,
-                background: "#fff",
-                borderRadius: 12,
-                boxShadow: "0 4px 12px rgba(0, 0, 0, 0.1)",
-                position: "sticky",
-              }}
-            >
-              <Text strong style={{ fontSize: 18, width: "100%" }}>
-                Book Your Stay
-              </Text>
-              <Divider />
-              <Form form={form} layout="vertical" onFinish={handleSubmit}>
-                <Form.Item
-                  label="Select Dates"
-                  name="dates"
-                  rules={[
-                    { required: true, message: "Please select your dates" },
-                  ]}
-                >
-                  <RangePicker
-                    style={{ width: "100%" }}
-                    disabledDate={(current) =>
-                      current && current < moment().startOf("day")
-                    }
-                  />
-                </Form.Item>
-
-                <Form.Item
-                  label="Number of Guests"
-                  name="guests"
-                  rules={[
-                    {
-                      required: true,
-                      message: "Please select number of guests",
-                    },
-                  ]}
-                >
-                  <Select
-                    suffixIcon={<UserOutlined />}
-                    onChange={handleGuestsChange}
-                    value={guests}
-                  >
-                    {[...Array(10).keys()].map((num) => (
-                      <Select.Option key={num + 1} value={num + 1}>
-                        {num + 1} Guest{num > 0 ? "s" : ""}
-                      </Select.Option>
-                    ))}
-                  </Select>
-                </Form.Item>
-
-                <Button
-                  type="primary"
-                  className="w-100"
-                  size="large"
-                  htmlType="submit"
-                >
-                  Book Now
-                </Button>
-              </Form>
+            <Affix offsetTop={100}>
               <div
-                className="my-2"
                 style={{
-                  backgroundColor: "#dee3d3",
-                  borderRadius: "8px",
+                  background: "#fff",
+                  padding: 24,
+                  borderRadius: 12,
+                  boxShadow: "0 4px 12px rgb(0 0 0 / 0.1)",
+                  // maxWidth: 400,
                 }}
               >
-                <List className="p-2">
-                  <List.Item
-                    style={{
-                      border: "none",
-                    }}
+                <Text strong style={{ fontSize: 18, width: "100%" }}>
+                  Book Your Stay
+                </Text>
+                <Divider />
+                <Form form={form} layout="vertical" onFinish={handleSubmit}>
+                  <Form.Item
+                    label="Select Dates"
+                    name="bookedDate"
+                    rules={[
+                      { required: true, message: "Please select your dates" },
+                    ]}
                   >
-                    <Flex gap={4} align="center">
-                      <FaCheckCircle
-                        size={20}
-                        style={{ color: "green", marginRight: 8 }}
-                      />
-                      <div>
-                        Free
-                        <strong
-                          onClick={() => setIsCancelPolicyOpen(true)}
-                          style={{
-                            cursor: "pointer",
-                          }}
-                        >
-                          <u> cancellation</u>
-                        </strong>{" "}
-                        , if you cancel the package at least 24 hours after the
-                        booking.
-                      </div>
-                    </Flex>
-                  </List.Item>
-                </List>
+                    <CustomDatePicker
+                      disabledDate={(current) => {
+                        return (
+                          current &&
+                          current < dayjs().add(1, "day").startOf("day")
+                        );
+                      }}
+                    />
+                  </Form.Item>
+
+                  <Form.Item
+                    label="Number of Guests"
+                    name="numberOfTravelers"
+                    rules={[
+                      {
+                        required: true,
+                        message: "Please select number of guests",
+                      },
+                      {
+                        type: "number",
+                        min: data?.minTourists || 1,
+                        message: `Min tourists for the package is ${
+                          data?.minTourists || 1
+                        }`,
+                      },
+                    ]}
+                  >
+                    <CustomInput suffixIcon={<UserOutlined />} type="number" />
+                  </Form.Item>
+
+                  <Button
+                    type="primary"
+                    className="w-100"
+                    size="large"
+                    htmlType="submit"
+                  >
+                    Book Now
+                  </Button>
+                </Form>
+                <div
+                  className="my-2"
+                  style={{
+                    backgroundColor: "#dee3d3",
+                    borderRadius: "8px",
+                  }}
+                >
+                  <List className="p-2">
+                    <List.Item
+                      style={{
+                        border: "none",
+                      }}
+                    >
+                      <Flex gap={4} align="center">
+                        <FaCheckCircle
+                          size={20}
+                          style={{ color: "green", marginRight: 8 }}
+                        />
+                        <div>
+                          Free
+                          <strong
+                            onClick={() => setIsCancelPolicyOpen(true)}
+                            style={{
+                              cursor: "pointer",
+                            }}
+                          >
+                            <u> cancellation</u>
+                          </strong>{" "}
+                          , if you cancel the package at least 24 hours after
+                          the booking.
+                        </div>
+                      </Flex>
+                    </List.Item>
+                  </List>
+                </div>
               </div>
-            </div>
+            </Affix>
           </Col>
         </Row>
       </MiddleContentWrapper>

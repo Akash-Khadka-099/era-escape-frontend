@@ -120,7 +120,10 @@ const PackageCards = ({ rating, packageDetail, featuresLists = [] }) => {
                 <Flex gap="middle" vertical>
                   <Rate tooltips={desc} onChange={setValue} value={value} />
                 </Flex>
-                <Typography.Text>1 Night 2 Days</Typography.Text>
+                <Typography.Text>
+                  {packageDetail?.totalNights} Night{" "}
+                  {packageDetail?.totalNights + 1} Days
+                </Typography.Text>
               </div>
               <div>
                 {featuresLists?.map((item) => (

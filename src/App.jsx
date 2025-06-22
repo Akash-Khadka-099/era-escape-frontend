@@ -12,6 +12,7 @@ import { useEffect, useState } from "react";
 import useAuthStore from "@/store/authStore";
 import OrganizationPackages from "@/Pages/OrganizationPages/OrganizationPackages";
 import AddOrganizationPackage from "@/Pages/OrganizationPages/OrganizationPackages/AddOrganizationPackage";
+import PackageBooking from "@/Pages/PackageBooking";
 
 const App = () => {
   const { setAccessToken, user } = useAuthStore();
@@ -72,6 +73,10 @@ const App = () => {
               <Route
                 path="/organization-package/edit/:packageSlug"
                 element={<AddOrganizationPackage />}
+              />
+              <Route
+                path="/package-booking/:package_slug"
+                element={<PackageBooking />}
               />
             </Routes>
           </div>

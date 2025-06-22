@@ -1,3 +1,4 @@
+import LogoutConfirmModal from "@/components/Navbar/LogoutConfirmModal";
 import { menuItems } from "@/components/Navbar/navbarItems";
 import LoginRegister from "@/Pages/LoginRegister";
 import useAuthStore from "@/store/authStore";
@@ -8,19 +9,8 @@ import { useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
 
-const dropdownMenu = [
-  {
-    label: "1st menu item",
-    key: "1",
-    icon: <UserOutlined />,
-  },
-  {
-    label: "2nd menu item",
-    key: "2",
-    icon: <UserOutlined />,
-  },
-];
 const Navbar = () => {
+  const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isLoginModalOpen, setISLoginModalOpen] = useState(false);
   const navigate = useNavigate();
 
@@ -28,6 +18,47 @@ const Navbar = () => {
 
   const handleCloseLoginModal = () => {
     setISLoginModalOpen(false);
+  };
+
+  const dropdownMenu = [
+    {
+      label: "Logout",
+      key: "1",
+      icon: <UserOutlined />,
+      onClick: () => setIsLogoutOpen(true),
+    },
+    {
+      label: "2nd menu item",
+      key: "2",
+      icon: <UserOutlined />,
+    },
+  ];
+
+  const filterNavItems = (menuItems, userRole) => {
+    return menuItems
+      .map((item) => {
+        // Check if item has required role
+        const hasRole =
+          item.role === "*" ||
+          (Array.isArray(item.role) && item.role.includes(userRole));
+
+        // If item has children, filter them recursively
+        if (item.children) {
+          const filteredChildren = filterNavItems(item.children, userRole);
+          // Only include item if it has role or has valid children
+          if (hasRole || filteredChildren.length > 0) {
+            return {
+              ...item,
+              children: filteredChildren,
+            };
+          }
+          return null;
+        }
+
+        // Return item if it has the required role
+        return hasRole ? item : null;
+      })
+      .filter((item) => item !== null);
   };
 
   return (
@@ -53,7 +84,7 @@ const Navbar = () => {
             <Menu
               mode="horizontal"
               style={{ lineHeight: "64px", background: "#fff" }}
-              items={menuItems}
+              items={filterNavItems(menuItems, user?.role)}
               onClick={(e) => {
                 navigate(e.key);
               }}
@@ -66,7 +97,6 @@ const Navbar = () => {
                 menu={{ items: dropdownMenu }}
                 placement="bottomRight"
                 icon={<UserOutlined />}
-                onClick={(e) => console.log("e", e)}
               >
                 {user?.name || ""}
               </Dropdown.Button>
@@ -87,6 +117,7 @@ const Navbar = () => {
         isLoginModalOpen={isLoginModalOpen}
         handleCloseLoginModal={handleCloseLoginModal}
       />
+      <LogoutConfirmModal isOpen={isLogoutOpen} setIsOpen={setIsLogoutOpen} />
     </>
   );
 };
