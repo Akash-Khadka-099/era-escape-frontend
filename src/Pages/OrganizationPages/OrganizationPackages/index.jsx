@@ -1,19 +1,49 @@
 import CustomCard from "@/components/Cards/CustomCard";
 import AdminWrappers from "@/components/ContentWrappers/AdminWrappers";
 import CustomDataTable from "@/components/CustomDataTable";
-import { useFetchOrganizationPackage } from "@/services/packageService";
+import {
+  useFetchOrganizationPackage,
+  useUpdatepackageActiveStatus,
+} from "@/services/packageService";
 import useAuthStore from "@/store/authStore";
 import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
-import { Button, Flex, Image, message, Popconfirm, Tag, Tooltip } from "antd";
+import {
+  Button,
+  Flex,
+  Image,
+  message,
+  Popconfirm,
+  Switch,
+  Tag,
+  Tooltip,
+} from "antd";
 import moment from "moment";
 import { useNavigate } from "react-router-dom";
 
 const OrganizationPackages = () => {
   const { user } = useAuthStore();
   const navigate = useNavigate();
-  const { data } = useFetchOrganizationPackage({
+  const { data, isLoading } = useFetchOrganizationPackage({
     organizationId: user?.organizationId,
   });
+  const { mutateAsync } = useUpdatepackageActiveStatus();
+
+  const handleChangePackageActiveStatus = async (id, activeStatus) => {
+    try {
+      const statusResponse = await mutateAsync({
+        id: id,
+        payloads: {
+          isActive: activeStatus,
+        },
+      });
+
+      if (statusResponse?.status == 200) {
+        message.success("Package  status changed successfully!");
+      }
+    } catch (error) {
+      console.error(error);
+    }
+  };
 
   const columns = [
     {
@@ -25,6 +55,16 @@ const OrganizationPackages = () => {
       title: "Package Title",
       align: "center",
       dataIndex: "title",
+    },
+    {
+      title: "Status",
+      align: "center",
+      render: (item) =>
+        item?.isActive ? (
+          <Tag color="green">Active</Tag>
+        ) : (
+          <Tag color="red">Inactive</Tag>
+        ),
     },
     {
       title: "Image",
@@ -64,7 +104,9 @@ const OrganizationPackages = () => {
             <Button
               shape="circle"
               icon={<EditOutlined style={{ color: "green" }} />}
-              onClick={() => navigate(`/organization-package/edit/${item?.slug}`)}
+              onClick={() =>
+                navigate(`/organization-package/edit/${item?.slug}`)
+              }
             />
           </Tooltip>
           <Popconfirm
@@ -84,6 +126,17 @@ const OrganizationPackages = () => {
               />
             </Tooltip>{" "}
           </Popconfirm>
+          <Tooltip
+            title={`${item?.isActive ? "Deactive" : "Activate"} package status`}
+          >
+            <Switch
+              value={item?.isActive}
+              onChange={(e) => {
+                console.log("switch value", e);
+                handleChangePackageActiveStatus(item?.id, e);
+              }}
+            />
+          </Tooltip>
         </Flex>
       ),
     },
@@ -105,7 +158,11 @@ const OrganizationPackages = () => {
             </Button>
           }
         >
-          <CustomDataTable columns={columns} dataSource={data?.data || []} />
+          <CustomDataTable
+            columns={columns}
+            dataSource={data?.data || []}
+            isLoading={isLoading}
+          />
         </CustomCard>
       </AdminWrappers>
     </>

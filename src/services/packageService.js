@@ -63,9 +63,28 @@ const useUpdatePackage = () => {
   });
 };
 
+const updatepackageActiveStatus = ({ payloads, id }) => {
+  return axiosInstance.post(
+    apiEndpoints.package.updateActiveStatus?.replace("{id}", id),
+    payloads
+  );
+};
+
+const useUpdatepackageActiveStatus = () => {
+  const clientQuery = useQueryClient();
+
+  return useMutation({
+    mutationFn: updatepackageActiveStatus,
+    onSuccess: () => {
+      clientQuery.invalidateQueries(apiEndpoints.package.fetchPost);
+    },
+  });
+};
+
 export {
   useFetchOrganizationPackage,
   useFetchPackageBySlug,
   useCreatePackage,
   useUpdatePackage,
+  useUpdatepackageActiveStatus,
 };

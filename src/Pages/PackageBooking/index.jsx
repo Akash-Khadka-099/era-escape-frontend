@@ -1,6 +1,7 @@
 import CustomCard from "@/components/Cards/CustomCard";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import CustomInput from "@/components/forms/CustomInput";
+import { useCreateBookingPackage } from "@/services/bookingPackageServices";
 import { CheckOutlined } from "@ant-design/icons";
 import {
   Button,
@@ -14,22 +15,37 @@ import {
   Typography,
 } from "antd";
 import PropTypes from "prop-types";
-import { useState } from "react";
+import { useCallback, useState } from "react";
+import { useLocation, useParams } from "react-router-dom";
+import Lottie from "react-lottie";
+import Success from "@/assets/JsonAnimation/Success.json";
 
 const { Step } = Steps;
 
 const PackageBooking = () => {
-  const [currentStep, setCurrentStep] = useState(0);
+  const [currentStep, setCurrentStep] = useState(3);
   const [form] = Form.useForm();
+  const { package_slug } = useParams();
 
-  const onSubmitHandler = async (values) => {
-    console.log("values", values);
-  };
+  const location = useLocation();
+  const searchParams = new URLSearchParams(location.search);
+  const queryParams = {};
+
+  for (let [key, value] of searchParams.entries()) {
+    queryParams[key] = value;
+  }
+
+  const { mutateAsync, isPending } = useCreateBookingPackage();
 
   const stepFields = [
-    ["name", "email", "phone"],
-    ["pickUpLocation", "pickUpTime"],
-    ["creditCardNumber", "expiryDate", "cvv"],
+    [
+      ["contact", "firstName"],
+      ["contact", "lastName"],
+      ["contact", "contactNumber"],
+      ["contact", "email"],
+    ],
+    ["pickUpPoint"],
+    // ["creditCardNumber", "expiryDate", "cvv"],
   ];
 
   const next = () => {
@@ -47,6 +63,33 @@ const PackageBooking = () => {
     setCurrentStep(currentStep - 1);
   };
 
+  const onSubmitHandler = useCallback(
+    async (values) => {
+      try {
+        const bookingResponse = await mutateAsync({
+          ...values,
+          ...(queryParams || {}),
+          packageSlug: package_slug,
+        });
+        if (bookingResponse?.status == 201) {
+          next();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    },
+    [queryParams, package_slug]
+  );
+
+  const defaultOptions = {
+    loop: false,
+    autoplay: true,
+    animationData: Success,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
+
   return (
     <MiddleContentWrapper>
       <Row gutter={16}>
@@ -61,13 +104,12 @@ const PackageBooking = () => {
           <Form form={form} onFinish={onSubmitHandler} layout="vertical">
             <div style={{ display: currentStep === 0 ? "block" : "none" }}>
               <Typography.Title level={3}>Contact details</Typography.Title>
-              <Typography.Text>{`We'll use this information to send you confirmation and updates about your booking
-`}</Typography.Text>
+              <Typography.Text>{`We'll use this information to send you confirmation and updates about your booking`}</Typography.Text>
               <Divider />
               <Row gutter={[16, 8]}>
                 <Col lg={12} md={12} sm={24} xs={24}>
                   <Form.Item
-                    name="firstName"
+                    name={["contact", "firstName"]}
                     label="First Name"
                     rules={[
                       { required: true, message: "First Name is required" },
@@ -78,7 +120,7 @@ const PackageBooking = () => {
                 </Col>
                 <Col lg={12} md={12} sm={24} xs={24}>
                   <Form.Item
-                    name="lastName"
+                    name={["contact", "lastName"]}
                     label="Last Name"
                     rules={[
                       { required: true, message: "Last Name is required" },
@@ -89,7 +131,7 @@ const PackageBooking = () => {
                 </Col>
                 <Col lg={12} md={12} sm={24} xs={24}>
                   <Form.Item
-                    name="contactNumber"
+                    name={["contact", "contactNumber"]}
                     label="Contact Number"
                     rules={[
                       {
@@ -103,7 +145,7 @@ const PackageBooking = () => {
                 </Col>
                 <Col lg={12} md={12} sm={24} xs={24}>
                   <Form.Item
-                    name="email"
+                    name={["contact", "email"]}
                     label="Email"
                     rules={[
                       {
@@ -122,7 +164,7 @@ const PackageBooking = () => {
 
                 <Col lg={12} md={12} sm={24} xs={24}>
                   <Form.Item
-                    name="secondaryContactNumber"
+                    name={["contact", "secondaryContactNumber"]}
                     label="Secondary Contact Number"
                   >
                     <CustomInput />
@@ -134,7 +176,7 @@ const PackageBooking = () => {
               <Row gutter={[16, 8]}>
                 <Col span={24}>
                   <Form.Item
-                    name="pickUpLocation"
+                    name="pickUpPoint"
                     label="Pick Up Location"
                     rules={[
                       {
@@ -159,29 +201,70 @@ const PackageBooking = () => {
                 name="paymentOption"
                 label="Payment Option"
                 rules={[
-                  { required: true, message: "Please select a payment option" },
+                  {
+                    required: false,
+                    message: "Please select a payment option",
+                  },
                 ]}
               >
                 <PaymentOptionSelector />
               </Form.Item>
             </div>
 
+            <div style={{ display: currentStep === 3 ? "block" : "none" }}>
+              <Flex
+                vertical
+                align="center"
+                className="mt-8"
+                justify="center"
+                style={{ width: "80%" }}
+              >
+                <Lottie
+                  options={defaultOptions}
+                  height={100}
+                  width={140}
+                  style={{
+                    minHeight: 100,
+                  }}
+                />
+                <Typography.Title level={5} type="secondary">
+                  {`Your, package has been booked successfully`}
+                </Typography.Title>
+              </Flex>
+            </div>
+
             <div style={{ marginTop: 20 }}>
-              {currentStep > 0 && (
+              {currentStep == 3 ? (
                 <Button style={{ margin: "0 8px" }} onClick={prev}>
-                  Previous
+                  Home
                 </Button>
+              ) : (
+                <>
+                  {currentStep > 0 && (
+                    <Button style={{ margin: "0 8px" }} onClick={prev}>
+                      Previous
+                    </Button>
+                  )}
+                </>
               )}
-              {currentStep < 2 && (
+
+              {currentStep == 2 ? (
+                <Button type="primary" htmlType="submit" loading={isPending}>
+                  Submit
+                </Button>
+              ) : (
+                ""
+              )}
+              {currentStep == 0 && (
                 <Button type="primary" onClick={next}>
                   Next
                 </Button>
               )}
-              {currentStep === 2 && (
+              {/* {currentStep === 2 && (
                 <Button type="primary" htmlType="submit">
                   Submit
                 </Button>
-              )}
+              )} */}
             </div>
           </Form>
         </Col>
@@ -195,12 +278,12 @@ const paymentOptions = [
   {
     name: "Esewa",
     value: "esewa",
-    logo: "https://play-lh.googleusercontent.com/MRzMmiJAe0-xaEkDKB0MKwv1a3kjDieSfNuaIlRo750_EgqxjRFWKKF7xQyRSb4O95Y",
+    logo: "https://cdn.esewa.com.np/ui/images/logos/esewa-icon-large.png",
   },
   {
     name: "Khalti",
     value: "khalti",
-    logo: "https://play-lh.googleusercontent.com/Xh_OlrdkF1UnGCnMN__4z-yXffBAEl0eUDeVDPr4UthOERV4Fll9S-TozSfnlXDFzw",
+    logo: "https://dao578ztqooau.cloudfront.net/static/img/logo1.png",
   },
   {
     name: "IME Pay",

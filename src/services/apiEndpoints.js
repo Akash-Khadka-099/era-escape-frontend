@@ -11,11 +11,16 @@ export const apiEndpoints = {
     crudById: "/api/destinations/{id}",
     searchFromDashboard: "/api/destination/search/",
   },
+
+  bookPackage: {
+    fetchPost: "/api/booking-packages",
+  },
   package: {
     fetchPost: "/api/packages",
     // fetchBySlug : "/api/packages/package-slug/{slug}",
     crudBySlug: "/api/packages/{slug}",
-    searchPackageList:"/api/packages-search/"
+    searchPackageList: "/api/packages-search/",
+    updateActiveStatus: "/api/packages/active-status/{id}",
   },
   file: {
     deleteFile: "/api/delete/file/{id}",
