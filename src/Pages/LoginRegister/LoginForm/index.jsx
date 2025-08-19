@@ -2,7 +2,7 @@ import { useLoginUser } from "@/services/loginService";
 import { Button, Col, Form, Input, message, Row } from "antd";
 import PropTypes from "prop-types";
 
-const LoginForm = ({ handleCloseLoginModal }) => {
+const LoginForm = ({ handleCloseLoginModal, setIsForgetPassword }) => {
   const [form] = Form.useForm();
 
   const { mutateAsync, isPending } = useLoginUser();
@@ -22,7 +22,7 @@ const LoginForm = ({ handleCloseLoginModal }) => {
   return (
     <>
       <Form layout="vertical" form={form} onFinish={onSubmitHandler}>
-        <Row gutter={8}>
+        <Row gutter={4}>
           <Col span={24}>
             <Form.Item
               label="Email"
@@ -40,6 +40,15 @@ const LoginForm = ({ handleCloseLoginModal }) => {
             >
               <Input type="password" placeholder="Enter your password" />
             </Form.Item>
+            <span
+              className="py-2 text-primary "
+              style={{
+                cursor: "pointer",
+              }}
+              onClick={() => setIsForgetPassword(true)}
+            >
+              Forgot Password ?
+            </span>
           </Col>
         </Row>
         <Form.Item>
@@ -58,6 +67,7 @@ const LoginForm = ({ handleCloseLoginModal }) => {
 };
 
 LoginForm.propTypes = {
+  setIsForgetPassword: PropTypes.func,
   handleCloseLoginModal: PropTypes.func,
 };
 

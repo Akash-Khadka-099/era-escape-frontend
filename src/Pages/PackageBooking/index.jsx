@@ -16,16 +16,18 @@ import {
 } from "antd";
 import PropTypes from "prop-types";
 import { useCallback, useState } from "react";
-import { useLocation, useParams } from "react-router-dom";
+import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Lottie from "react-lottie";
 import Success from "@/assets/JsonAnimation/Success.json";
 
 const { Step } = Steps;
 
 const PackageBooking = () => {
-  const [currentStep, setCurrentStep] = useState(3);
+  const [currentStep, setCurrentStep] = useState(0);
   const [form] = Form.useForm();
   const { package_slug } = useParams();
+
+  const navigate = useNavigate();
 
   const location = useLocation();
   const searchParams = new URLSearchParams(location.search);
@@ -235,7 +237,10 @@ const PackageBooking = () => {
 
             <div style={{ marginTop: 20 }}>
               {currentStep == 3 ? (
-                <Button style={{ margin: "0 8px" }} onClick={prev}>
+                <Button
+                  style={{ margin: "0 8px" }}
+                  onClick={() => navigate("/")}
+                >
                   Home
                 </Button>
               ) : (
@@ -255,7 +260,7 @@ const PackageBooking = () => {
               ) : (
                 ""
               )}
-              {currentStep == 0 && (
+              {currentStep < 2 && (
                 <Button type="primary" onClick={next}>
                   Next
                 </Button>

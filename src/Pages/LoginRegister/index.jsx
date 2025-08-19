@@ -1,3 +1,4 @@
+import ForgetPassword from "@/Pages/LoginRegister/ForgetPassword";
 import LoginForm from "@/Pages/LoginRegister/LoginForm";
 import RegisterForm from "@/Pages/LoginRegister/RegisterForm";
 import { Button, Flex, Image, Modal } from "antd";
@@ -6,7 +7,7 @@ import { useState } from "react";
 
 const LoginRegister = ({ isLoginModalOpen, handleCloseLoginModal }) => {
   const [isLoginPage, setIsLoginPage] = useState(true);
-
+  const [isForgetPassword, setIsForgetPassword] = useState(false);
   return (
     <>
       {" "}
@@ -14,24 +15,41 @@ const LoginRegister = ({ isLoginModalOpen, handleCloseLoginModal }) => {
         width={600}
         onCancel={handleCloseLoginModal}
         open={isLoginModalOpen}
-        title={"Sign in or create an account"}
+        title={
+          isForgetPassword
+            ? "Forgot Password and Recovery"
+            : "Sign in or create an account"
+        }
         footer={null}
       >
-        <Flex justify="end">
-          <Button onClick={() => setIsLoginPage(!isLoginPage)}>
-            {isLoginPage ? "Register" : "Login"}
-          </Button>
-        </Flex>
-        <Image
-          preview={false}
-          width={"100%"}
-          height={200}
-          style={{ objectFit: "contain" }}
-          src={"/images/login.png"}
-        />
-        <div className="my-4">
-          {isLoginPage ? <LoginForm  handleCloseLoginModal={handleCloseLoginModal}/> : <RegisterForm />}
-        </div>
+        {isForgetPassword ? (
+          <ForgetPassword setIsForgetPassword={setIsForgetPassword} />
+        ) : (
+          <>
+            <Flex justify="end">
+              <Button onClick={() => setIsLoginPage(!isLoginPage)}>
+                {isLoginPage ? "Register" : "Login"}
+              </Button>
+            </Flex>
+            <Image
+              preview={false}
+              width={"100%"}
+              height={200}
+              style={{ objectFit: "contain" }}
+              src={"/images/login.png"}
+            />
+            <div className="my-4">
+              {isLoginPage ? (
+                <LoginForm
+                  setIsForgetPassword={setIsForgetPassword}
+                  handleCloseLoginModal={handleCloseLoginModal}
+                />
+              ) : (
+                <RegisterForm handleCloseLoginModal={handleCloseLoginModal} />
+              )}
+            </div>
+          </>
+        )}
       </Modal>
     </>
   );

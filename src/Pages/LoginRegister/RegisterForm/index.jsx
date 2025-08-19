@@ -1,8 +1,9 @@
 import { useCreateUsers } from "@/services/userServices";
 import { Button, Col, Form, Input, message, Row } from "antd";
+import PropTypes from "prop-types";
 import { useState } from "react";
 
-const RegisterForm = () => {
+const RegisterForm = ({ handleCloseLoginModal }) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [form] = Form.useForm();
@@ -24,6 +25,8 @@ const RegisterForm = () => {
       const userResponse = await mutateAsync({ ...values, role: "user" });
       if (userResponse.status == 201) {
         message.success("users created successfully");
+        form.resetFields();
+        handleCloseLoginModal();
       }
     } catch (error) {
       console.error(error);
@@ -128,4 +131,7 @@ const RegisterForm = () => {
   );
 };
 
+RegisterForm.propTypes = {
+  handleCloseLoginModal: PropTypes.func,
+};
 export default RegisterForm;
