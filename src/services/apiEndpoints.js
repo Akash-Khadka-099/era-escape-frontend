@@ -5,6 +5,8 @@ export const apiEndpoints = {
   },
   login: "/api/login",
   logout: "/api/logout",
+  forgetPassword: "/api/forget-password",
+  resetPassword: "/api/reset-password",
   destination: {
     create: "/api/destinations/organization",
     fetchPost: "/api/destinations",

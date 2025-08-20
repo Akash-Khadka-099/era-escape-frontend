@@ -44,4 +44,25 @@ const useLogoutUser = () => {
     },
   });
 };
-export { useLoginUser, useLogoutUser };
+
+const forgetPassword = async (payload) => {
+  return await axiosInstance.post(apiEndpoints.forgetPassword, payload);
+};
+
+const useForgetPassword = () => {
+  return useMutation({
+    mutationFn: forgetPassword,
+  });
+};
+
+const resetPassword = async (payload) => {
+  return await axiosInstance.post(apiEndpoints.resetPassword, payload);
+};
+
+const useResetPassword = () => {
+  return useMutation({
+    mutationFn: resetPassword,
+  });
+};
+
+export { useLoginUser, useLogoutUser, useForgetPassword, useResetPassword };
