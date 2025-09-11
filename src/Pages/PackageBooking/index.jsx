@@ -4,7 +4,9 @@ import CustomInput from "@/components/forms/CustomInput";
 import { useCreateBookingPackage } from "@/services/bookingPackageServices";
 import { CheckOutlined } from "@ant-design/icons";
 import {
+  Affix,
   Button,
+  Card,
   Col,
   Divider,
   Flex,
@@ -19,8 +21,10 @@ import { useCallback, useState } from "react";
 import { useLocation, useNavigate, useParams } from "react-router-dom";
 import Lottie from "react-lottie";
 import Success from "@/assets/JsonAnimation/Success.json";
+import { useFetchPackageBySlug } from "@/services/packageService";
 
 const { Step } = Steps;
+const { Meta } = Card;
 
 const PackageBooking = () => {
   const [currentStep, setCurrentStep] = useState(0);
@@ -36,6 +40,9 @@ const PackageBooking = () => {
   for (let [key, value] of searchParams.entries()) {
     queryParams[key] = value;
   }
+  const { data: packageDetail } = useFetchPackageBySlug(package_slug || "");
+
+  console.log("packageDetail", packageDetail);
 
   const { mutateAsync, isPending } = useCreateBookingPackage();
 
@@ -273,7 +280,59 @@ const PackageBooking = () => {
             </div>
           </Form>
         </Col>
-        <Col span={8}>hello</Col>
+        <Col span={8}>
+          {" "}
+          <Affix>
+            <Flex justify="center">
+              <Card
+                hoverable
+                style={{ width: 350 }}
+                cover={
+                  <img
+                    alt="example"
+                    src={`${import.meta.env.VITE_API_URL}/${
+                      packageDetail?.profileImage?.path
+                    }`}
+                  />
+                }
+              >
+                <Meta
+                  title={packageDetail?.title}
+                  description={
+                    <Flex vertical>
+                      <div>
+                        {packageDetail?.totalNights} Night
+                        {packageDetail?.totalNights + 1} Days
+                      </div>
+                      <Flex gap={8}>
+                        <div>
+                          Rs.{" "}
+                          {
+                            packageDetail?.prices?.find(
+                              (item) => item?.country == "nepal"
+                            )?.price
+                          }
+                        </div>
+                        <div>
+                          {" "}
+                          {packageDetail?.prices?.find(
+                            (item) => item?.country == "nepal"
+                          )?.discountPercent
+                            ? `(${
+                                packageDetail?.prices?.find(
+                                  (item) => item?.country == "nepal"
+                                )?.discountPercent
+                              }  Off)`
+                            : ""}
+                        </div>
+                      </Flex>
+                    </Flex>
+                  }
+                />
+              </Card>
+            </Flex>
+          </Affix>
+        </Col>
       </Row>
     </MiddleContentWrapper>
   );
@@ -291,9 +350,9 @@ const paymentOptions = [
     logo: "https://dao578ztqooau.cloudfront.net/static/img/logo1.png",
   },
   {
-    name: "IME Pay",
-    value: "imePay",
-    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcTQjwbYrEBIYPzKbAHRTtN0Ovjht9q-Lv5C2Q&s",
+    name: "Hand Cash ",
+    value: "handcash",
+    logo: "https://media.istockphoto.com/id/1224768616/photo/closeup-of-girl-offering-money-to-young-guy-against-light-background.jpg?s=612x612&w=0&k=20&c=G0s4TCtSqcd3n7v6CJPenCLGAXW4_qNKtGj3zWgrbeo=",
   },
 ];
 

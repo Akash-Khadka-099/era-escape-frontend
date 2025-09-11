@@ -1,4 +1,5 @@
 import Dashboard from "@/Pages/Dashboard";
+import OrganizationDashboard from "@/Pages/OrganizationPages/OrganizationDashboard";
 import OrganizationPackages from "@/Pages/OrganizationPages/OrganizationPackages";
 import AddOrganizationPackage from "@/Pages/OrganizationPages/OrganizationPackages/AddOrganizationPackage";
 import PackageBooking from "@/Pages/PackageBooking";
@@ -18,6 +19,10 @@ export const userRoutes = [
   {
     path: "/package-details/:package_slug",
     element: <PackageDetail />,
+  },
+  {
+    path: "/organization-dashboard",
+    element: <OrganizationDashboard />,
   },
   {
     path: "/organization-package-list",

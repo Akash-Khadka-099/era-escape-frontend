@@ -16,7 +16,10 @@ const CustomFooter = () => {
           <Text strong>Get connected with us on social networks:</Text>
         </Col>
         <Col xs={24} md={12} style={{ textAlign: "right" }}>
-          <Link  href="#!" style={{ marginRight: "16px", textDecoration: "none" }}>
+          <Link
+            href="#!"
+            style={{ marginRight: "16px", textDecoration: "none" }}
+          >
             {/* <Icon type="facebook" /> */}
             facebook
           </Link>
@@ -36,10 +39,6 @@ const CustomFooter = () => {
             {/* <Icon type="linkedin" /> */}
             linkedin
           </Link>
-          <Link href="#!" style={{ marginRight: "16px" }}>
-            {/* <Icon type="github" /> */}
-            gihub
-          </Link>
         </Col>
       </Row>
 
@@ -50,26 +49,20 @@ const CustomFooter = () => {
             {/* <Icon type="bank" style={{ marginRight: '8px' }} /> */}
             Company Name
           </Title>
-          <Text>
-            Here you can use rows and columns to organize your footer content.
-            Lorem ipsum dolor sit amet, consectetur adipisicing elit.
-          </Text>
+          <Text>Tour and Travel package in Nepal</Text>
         </Col>
 
         <Col xs={24} md={6} style={{ padding: "0 16px" }}>
-          <Title level={5}>Products</Title>
+          <Title level={5}>Trip Ideas</Title>
           <Flex vertical>
             <Link href="#!" block>
-              Angular
+              Travel
             </Link>
             <Link href="#!" block>
-              React
+              Best Iteneries
             </Link>
             <Link href="#!" block>
-              Vue
-            </Link>
-            <Link href="#!" block>
-              Laravel
+              Authorized Organization
             </Link>
           </Flex>
         </Col>
@@ -83,9 +76,7 @@ const CustomFooter = () => {
             <Link href="#!" block>
               Settings
             </Link>
-            <Link href="#!" block>
-              Orders
-            </Link>
+
             <Link href="#!" block>
               Help
             </Link>
@@ -97,19 +88,19 @@ const CustomFooter = () => {
           <Flex vertical>
             <Text>
               {/* <Icon type="home" style={{ marginRight: '8px' }} /> */}
-              New York, NY 10012, US
+             Nepal, Kathmandu
             </Text>
             <Text>
               {/* <Icon type="mail" style={{ marginRight: '8px' }} /> */}
-              info@example.com
+              akashkhadka099@example.com
             </Text>
             <Text>
               {/* <Icon type="phone" style={{ marginRight: '8px' }} /> */}
-              +01 234 567 88
+              +977 9877777765
             </Text>
             <Text>
               {/* <Icon type="printer" style={{ marginRight: '8px' }} /> */}
-              +01 234 567 89
+              +977 9877777766
             </Text>
           </Flex>
         </Col>
@@ -126,9 +117,9 @@ const CustomFooter = () => {
       >
         <Col>
           <Text>
-            © 2021 Copyright:{" "}
+            © 2025 Copyright:{" "}
             <Link href="https://mdbootstrap.com/" target="_blank">
-              MDBootstrap.com
+             PackageNepal.com
             </Link>
           </Text>
         </Col>

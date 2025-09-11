@@ -23,16 +23,16 @@ const cardData = [
       "https://www.speedynepal.com/public/images/upload/package/slider/kalinchowk-speedy.jpg",
   },
   {
-    title: "Gosaikunda",
+    title: "Everest Base Camp",
     shortDescription:
-      "Gpsaikunda is a good , peace  and natural places based in relgious",
+      "EBC is a good , peace  and natural places based in relgious",
     imageSrc:
       "https://aasraecotreks.com.np/wp-content/uploads/2018/10/Gosaikunda-lake.jpg",
   },
   {
-    title: "Mustang",
+    title: "Kapuche",
     shortDescription:
-      "Mustang is a good , peace  and natural places based in relgious",
+      "Kapuche is a good , peace  and natural places based in relgious",
     imageSrc:
       "https://res.klook.com/image/upload/c_fill,w_750,h_750/q_80/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/t8nn7dhvlof3gm7sjlm8.jpg",
   },

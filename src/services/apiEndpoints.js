@@ -27,4 +27,8 @@ export const apiEndpoints = {
   file: {
     deleteFile: "/api/delete/file/{id}",
   },
+
+  organization: {
+    dashboardCard: "/api/organization/dashboard/cards",
+  },
 };

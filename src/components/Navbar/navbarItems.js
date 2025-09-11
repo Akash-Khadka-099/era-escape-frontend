@@ -29,6 +29,11 @@ export const menuItems = [
     role: ["admin"],
     children: [
       {
+        key: "/organization-dashboard",
+        label: "Dashboard",
+        role: ["admin"],
+      },
+      {
         key: "/organization-package-list",
         label: "Package List",
         role: ["admin"],

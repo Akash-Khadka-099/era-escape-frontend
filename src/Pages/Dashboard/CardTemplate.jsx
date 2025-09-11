@@ -2,7 +2,6 @@ import { Button } from "antd";
 import "./CardComponent.scss"; // Create this CSS file for custom styles
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
-import { routeLists } from "@/Routes/routeLists";
 
 const CardComponent = ({ title, shortDescription, imageSrc }) => {
   const navigate = useNavigate();
@@ -23,7 +22,7 @@ const CardComponent = ({ title, shortDescription, imageSrc }) => {
             <p className="card__description">{shortDescription}</p>
           </div>
           <Button
-            onClick={() => navigate(routeLists.package)}
+            onClick={() => navigate(`/packages?search=${title}`)}
             className="card__button"
           >
             View Options
