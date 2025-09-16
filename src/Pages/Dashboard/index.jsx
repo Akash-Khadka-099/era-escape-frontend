@@ -1,3 +1,5 @@
+import "./Dashboard.css";
+
 import AnimatedWelcomeText from "@/components/HomeAnimatedText/AnimatedWelcomeText";
 import CardComponent from "@/Pages/Dashboard/CardTemplate";
 import CategoryCard from "@/Pages/Dashboard/CategoryCard";
@@ -91,36 +93,29 @@ const Dashboard = () => {
           background: "whitesmoke",
           width: "inherit",
         }}
+        className="hero-container"
       >
         <Flex
           vertical
           style={{ width: "100%" }}
           align="center"
           justify="center"
+          className="welcome-container"
         >
           <AnimatedWelcomeText text="welcome to the world of Tour" />
-          <div style={{ width: "500px" }}>
+          <div className="search-destination">
             <DashboardSearch />
           </div>
         </Flex>
-        <div className={"py-2"} style={{ width: "50%" }}>
-          <Lottie
-            options={defaultOptions}
-            height={500}
-            style={{
-              minHeight: 300,
-            }}
-          />
+        <div className={"lottie-container"}>
+          <Lottie options={defaultOptions} />
         </div>
       </Flex>
 
       <MiddleContentWrapper>
         <div className="my-5 bg-white fade-up-wrapper">
           <Flex justify="space-between" align={"center"}>
-            <Typography.Title level={2}>
-              {" "}
-              Top Trending Packages
-            </Typography.Title>
+            <Typography.Title level={2}>Top Trending Packages</Typography.Title>
             <Button
               icon={<ArrowRightOutlined />}
               iconPosition="end"
@@ -173,7 +168,7 @@ const Dashboard = () => {
               View More
             </Button>
           </Flex>
-          <Flex>
+          <Flex style={{ flexWrap: "wrap", justifyContent: "center" }}>
             {categoryCardLists?.map((item, index) => (
               <CategoryCard
                 key={index}

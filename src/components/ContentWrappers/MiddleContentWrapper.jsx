@@ -5,7 +5,7 @@ const MiddleContentWrapper = ({ children, extraStyles, extraClassNames }) => {
     <div
       className={`mx-auto p-3 py-5 ${extraClassNames}`}
       style={{
-        width: "max(85%, 1400px)",
+        // width: "max(85%, 1400px)",
         overflow: "hidden",
         ...extraStyles,
       }}

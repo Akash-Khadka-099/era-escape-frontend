@@ -1,9 +1,10 @@
+import "./navbar.css";
 import LogoutConfirmModal from "@/components/Navbar/LogoutConfirmModal";
 import { menuItems } from "@/components/Navbar/navbarItems";
 import LoginRegister from "@/Pages/LoginRegister";
 import useAuthStore from "@/store/authStore";
-import { UserOutlined } from "@ant-design/icons";
-import { Button, Dropdown, Flex, Layout, Menu } from "antd";
+import { MenuOutlined, UserOutlined } from "@ant-design/icons";
+import { Button, Drawer, Dropdown, Flex, Layout, Menu } from "antd";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
@@ -12,12 +13,22 @@ const { Header } = Layout;
 const Navbar = () => {
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [isLoginModalOpen, setISLoginModalOpen] = useState(false);
+  const [open, setOpen] = useState(false);
+
   const navigate = useNavigate();
 
   const { user, isAuthenticated } = useAuthStore();
 
   const handleCloseLoginModal = () => {
     setISLoginModalOpen(false);
+  };
+
+  const showDrawer = () => {
+    setOpen(true);
+  };
+
+  const onClose = () => {
+    setOpen(false);
   };
 
   const dropdownMenu = [
@@ -63,11 +74,10 @@ const Navbar = () => {
 
   return (
     <>
-      {" "}
       <Header
         style={{
           backgroundColor: "transparent",
-          padding: "0 24px",
+          padding: "0",
           width: "100%",
           zIndex: 1,
           background: "#fff",
@@ -82,6 +92,7 @@ const Navbar = () => {
           <div>Logo</div>
           <div style={{ width: "85%" }}>
             <Menu
+              className="lg-menu-items"
               mode="horizontal"
               style={{ lineHeight: "64px", background: "#fff" }}
               items={filterNavItems(menuItems, user?.role)}
@@ -90,27 +101,32 @@ const Navbar = () => {
               }}
             />
           </div>
-          {isAuthenticated ? (
-            <Flex align="center">
-              <Dropdown.Button
-                trigger={["click"]}
-                menu={{ items: dropdownMenu }}
-                placement="bottomRight"
-                icon={<UserOutlined />}
-              >
-                {user?.name || ""}
-              </Dropdown.Button>
-            </Flex>
-          ) : (
-            <div>
-              <Button
-                icon={<UserOutlined />}
-                onClick={() => setISLoginModalOpen(true)}
-              >
-                Login/Register
-              </Button>
+          <Flex gap={16}>
+            {isAuthenticated ? (
+              <Flex align="center">
+                <Dropdown.Button
+                  trigger={["click"]}
+                  menu={{ items: dropdownMenu }}
+                  placement="bottomRight"
+                  icon={<UserOutlined />}
+                >
+                  {user?.name || ""}
+                </Dropdown.Button>
+              </Flex>
+            ) : (
+              <div>
+                <Button
+                  icon={<UserOutlined />}
+                  onClick={() => setISLoginModalOpen(true)}
+                >
+                  Login/Register
+                </Button>
+              </div>
+            )}
+            <div className="hamburger-icon" onClick={showDrawer}>
+              <MenuOutlined />
             </div>
-          )}
+          </Flex>
         </Flex>
       </Header>
       <LoginRegister
@@ -118,6 +134,20 @@ const Navbar = () => {
         handleCloseLoginModal={handleCloseLoginModal}
       />
       <LogoutConfirmModal isOpen={isLogoutOpen} setIsOpen={setIsLogoutOpen} />
+      <Drawer
+        closable={{ "aria-label": "Close Button" }}
+        onClose={onClose}
+        open={open}
+      >
+        <Menu
+          mode="vertical"
+          style={{ lineHeight: "64px", background: "#fff" }}
+          items={filterNavItems(menuItems, user?.role)}
+          onClick={(e) => {
+            navigate(e.key);
+          }}
+        />
+      </Drawer>
     </>
   );
 };
