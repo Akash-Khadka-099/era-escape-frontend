@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import anime from "animejs";
-// import "antd/dist/antd.css"; 
+// import "antd/dist/antd.css";
 import PropTypes from "prop-types";
 
 const AnimatedWelcomeText = ({ text }) => {
@@ -12,30 +12,34 @@ const AnimatedWelcomeText = ({ text }) => {
         "<span class='letter'>$&</span>"
       );
 
-      anime
-        .timeline({ loop: false })
-        .add({
-          targets: ".ml7 .letter",
-          translateY: ["1.1em", 0],
-          translateX: ["0.55em", 0],
-          translateZ: 0,
-          rotateZ: [180, 0],
-          duration: 750,
-          easing: "easeOutExpo",
-          delay: (el, i) => 50 * i,
-        })
-        // .add({
-        //   targets: ".ml7",
-        //   opacity: 0,
-        //   duration: 1000,
-        //   easing: "easeOutExpo",
-        //   delay: 1000,
-        // });
+      anime.timeline({ loop: false }).add({
+        targets: ".ml7 .letter",
+        translateY: ["1.1em", 0],
+        translateX: ["0.55em", 0],
+        translateZ: 0,
+        rotateZ: [180, 0],
+        duration: 750,
+        easing: "easeOutExpo",
+        delay: (el, i) => 50 * i,
+      });
+      // .add({
+      //   targets: ".ml7",
+      //   opacity: 0,
+      //   duration: 1000,
+      //   easing: "easeOutExpo",
+      //   delay: 1000,
+      // });
     }
   }, [text]); // Re-run the effect when the `text` prop changes
 
   return (
-    <div style={{ textAlign: "center", marginTop: "50px" }}>
+    // TODO: container style from props
+    <div
+      style={{
+        textAlign: "center",
+        margin: "50px 10px 0px 10px",
+      }}
+    >
       <style>
         {`
           .ml7 {

@@ -1,0 +1,12 @@
+.lg-menu-items {
+  display: none;
+}
+
+@media (min-width: 500px) {
+  .hamburger-icon {
+    display: none;
+  }
+  .lg-menu-items {
+    display: block;
+  }
+}

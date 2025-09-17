@@ -1,3 +1,5 @@
+import "./Dashboard.css";
+
 import AnimatedWelcomeText from "@/components/HomeAnimatedText/AnimatedWelcomeText";
 import CardComponent from "@/Pages/Dashboard/CardTemplate";
 import CategoryCard from "@/Pages/Dashboard/CategoryCard";
@@ -6,13 +8,15 @@ import {
   LeftOutlined,
   RightOutlined,
 } from "@ant-design/icons";
-import { Button, Carousel, Flex, Typography } from "antd";
-import { useRef } from "react";
+import { Button, Carousel, Col, Flex, Grid, Row, Typography } from "antd";
+import { useCallback, useRef } from "react";
 import Lottie from "react-lottie";
 import TravelAnimation from "@/assets/JsonAnimation/travelAnimation.json";
 import "animate.css";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import DashboardSearch from "@/components/DashboardSearch";
+
+const { useBreakpoint } = Grid;
 
 const cardData = [
   {
@@ -65,6 +69,16 @@ const categoryCardLists = [
 ];
 const Dashboard = () => {
   const carouselRef = useRef(null);
+  const screens = useBreakpoint();
+
+  const getSlidesToShow = useCallback(() => {
+    if (screens.xl) return 4;
+    if (screens.lg) return 3;
+    if (screens.md) return 2;
+    if (screens.sm) return 1;
+    if (screens.xs) return 1;
+    return 4;
+  }, [screens]);
 
   const handleCarouselPrev = () => {
     carouselRef.current.prev();
@@ -91,36 +105,29 @@ const Dashboard = () => {
           background: "whitesmoke",
           width: "inherit",
         }}
+        className="hero-container"
       >
         <Flex
           vertical
           style={{ width: "100%" }}
           align="center"
           justify="center"
+          className="welcome-container"
         >
           <AnimatedWelcomeText text="welcome to the world of Tour" />
-          <div style={{ width: "500px" }}>
+          <div className="search-destination">
             <DashboardSearch />
           </div>
         </Flex>
-        <div className={"py-2"} style={{ width: "50%" }}>
-          <Lottie
-            options={defaultOptions}
-            height={500}
-            style={{
-              minHeight: 300,
-            }}
-          />
+        <div className={"lottie-container"}>
+          <Lottie options={defaultOptions} />
         </div>
       </Flex>
 
       <MiddleContentWrapper>
         <div className="my-5 bg-white fade-up-wrapper">
           <Flex justify="space-between" align={"center"}>
-            <Typography.Title level={2}>
-              {" "}
-              Top Trending Packages
-            </Typography.Title>
+            <Typography.Title level={2}>Top Trending Packages</Typography.Title>
             <Button
               icon={<ArrowRightOutlined />}
               iconPosition="end"
@@ -133,18 +140,24 @@ const Dashboard = () => {
           <div>
             <Carousel
               ref={carouselRef}
-              arrows={true}
-              slidesToShow={4}
+              arrows
               dots={false}
               draggable
+              adaptiveHeight
+              slidesToShow={getSlidesToShow()}
+              slidesToScroll={getSlidesToShow()}
             >
-              {cardData?.map((item, index) => (
-                <div className="my-2" key={index}>
-                  <CardComponent
-                    title={item?.title}
-                    shortDescription={item?.shortDescription}
-                    imageSrc={item?.imageSrc}
-                  />
+              {cardData?.map((item, idx) => (
+                <div key={idx}>
+                  <Row gutter={[16, 16]} justify="center">
+                    <Col span={24}>
+                      <CardComponent
+                        title={item?.title}
+                        shortDescription={item?.shortDescription}
+                        imageSrc={item?.imageSrc}
+                      />
+                    </Col>
+                  </Row>
                 </div>
               ))}
             </Carousel>
@@ -173,7 +186,7 @@ const Dashboard = () => {
               View More
             </Button>
           </Flex>
-          <Flex>
+          <Flex style={{ flexWrap: "wrap", justifyContent: "center" }}>
             {categoryCardLists?.map((item, index) => (
               <CategoryCard
                 key={index}
