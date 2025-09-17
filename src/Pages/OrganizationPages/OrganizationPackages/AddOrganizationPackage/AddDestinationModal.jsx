@@ -23,7 +23,7 @@ const AddDestinationModal = ({
     try {
       const createDestination = await mutateAsync({
         ...values,
-        organizationId: "67eb42594532f239ddf31e64",
+        organizationId: "68ca1bfaa2b05c76498f7028",
       });
 
       if (createDestination?.status == 201) {
