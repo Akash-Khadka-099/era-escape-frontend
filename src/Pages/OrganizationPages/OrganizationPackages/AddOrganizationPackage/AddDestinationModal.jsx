@@ -1,5 +1,6 @@
 import CustomInput from "@/components/forms/CustomInput";
 import { useCreateDestination } from "@/services/destinationService";
+import useAuthStore from "@/store/authStore";
 import { Col, Form, message, Modal, Row } from "antd";
 import PropTypes from "prop-types";
 
@@ -9,6 +10,9 @@ const AddDestinationModal = ({
   packageForm,
 }) => {
   const [form] = Form.useForm();
+  const { user } = useAuthStore();
+
+  console.log("user inside", user);
 
   const packageSelectedDestination = Form.useWatch("destinations", packageForm);
 
@@ -23,12 +27,10 @@ const AddDestinationModal = ({
     try {
       const createDestination = await mutateAsync({
         ...values,
-        organizationId: "68ca1bfaa2b05c76498f7028",
+        organizationId: user?.organizationId,
       });
 
       if (createDestination?.status == 201) {
-        console.log("createDestination", createDestination);
-        console.log("new id", createDestination?.data?.data?.id);
         packageForm.setFieldValue("destinations", [
           ...packageSelectedDestination,
           createDestination?.data?.data?.id,
