@@ -18,6 +18,7 @@ const CustomSelect = ({
   value,
   defaultValue,
   onAddNew,
+  onSearch,
   ...props
 }) => {
   // Handle the search by converting input to both English and Nepali
@@ -51,6 +52,7 @@ const CustomSelect = ({
           value={value}
           mode={isMultiple ? "multiple" : undefined}
           onChange={onChange}
+          onSearch={onSearch}
           placeholder={placeholder || "Select"}
           loading={isLoading}
           filterOption={filterOption}
@@ -99,6 +101,7 @@ CustomSelect.propTypes = {
   value: PropTypes.oneOfType([PropTypes.string, PropTypes.number]),
   defaultValue: PropTypes.any,
   onAddNew: PropTypes.func,
+  onSearch: PropTypes.func,
 };
 
 export default CustomSelect;

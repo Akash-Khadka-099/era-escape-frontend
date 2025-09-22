@@ -3,11 +3,14 @@ import { useCreateDestination } from "@/services/destinationService";
 import useAuthStore from "@/store/authStore";
 import { Col, Form, message, Modal, Row } from "antd";
 import PropTypes from "prop-types";
+import { useEffect } from "react";
 
 const AddDestinationModal = ({
-  isModalOpen = false,
+  isModalOpen,
   setIsModalOpen,
   packageForm,
+  setSearchedDestination,
+  searchedDestination,
 }) => {
   const [form] = Form.useForm();
   const { user } = useAuthStore();
@@ -21,6 +24,7 @@ const AddDestinationModal = ({
   const onModalClose = () => {
     form.resetFields();
     setIsModalOpen(false);
+    setSearchedDestination("");
   };
 
   const onSubmitHandler = async (values) => {
@@ -42,6 +46,13 @@ const AddDestinationModal = ({
       console.error(error);
     }
   };
+
+  useEffect(() => {
+    if (isModalOpen) {
+      form.setFieldsValue({ title: searchedDestination });
+    }
+  }, [isModalOpen, form, searchedDestination]);
+
   return (
     <>
       <Modal
@@ -101,9 +112,11 @@ const AddDestinationModal = ({
 };
 
 AddDestinationModal.propTypes = {
-  isModalOpen: PropTypes.bool,
+  isModalOpen: PropTypes.any,
   setIsModalOpen: PropTypes.func,
   packageForm: PropTypes.any,
+  setSearchedDestination: PropTypes.func,
+  searchedDestination: PropTypes.string,
 };
 
 export default AddDestinationModal;

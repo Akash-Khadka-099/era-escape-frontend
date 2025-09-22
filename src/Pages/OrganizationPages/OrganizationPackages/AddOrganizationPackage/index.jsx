@@ -59,6 +59,7 @@ const AddOrganizationPackage = () => {
   const [acceptedMapImage, setAcceptedMapImage] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [isAddDestinationOpen, setIsAddDestinationOpen] = useState(false);
+  const [searchedDestination, setSearchedDestination] = useState("");
 
   const { packageSlug } = useParams();
   const { user } = useAuthStore();
@@ -162,7 +163,6 @@ const AddOrganizationPackage = () => {
     <>
       <AdminWrappers>
         <CustomCard title={"Add Travel Packages"}>
-          {" "}
           <Form
             layout="vertical"
             form={form}
@@ -199,6 +199,7 @@ const AddOrganizationPackage = () => {
                     <CustomSelect
                       isMultiple={true}
                       options={destinations_options}
+                      onSearch={(value) => setSearchedDestination(value)}
                       onAddNew={() => setIsAddDestinationOpen(true)}
                     />
                   </Form.Item>
@@ -1106,6 +1107,8 @@ const AddOrganizationPackage = () => {
       <AddDestinationModal
         isModalOpen={isAddDestinationOpen}
         setIsModalOpen={setIsAddDestinationOpen}
+        searchedDestination={searchedDestination}
+        setSearchedDestination={setSearchedDestination}
         packageForm={form}
       />
     </>
