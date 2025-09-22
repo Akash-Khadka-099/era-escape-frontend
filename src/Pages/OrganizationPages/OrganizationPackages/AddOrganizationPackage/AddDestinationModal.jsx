@@ -6,7 +6,7 @@ import PropTypes from "prop-types";
 import { useEffect } from "react";
 
 const AddDestinationModal = ({
-  isModalOpen,
+  isModalOpen = false,
   setIsModalOpen,
   packageForm,
   setSearchedDestination,
@@ -112,7 +112,7 @@ const AddDestinationModal = ({
 };
 
 AddDestinationModal.propTypes = {
-  isModalOpen: PropTypes.any,
+  isModalOpen: PropTypes.bool,
   setIsModalOpen: PropTypes.func,
   packageForm: PropTypes.any,
   setSearchedDestination: PropTypes.func,
