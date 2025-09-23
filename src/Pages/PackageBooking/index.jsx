@@ -42,8 +42,6 @@ const PackageBooking = () => {
   }
   const { data: packageDetail } = useFetchPackageBySlug(package_slug || "");
 
-  console.log("packageDetail", packageDetail);
-
   const { mutateAsync, isPending } = useCreateBookingPackage();
 
   const stepFields = [

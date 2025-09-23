@@ -59,6 +59,7 @@ const AddOrganizationPackage = () => {
   const [acceptedMapImage, setAcceptedMapImage] = useState(null);
   const [fileList, setFileList] = useState([]);
   const [isAddDestinationOpen, setIsAddDestinationOpen] = useState(false);
+  const [searchedDestination, setSearchedDestination] = useState("");
 
   const { packageSlug } = useParams();
   const { user } = useAuthStore();
@@ -71,6 +72,7 @@ const AddOrganizationPackage = () => {
   const { mutateAsync: updateMutation, isPending: isUpdating } =
     useUpdatePackage();
   const [form] = Form.useForm();
+  const totalNights = Form.useWatch("totalNights", form);
   const { data: destinationData } = useFetchDestinations({ no_pagination: 1 });
 
   const destinations_options = useMemo(
@@ -162,7 +164,6 @@ const AddOrganizationPackage = () => {
     <>
       <AdminWrappers>
         <CustomCard title={"Add Travel Packages"}>
-          {" "}
           <Form
             layout="vertical"
             form={form}
@@ -199,6 +200,7 @@ const AddOrganizationPackage = () => {
                     <CustomSelect
                       isMultiple={true}
                       options={destinations_options}
+                      onSearch={(value) => setSearchedDestination(value)}
                       onAddNew={() => setIsAddDestinationOpen(true)}
                     />
                   </Form.Item>
@@ -658,75 +660,80 @@ const AddOrganizationPackage = () => {
                 {(fields, { add, remove }, { errors }) => (
                   <>
                     <Row gutter={[16, 8]}>
-                      {fields?.map(({ key, name, ...restField }, index) => (
-                        <>
-                          <Col xs={24} md={12} lg={6}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, "title"]}
-                              label={`Itinerary title`}
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Title is required",
-                                },
-                              ]}
-                            >
-                              <CustomInput />
-                            </Form.Item>
-                          </Col>
-                          <Col span={24} key={key}>
-                            <Form.Item
-                              {...restField}
-                              name={[name, "description"]}
-                              label={`Iteneraries details of day ${index + 1}`}
-                              rules={[
-                                {
-                                  required: true,
-                                  message: "Itinerary details is required",
-                                },
-                              ]}
-                            >
-                              <CustomCkEditor />
-                            </Form.Item>
+                      {fields?.map(({ key, name, ...restField }, index) => {
+                        const isAddBtnVisible =
+                          fields?.length <= totalNights &&
+                          fields.length - 1 === index;
+                        return (
+                          <>
+                            <Col xs={24} md={12} lg={6}>
+                              <Form.Item
+                                {...restField}
+                                name={[name, "title"]}
+                                label={`Itinerary title`}
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Title is required",
+                                  },
+                                ]}
+                              >
+                                <CustomInput />
+                              </Form.Item>
+                            </Col>
+                            <Col span={24} key={key}>
+                              <Form.Item
+                                {...restField}
+                                name={[name, "description"]}
+                                label={`Iteneraries details of day ${
+                                  index + 1
+                                }`}
+                                rules={[
+                                  {
+                                    required: true,
+                                    message: "Itinerary details is required",
+                                  },
+                                ]}
+                              >
+                                <CustomCkEditor />
+                              </Form.Item>
 
-                            <Flex gap={8}>
-                              {fields?.length - 1 == index ? (
+                              <Flex gap={8}>
+                                {isAddBtnVisible && (
+                                  <Button
+                                    variant="filled"
+                                    color="green"
+                                    icon={<PlusOutlined />}
+                                    onClick={() =>
+                                      add(
+                                        {
+                                          title: `Day ${index + 2}`,
+                                          itinerary: "",
+                                        },
+                                        index + 1
+                                      )
+                                    }
+                                  >
+                                    Add
+                                  </Button>
+                                )}
                                 <Button
                                   variant="filled"
-                                  color="green"
-                                  icon={<PlusOutlined />}
-                                  onClick={() =>
-                                    add(
-                                      {
-                                        title: `Day ${index + 2}`,
-                                        itinerary: "",
-                                      },
-                                      index + 1
-                                    )
-                                  }
+                                  color="red"
+                                  icon={<DeleteOutlined />}
+                                  onClick={() => remove(name)}
                                 >
-                                  Add
+                                  Remove
                                 </Button>
-                              ) : (
-                                ""
-                              )}
-                              <Button
-                                variant="filled"
-                                color="red"
-                                icon={<DeleteOutlined />}
-                                onClick={() => remove(name)}
-                              >
-                                Remove
-                              </Button>
-                            </Flex>
-                            <Divider
-                              variant="dotted"
-                              style={{ borderColor: "#7cb305" }}
-                            />
-                          </Col>
-                        </>
-                      ))}
+                              </Flex>
+                              <Divider
+                                variant="dotted"
+                                style={{ borderColor: "#7cb305" }}
+                              />
+                            </Col>
+                          </>
+                        );
+                      })}
                     </Row>
                     {!fields?.length ? (
                       <Button
@@ -1106,6 +1113,8 @@ const AddOrganizationPackage = () => {
       <AddDestinationModal
         isModalOpen={isAddDestinationOpen}
         setIsModalOpen={setIsAddDestinationOpen}
+        searchedDestination={searchedDestination}
+        setSearchedDestination={setSearchedDestination}
         packageForm={form}
       />
     </>
