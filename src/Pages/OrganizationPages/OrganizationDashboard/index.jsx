@@ -5,7 +5,6 @@ import { useFetchOrganizationDashboardCards } from "@/services/organizationServi
 const OrganizationDashboard = () => {
   const { data } = useFetchOrganizationDashboardCards();
 
-  console.log("data", data);
   return (
     <>
       <AdminWrappers>

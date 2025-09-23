@@ -132,7 +132,6 @@ const OrganizationPackages = () => {
             <Switch
               value={item?.isActive}
               onChange={(e) => {
-                console.log("switch value", e);
                 handleChangePackageActiveStatus(item?.id, e);
               }}
             />
@@ -142,7 +141,6 @@ const OrganizationPackages = () => {
     },
   ];
 
-  console.log("data package", data);
   return (
     <>
       <AdminWrappers>

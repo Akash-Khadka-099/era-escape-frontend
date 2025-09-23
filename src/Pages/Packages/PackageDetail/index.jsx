@@ -61,7 +61,6 @@ const PackageDetail = () => {
   }, [data]);
 
   const handleSubmit = (values) => {
-    console.log("Booking details:", values);
     navigate(
       `/package-booking/${package_slug}?bookedDate=${values?.bookedDate}&numberOfTravelers=${values?.numberOfTravelers}`
     );

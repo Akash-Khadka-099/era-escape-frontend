@@ -15,8 +15,6 @@ const AddDestinationModal = ({
   const [form] = Form.useForm();
   const { user } = useAuthStore();
 
-  console.log("user inside", user);
-
   const packageSelectedDestination = Form.useWatch("destinations", packageForm);
 
   const { mutateAsync, isPending } = useCreateDestination();
