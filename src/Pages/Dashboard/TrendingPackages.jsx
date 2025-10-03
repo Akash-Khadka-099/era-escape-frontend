@@ -10,7 +10,7 @@ import {
   Flex,
   Grid,
   Row,
-  Select,
+  Segmented,
   Typography,
 } from "antd";
 import { useCallback, useRef, useState } from "react";
@@ -24,18 +24,22 @@ const TrendingPackages = () => {
   const carouselRef = useRef(null);
   const screens = useBreakpoint();
 
+  console.log("screens here", screens);
+
   const [period, setPeriod] = useState(1);
 
   const { data: trendingPackages } = useFetchTrendingPackages({ period });
 
   const getSlidesToShow = useCallback(() => {
-    if (screens.xl) return 4;
+    if (screens.xxl) return 4;
     if (screens.lg) return 3;
     if (screens.md) return 2;
     if (screens.sm) return 1;
     if (screens.xs) return 1;
     return 4;
   }, [screens]);
+
+  console.log("getSlidesToShow", getSlidesToShow());
 
   const handleCarouselPrev = () => {
     carouselRef.current.prev();
@@ -50,16 +54,26 @@ const TrendingPackages = () => {
       <Flex justify="space-between" align={"center"}>
         <Typography.Title level={2}>Top Trending Packages</Typography.Title>
         <Flex gap={12}>
-          <Select
-            defaultValue={1}
-            style={{ width: 120 }}
-            onChange={(value) => setPeriod(value)}
+          <Segmented
+            value={period}
+            style={{ marginBottom: 8, padding: "6px" }}
+            onChange={setPeriod}
             options={[
-              { value: 1, label: "1 month" },
-              { value: 2, label: "2 months" },
-              { value: 3, label: "3 months" },
+              {
+                value: "1",
+                label: "30 Days",
+              },
+              {
+                value: "2",
+                label: "60 Days",
+              },
+              {
+                value: "3",
+                label: "90 Days",
+              },
             ]}
           />
+
           <Button
             icon={<ArrowRightOutlined />}
             iconPosition="end"
@@ -77,22 +91,21 @@ const TrendingPackages = () => {
           dots={false}
           draggable
           adaptiveHeight
-          slidesToShow={Math.min(
-            getSlidesToShow(),
-            trendingPackages?.trending?.length || 1
-          )}
+          slidesToShow={getSlidesToShow()}
           slidesToScroll={1}
         >
           {trendingPackages?.trending?.map((item, idx) => (
             <div key={idx}>
               <Row gutter={[16, 16]} justify="center">
                 <Col span={24}>
-                  <CardComponent
-                    title={item?.title}
-                    shortDescription={""}
-                    imageSrc={`${BASE_URL}/${item?.packageProfileImage?.[0]?.path}`}
-                    slug={item?.slug}
-                  />
+                  <div className="my-4">
+                    <CardComponent
+                      title={item?.title}
+                      shortDescription={""}
+                      imageSrc={`${BASE_URL}/${item?.packageProfileImage?.[0]?.path}`}
+                      slug={item?.slug}
+                    />
+                  </div>
                 </Col>
               </Row>
             </div>
