@@ -23,6 +23,7 @@ export const apiEndpoints = {
     crudBySlug: "/api/packages/{slug}",
     searchPackageList: "/api/packages-search/",
     updateActiveStatus: "/api/packages/active-status/{id}",
+    trending: "/api/users-trending-packages",
   },
   file: {
     deleteFile: "/api/delete/file/{id}",

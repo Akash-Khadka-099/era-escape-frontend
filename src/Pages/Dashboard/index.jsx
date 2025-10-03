@@ -1,53 +1,15 @@
 import "./Dashboard.css";
 
 import AnimatedWelcomeText from "@/components/HomeAnimatedText/AnimatedWelcomeText";
-import CardComponent from "@/Pages/Dashboard/CardTemplate";
 import CategoryCard from "@/Pages/Dashboard/CategoryCard";
-import {
-  ArrowRightOutlined,
-  LeftOutlined,
-  RightOutlined,
-} from "@ant-design/icons";
-import { Button, Carousel, Col, Flex, Grid, Row, Typography } from "antd";
-import { useCallback, useRef } from "react";
+import { ArrowRightOutlined } from "@ant-design/icons";
+import { Button, Flex, Typography } from "antd";
 import Lottie from "react-lottie";
 import TravelAnimation from "@/assets/JsonAnimation/travelAnimation.json";
 import "animate.css";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import DashboardSearch from "@/components/DashboardSearch";
-
-const { useBreakpoint } = Grid;
-
-const cardData = [
-  {
-    title: "Kalinchowk",
-    shortDescription:
-      "Kalinchowk is a good , peace  and natural places based in relgious",
-    imageSrc:
-      "https://www.speedynepal.com/public/images/upload/package/slider/kalinchowk-speedy.jpg",
-  },
-  {
-    title: "Everest Base Camp",
-    shortDescription:
-      "EBC is a good , peace  and natural places based in relgious",
-    imageSrc:
-      "https://aasraecotreks.com.np/wp-content/uploads/2018/10/Gosaikunda-lake.jpg",
-  },
-  {
-    title: "Kapuche",
-    shortDescription:
-      "Kapuche is a good , peace  and natural places based in relgious",
-    imageSrc:
-      "https://res.klook.com/image/upload/c_fill,w_750,h_750/q_80/w_80,x_15,y_15,g_south_west,l_Klook_water_br_trans_yhcmh3/activities/t8nn7dhvlof3gm7sjlm8.jpg",
-  },
-  {
-    title: "Kalinchowk",
-    shortDescription:
-      "Kalinchowk is a good , peace  and natural places based in relgious",
-    imageSrc:
-      "https://www.speedynepal.com/public/images/upload/package/slider/kalinchowk-speedy.jpg",
-  },
-];
+import TrendingPackages from "./TrendingPackages";
 
 const categoryCardLists = [
   {
@@ -68,26 +30,6 @@ const categoryCardLists = [
   },
 ];
 const Dashboard = () => {
-  const carouselRef = useRef(null);
-  const screens = useBreakpoint();
-
-  const getSlidesToShow = useCallback(() => {
-    if (screens.xl) return 4;
-    if (screens.lg) return 3;
-    if (screens.md) return 2;
-    if (screens.sm) return 1;
-    if (screens.xs) return 1;
-    return 4;
-  }, [screens]);
-
-  const handleCarouselPrev = () => {
-    carouselRef.current.prev();
-  };
-
-  const handleCarouselNext = () => {
-    carouselRef.current.next();
-  };
-
   const defaultOptions = {
     loop: true,
     autoplay: true,
@@ -125,56 +67,7 @@ const Dashboard = () => {
       </Flex>
 
       <MiddleContentWrapper>
-        <div className="my-5 bg-white fade-up-wrapper">
-          <Flex justify="space-between" align={"center"}>
-            <Typography.Title level={2}>Top Trending Packages</Typography.Title>
-            <Button
-              icon={<ArrowRightOutlined />}
-              iconPosition="end"
-              type="primary"
-            >
-              View More
-            </Button>
-          </Flex>
-
-          <div>
-            <Carousel
-              ref={carouselRef}
-              arrows
-              dots={false}
-              draggable
-              adaptiveHeight
-              slidesToShow={getSlidesToShow()}
-              slidesToScroll={getSlidesToShow()}
-            >
-              {cardData?.map((item, idx) => (
-                <div key={idx}>
-                  <Row gutter={[16, 16]} justify="center">
-                    <Col span={24}>
-                      <CardComponent
-                        title={item?.title}
-                        shortDescription={item?.shortDescription}
-                        imageSrc={item?.imageSrc}
-                      />
-                    </Col>
-                  </Row>
-                </div>
-              ))}
-            </Carousel>
-            <Flex className="my-3 mx-5" justify="end" gap={16}>
-              <Button
-                shape="circle"
-                icon={<LeftOutlined />}
-                onClick={handleCarouselPrev}
-              />
-              <Button
-                shape="circle"
-                icon={<RightOutlined />}
-                onClick={handleCarouselNext}
-              />{" "}
-            </Flex>
-          </div>
-        </div>
+        <TrendingPackages />
         <div className="my-5 fade-up-wrapper">
           <Flex justify="space-between" align={"center"}>
             <Typography.Title level={2}> Travel Categories </Typography.Title>

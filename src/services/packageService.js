@@ -81,9 +81,24 @@ const useUpdatepackageActiveStatus = () => {
   });
 };
 
+const fetchTrendingPackages = ({ period }) => {
+  return axiosInstance.get(apiEndpoints.package.trending, {
+    params: { period },
+  });
+};
+
+const useFetchTrendingPackages = ({ period }) => {
+  return useQuery({
+    queryKey: [apiEndpoints.package.trending, period],
+    queryFn: () => fetchTrendingPackages({ period }),
+    select: (data) => data.data,
+  });
+};
+
 export {
   useFetchOrganizationPackage,
   useFetchPackageBySlug,
+  useFetchTrendingPackages,
   useCreatePackage,
   useUpdatePackage,
   useUpdatepackageActiveStatus,

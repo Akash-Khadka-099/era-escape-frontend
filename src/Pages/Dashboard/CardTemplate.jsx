@@ -3,7 +3,7 @@ import "./CardComponent.scss"; // Create this CSS file for custom styles
 import PropTypes from "prop-types";
 import { useNavigate } from "react-router-dom";
 
-const CardComponent = ({ title, shortDescription, imageSrc }) => {
+const CardComponent = ({ title, shortDescription, imageSrc, slug }) => {
   const navigate = useNavigate();
   return (
     <main className="d-flex flex-column justify-content-center align-items-center  ">
@@ -12,7 +12,7 @@ const CardComponent = ({ title, shortDescription, imageSrc }) => {
           className="card__background"
           // src="https://i.imgur.com/QYWAcXk.jpeg"
           src={imageSrc}
-          alt="Photo of Cartagena's cathedral at the background and some colonial style houses"
+          alt={title}
           width="1920"
           height="2193"
         />
@@ -22,10 +22,10 @@ const CardComponent = ({ title, shortDescription, imageSrc }) => {
             <p className="card__description">{shortDescription}</p>
           </div>
           <Button
-            onClick={() => navigate(`/packages?search=${title}`)}
+            onClick={() => navigate(`/package-details/${slug}`)}
             className="card__button"
           >
-            View Options
+            View Detail
           </Button>
         </div>
       </article>
@@ -37,6 +37,7 @@ CardComponent.propTypes = {
   title: PropTypes.string,
   shortDescription: PropTypes.string,
   imageSrc: PropTypes.string,
+  slug: PropTypes.string,
 };
 
 export default CardComponent;
