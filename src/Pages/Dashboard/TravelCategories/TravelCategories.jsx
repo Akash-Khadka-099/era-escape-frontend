@@ -1,5 +1,5 @@
+import CategoryCard from "@/Pages/Dashboard/TravelCategories/CategoryCard";
 import { Col, Row } from "antd";
-import CategoryCard from "./CategoryCard";
 
 const categoryCardLists = [
   {

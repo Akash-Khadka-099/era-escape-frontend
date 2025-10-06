@@ -7,8 +7,8 @@ import TravelAnimation from "@/assets/JsonAnimation/travelAnimation.json";
 import "animate.css";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import DashboardSearch from "@/components/DashboardSearch";
-import TrendingPackages from "./TrendingPackages";
-import TravelCategories from "./TravelCategories/TravelCategories";
+import TrendingPackages from "@/Pages/Dashboard/TrendingPackages";
+import TravelCategories from "@/Pages/Dashboard/TravelCategories/TravelCategories";
 
 const Dashboard = () => {
   const defaultOptions = {

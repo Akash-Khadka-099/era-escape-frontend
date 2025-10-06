@@ -7,7 +7,7 @@ import useAuthStore from "@/store/authStore";
 import { userRoutes } from "@/Routes/userRoutes";
 import UserLayout from "@/layout/UserLayout";
 import ResetPasswordForm from "@/Pages/LoginRegister/ResetPassword";
-import { GlobalSpinner } from "./components/Feedback";
+import { GlobalSpinner } from "@/components/Feedback";
 
 const App = () => {
   const { setAccessToken, user } = useAuthStore();
