@@ -1,7 +1,5 @@
 import "./Dashboard.css";
-
 import AnimatedWelcomeText from "@/components/HomeAnimatedText/AnimatedWelcomeText";
-import CategoryCard from "@/Pages/Dashboard/CategoryCard";
 import { ArrowRightOutlined } from "@ant-design/icons";
 import { Button, Flex, Typography } from "antd";
 import Lottie from "react-lottie";
@@ -10,25 +8,8 @@ import "animate.css";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import DashboardSearch from "@/components/DashboardSearch";
 import TrendingPackages from "./TrendingPackages";
+import TravelCategories from "./TravelCategories/TravelCategories";
 
-const categoryCardLists = [
-  {
-    title: "Mountains",
-    imageSrc: "/images/mountain-home.png",
-  },
-  {
-    title: "Religious",
-    imageSrc: "/images/religion-home.jpg",
-  },
-  {
-    title: "Lakes",
-    imageSrc: "/images/lake-home.jpg",
-  },
-  {
-    title: "Musuems",
-    imageSrc: "/images/musuem.png",
-  },
-];
 const Dashboard = () => {
   const defaultOptions = {
     loop: true,
@@ -79,15 +60,7 @@ const Dashboard = () => {
               View More
             </Button>
           </Flex>
-          <Flex style={{ flexWrap: "wrap", justifyContent: "center" }}>
-            {categoryCardLists?.map((item, index) => (
-              <CategoryCard
-                key={index}
-                title={item?.title}
-                imageSrc={item?.imageSrc}
-              />
-            ))}
-          </Flex>
+          <TravelCategories />
         </div>
       </MiddleContentWrapper>
     </>
