@@ -5,6 +5,8 @@ import AddOrganizationPackage from "@/Pages/OrganizationPages/OrganizationPackag
 import PackageBooking from "@/Pages/PackageBooking";
 import Packages from "@/Pages/Packages";
 import PackageDetail from "@/Pages/Packages/PackageDetail";
+import TrekTrails from "@/Pages/TrekTrails";
+import TestTrailMap from "@/Pages/TrekTrails/TestTrailMap";
 import { routeLists } from "@/Routes/routeLists";
 
 export const userRoutes = [
@@ -39,5 +41,13 @@ export const userRoutes = [
   {
     path: "/package-booking/:package_slug",
     element: <PackageBooking />,
+  },
+  {
+    path: "/trek-trails",
+    element: <TrekTrails />,
+  },
+  {
+    path: "/test-trail-map",
+    element: <TestTrailMap />,
   },
 ];

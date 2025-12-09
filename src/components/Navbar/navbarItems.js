@@ -11,19 +11,7 @@ export const menuItems = [
     label: "Packages",
     role: "*",
   },
-  // {
-  //   label: "Teams",
-  //   children: [
-  //     {
-  //       key: "dev",
-  //       label: "Development Teams",
-  //     },
-  //     {
-  //       key: "market",
-  //       label: "Marketting Teams",
-  //     },
-  //   ],
-  // },
+
   {
     label: "Organization",
     role: ["admin"],
@@ -39,5 +27,10 @@ export const menuItems = [
         role: ["admin"],
       },
     ],
+  },
+  {
+    key: routeLists.trekTrails,
+    label: "Explore Trails",
+    role: "*",
   },
 ];

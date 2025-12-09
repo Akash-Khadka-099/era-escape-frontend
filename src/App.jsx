@@ -1,17 +1,17 @@
 import { Route, Routes } from "react-router-dom";
 import AppProvider from "@/Provider/AppProvider";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import useAuthStore from "@/store/authStore";
 
 import { userRoutes } from "@/Routes/userRoutes";
 import UserLayout from "@/layout/UserLayout";
 import ResetPasswordForm from "@/Pages/LoginRegister/ResetPassword";
-import { GlobalSpinner } from "@/components/Feedback";
+// import { GlobalSpinner } from "@/components/Feedback";
 
 const App = () => {
   const { setAccessToken, user } = useAuthStore();
-  const [isLoading, setIsLoading] = useState(true);
+  // const [isLoading, setIsLoading] = useState(true);
 
   console.log("user details", user);
 
@@ -28,16 +28,16 @@ const App = () => {
       } catch (error) {
         console.error("Unable to refresh token:", error);
       } finally {
-        setIsLoading(false);
+        // setIsLoading(false);
       }
     };
 
     initializeAuth();
   }, [setAccessToken]);
 
-  if (isLoading) {
-    return <GlobalSpinner />;
-  }
+  // if (isLoading) {
+  //   return <GlobalSpinner />;
+  // }
 
   return (
     <>
