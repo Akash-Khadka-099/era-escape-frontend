@@ -6,7 +6,7 @@ import PackageBooking from "@/Pages/PackageBooking";
 import Packages from "@/Pages/Packages";
 import PackageDetail from "@/Pages/Packages/PackageDetail";
 import TrekTrails from "@/Pages/TrekTrails";
-import TestTrailMap from "@/Pages/TrekTrails/TestTrailMap";
+import TrekMap from "@/Pages/TrekTrails/TrekMap";
 import { routeLists } from "@/Routes/routeLists";
 import { ReactNode } from "react";
 
@@ -53,7 +53,7 @@ export const userRoutes: RouteItem[] = [
     element: <TrekTrails />,
   },
   {
-    path: "/test-trail-map",
-    element: <TestTrailMap />,
+    path: "/trek-trails/map",
+    element: <TrekMap />,
   },
 ];

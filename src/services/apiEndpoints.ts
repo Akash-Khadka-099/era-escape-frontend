@@ -1,4 +1,37 @@
-export const apiEndpoints = {
+interface ApiEndpoints {
+  users: {
+    fetch: string;
+    create: string;
+  };
+  login: string;
+  logout: string;
+  forgetPassword: string;
+  resetPassword: string;
+  destination: {
+    create: string;
+    fetchPost: string;
+    crudById: string;
+    searchFromDashboard: string;
+  };
+  bookPackage: {
+    fetchPost: string;
+  };
+  package: {
+    fetchPost: string;
+    crudBySlug: string;
+    searchPackageList: string;
+    updateActiveStatus: string;
+    trending: string;
+  };
+  file: {
+    deleteFile: string;
+  };
+  organization: {
+    dashboardCard: string;
+  };
+}
+
+export const apiEndpoints: ApiEndpoints = {
   users: {
     fetch: "/api/users",
     create: "/api/users",

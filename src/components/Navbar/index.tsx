@@ -86,7 +86,7 @@ const Navbar: React.FC = () => {
           backgroundColor: "transparent",
           padding: "0",
           width: "100%",
-          zIndex: 1,
+          zIndex: 999,
           background: "#fff",
           position: "sticky",
           top: 0,

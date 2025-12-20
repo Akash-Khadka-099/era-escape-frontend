@@ -1,9 +1,13 @@
 import CustomFooter from "@/components/Footer";
 import Navbar from "@/components/Navbar";
 import { Flex } from "antd";
-import PropTypes from "prop-types";
+import { ReactNode } from "react";
 
-const UserLayout = ({ children }) => {
+interface UserLayoutProps {
+  children?: ReactNode;
+}
+
+const UserLayout = ({ children }: UserLayoutProps) => {
   return (
     <>
       <Flex vertical style={{ minHeight: "100vh" }}>
@@ -21,10 +25,6 @@ const UserLayout = ({ children }) => {
       </Flex>
     </>
   );
-};
-
-UserLayout.propTypes = {
-  children: PropTypes.node,
 };
 
 export default UserLayout;

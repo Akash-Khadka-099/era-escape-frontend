@@ -1,14 +1,26 @@
 import { jwtDecode } from "jwt-decode";
 import { create } from "zustand";
 
-const useAuthStore = create((set) => ({
+interface DecodedUser {
+  [key: string]: any; // You can make this more specific based on your JWT payload
+}
+
+interface AuthState {
+  accessToken: string | null;
+  user: DecodedUser | null;
+  isAuthenticated: boolean;
+  setAccessToken: (token: string) => void;
+  clearAuth: () => void;
+}
+
+const useAuthStore = create<AuthState>((set) => ({
   accessToken: null,
   user: null, // Store decoded user details
   isAuthenticated: false,
 
-  setAccessToken: (token) => {
+  setAccessToken: (token: string) => {
     try {
-      const decodedUser = jwtDecode(token);
+      const decodedUser = jwtDecode<DecodedUser>(token);
       set({
         accessToken: token,
         user: decodedUser,

@@ -1,4 +1,4 @@
-export const validateNepaliPhoneNumber = (_, value) => {
+export const validateNepaliPhoneNumber = (_: any, value: string): Promise<void> => {
   if (!value) {
     return Promise.reject(new Error("Please enter a phone number"));
   }
@@ -43,10 +43,11 @@ export const validateNepaliPhoneNumber = (_, value) => {
     )
   );
 };
-export function objectToFormData(obj) {
+
+export function objectToFormData(obj: Record<string, any>): FormData {
   const formData = new FormData();
 
-  function appendValue(key, value) {
+  function appendValue(key: string, value: any): void {
     if (value === null || value === undefined || value === "") {
       return;
     }
@@ -80,11 +81,12 @@ export function objectToFormData(obj) {
 
   return formData;
 }
-export function removeFalsyValuesHandler(obj) {
+
+export function removeFalsyValuesHandler<T>(obj: T): T {
   if (Array.isArray(obj)) {
     return obj
       .map((item) => removeFalsyValuesHandler(item))
-      .filter((item) => !(item == null || item === "")); // remove null, undefined, ''
+      .filter((item) => !(item == null || item === "")) as T; // remove null, undefined, ''
   } else if (obj !== null && typeof obj === "object") {
     return Object.entries(obj).reduce((acc, [key, value]) => {
       const cleanedValue = removeFalsyValuesHandler(value);
@@ -96,14 +98,26 @@ export function removeFalsyValuesHandler(obj) {
         acc[key] = cleanedValue;
       }
       return acc;
-    }, {});
+    }, {} as any) as T;
   } else {
     return obj;
   }
 }
 
 
-export function capitalizeFirstWord(str) {
+export function capitalizeFirstWord(str: string): string {
   if (!str) return '';
   return str.charAt(0).toUpperCase() + str.slice(1).toLowerCase();
+}
+
+
+export function getLocationIdFromHtml(htmlString: string | null | undefined): string | null {
+  if (!htmlString) return null;
+
+  const parser = new DOMParser();
+  const doc: Document = parser.parseFromString(htmlString, "text/html");
+
+  const element = doc.querySelector<HTMLElement>("[data-location-id]");
+
+  return element?.dataset?.locationId ?? null;
 }

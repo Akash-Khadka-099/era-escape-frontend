@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { MapContainer, TileLayer, Marker, Polyline, Popup } from 'react-leaflet';
+import { MapContainer, TileLayer, Marker, Polyline, Tooltip } from 'react-leaflet';
 import 'leaflet/dist/leaflet.css';
 import L from 'leaflet';
-import parse from 'html-react-parser';
+import { getLocationIdFromHtml } from '@/utils/helper';
+import TrailLocationDrawer from './TrailLocationDrawer';
 
 // Fix for default marker icon in React Leaflet with Vite/Webpack
 import icon from 'leaflet/dist/images/marker-icon.png';
@@ -19,7 +20,7 @@ let DefaultIcon = L.icon({
 
 L.Marker.prototype.options.icon = DefaultIcon;
 
-const TestTrailMap: React.FC = () => {
+const TrekMap: React.FC = () => {
   interface MarkerData {
     position: [number, number];
     name: string | null;
@@ -36,6 +37,8 @@ const TestTrailMap: React.FC = () => {
   const [markers, setMarkers] = useState<MarkerData[]>([]);
   const [paths, setPaths] = useState<PathData[]>([]);
   const [center, setCenter] = useState<[number, number]>([28.6, 83.7]); // Default center
+  const [drawerOpen, setDrawerOpen] = useState(false);
+  const [selectedMarkerName, setSelectedMarkerName] = useState<string>("");
 
   const kmlUrl = "/kmlFiles/demo-abc-I.kml";
 
@@ -47,6 +50,47 @@ const TestTrailMap: React.FC = () => {
         const parser = new DOMParser();
         const kml = parser.parseFromString(text, "text/xml");
         
+        // First, extract all styles with BalloonStyle descriptions
+        const styleMap: { [key: string]: string | null } = {};
+        
+        // Parse CascadingStyles with BalloonStyle
+        const cascadingStyles = kml.getElementsByTagName("gx:CascadingStyle");
+        for (let i = 0; i < cascadingStyles.length; i++) {
+          const style = cascadingStyles[i];
+          const styleId = style.getAttribute("kml:id");
+          if (styleId) {
+            const balloonStyle = style.getElementsByTagName("BalloonStyle")[0];
+            if (balloonStyle) {
+              const textElement = balloonStyle.getElementsByTagName("text")[0];
+              if (textElement) {
+                const balloonText = textElement.textContent?.trim() || null;
+                styleMap[`#${styleId}`] = balloonText;
+              }
+            }
+          }
+        }
+        
+        // Parse StyleMaps to resolve references
+        const styleMaps = kml.getElementsByTagName("StyleMap");
+        for (let i = 0; i < styleMaps.length; i++) {
+          const styleMapEl = styleMaps[i];
+          const styleMapId = styleMapEl.getAttribute("id");
+          if (styleMapId) {
+            const pairs = styleMapEl.getElementsByTagName("Pair");
+            for (let j = 0; j < pairs.length; j++) {
+              const pair = pairs[j];
+              const key = pair.getElementsByTagName("key")[0]?.textContent;
+              if (key === "normal" || key === "highlight") {
+                const styleUrl = pair.getElementsByTagName("styleUrl")[0]?.textContent;
+                if (styleUrl && styleMap[styleUrl]) {
+                  styleMap[`#${styleMapId}`] = styleMap[styleUrl];
+                  break; // Use the first match
+                }
+              }
+            }
+          }
+        }
+        
         const placemarks = kml.getElementsByTagName("Placemark");
         const newMarkers: MarkerData[] = [];
         const newPaths: PathData[] = [];
@@ -55,7 +99,27 @@ const TestTrailMap: React.FC = () => {
         for (let i = 0; i < placemarks.length; i++) {
           const placemark = placemarks[i];
           const name = placemark.getElementsByTagName("name")[0]?.textContent;
-          const description = placemark.getElementsByTagName("description")[0]?.textContent;
+          
+          // Extract description handling CDATA
+          let description = null;
+          const descElement = placemark.getElementsByTagName("description")[0];
+          if (descElement) {
+            // Get text content which includes CDATA
+            description = descElement.textContent || descElement.innerHTML;
+            // Clean up any extra whitespace
+            description = description?.trim() || null;
+          }
+          
+          // If no direct description, check styleUrl for BalloonStyle
+          if (!description) {
+            const styleUrlElement = placemark.getElementsByTagName("styleUrl")[0];
+            if (styleUrlElement) {
+              const styleUrl = styleUrlElement.textContent?.trim();
+              if (styleUrl && styleMap[styleUrl]) {
+                description = styleMap[styleUrl];
+              }
+            }
+          }
           
           // Parse images
           const images: string[] = [];
@@ -102,7 +166,12 @@ const TestTrailMap: React.FC = () => {
           }
         }
 
-        setMarkers(newMarkers);
+        const structureMakers = newMarkers?.map((item => ({
+          ...item,
+          locationKey: getLocationIdFromHtml(item.description)
+        })));
+        
+        setMarkers(structureMakers);
         setPaths(newPaths);
         
         if (bounds.length > 0) {
@@ -118,10 +187,8 @@ const TestTrailMap: React.FC = () => {
     fetchKml();
   }, []);
 
-  console.log("markers", markers);
-
   return (
-    <div style={{ height: "700px", width: "100%" }}>
+    <div style={{ height: "85vh", width: "100%" }}>
       <MapContainer center={center} zoom={10} style={{ height: "100%", width: "100%" }}>
         <TileLayer
           attribution='Tiles &copy; Esri &mdash; Source: Esri, i-cubed, USDA, USGS, AEX, GeoEye, Getmapping, Aerogrid, IGN, IGP, UPR-EGP, and the GIS User Community'
@@ -141,39 +208,31 @@ const TestTrailMap: React.FC = () => {
           <Marker
             key={`marker-${index}`}
             position={marker.position}
-            
+            eventHandlers={{
+              click: () => {
+                setSelectedMarkerName(marker.name || "Unknown Location");
+                setDrawerOpen(true);
+              },
+            }}
           >
-            <Popup>
-               <div style={{ maxWidth: "300px" }}>
-                <h3 style={{ margin: "0 0 8px 0", fontSize: "16px", fontWeight: "bold" }}>{marker.name}</h3>
-                <div style={{ fontSize: "12px", marginBottom: "8px", color: "#666" }}>
-                  <strong>Lat:</strong> {marker.position[0].toFixed(5)}, <strong>Lng:</strong> {marker.position[1].toFixed(5)}
+            <Tooltip direction="top" offset={[0, -20]} opacity={1}>
+              <div style={{ textAlign: 'center' }}>
+                <strong>{marker.name || "Unknown Location"}</strong>
+                <div style={{ fontSize: '11px', color: '#666' }}>
+                  {marker.position[0].toFixed(4)}, {marker.position[1].toFixed(4)}
                 </div>
-                {marker.description && (
-                  <div style={{ fontSize: "14px", marginBottom: "8px" }}>{parse(marker.description || "")}</div>
-                )}
-                 {marker.images && marker.images.length > 0 && (
-                   <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    {marker.images.map((img, i) => (
-                        <img 
-                          key={i} 
-                          src={img} 
-                          alt={marker.name || undefined} 
-                          style={{ width: "100%", borderRadius: "4px", objectFit: "cover" }}
-                          onError={(e) => {
-                            (e.target as HTMLImageElement).style.display = 'none';
-                          }}
-                        />
-                     ))}
-                   </div>
-                 )}
-               </div>
-            </Popup>
+              </div>
+            </Tooltip>
           </Marker>
         ))}
+        <TrailLocationDrawer 
+          open={drawerOpen} 
+          onClose={() => setDrawerOpen(false)} 
+          title={selectedMarkerName} 
+        />
       </MapContainer>
     </div>
   );
 }
 
-export default TestTrailMap;
+export default TrekMap;

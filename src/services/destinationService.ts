@@ -1,14 +1,23 @@
 import { apiEndpoints } from "@/services/apiEndpoints";
 import axiosInstance from "@/services/axiosInstance";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 
-const fetchDestinations = (query) => () => {
+interface DestinationQuery {
+  [key: string]: any;
+}
+
+interface CreateDestinationPayload {
+  [key: string]: any;
+}
+
+const fetchDestinations = (query: DestinationQuery) => (): Promise<AxiosResponse> => {
   return axiosInstance.get(apiEndpoints.destination.fetchPost, {
     params: query,
   });
 };
 
-const useFetchDestinations = (query) => {
+const useFetchDestinations = (query: DestinationQuery) => {
   return useQuery({
     queryKey: [apiEndpoints.destination.fetchPost, query],
     queryFn: fetchDestinations(query),
@@ -16,7 +25,7 @@ const useFetchDestinations = (query) => {
   });
 };
 
-const createDestination = (payaloads) => {
+const createDestination = (payaloads: CreateDestinationPayload): Promise<AxiosResponse> => {
   return axiosInstance.post(apiEndpoints.destination.create, payaloads);
 };
 
@@ -26,7 +35,7 @@ const useCreateDestination = () => {
   return useMutation({
     mutationFn: createDestination,
     onSuccess: () => {
-      clientQuery.invalidateQueries(apiEndpoints.destination.fetchPost);
+      clientQuery.invalidateQueries({ queryKey: [apiEndpoints.destination.fetchPost] });
     },
   });
 };

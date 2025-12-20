@@ -1,4 +1,9 @@
-export const packageVehicleOptions = [
+export interface OptionType {
+  label: string;
+  value: string;
+}
+
+export const packageVehicleOptions: OptionType[] = [
   { label: "Car", value: "car" },
   { label: "Sumo", value: "sumo" },
   { label: "Hiace", value: "hiace" },
@@ -10,7 +15,7 @@ export const packageVehicleOptions = [
   { label: "Plane", value: "plane" },
 ];
 
-export const packageRoomOptions = [
+export const packageRoomOptions: OptionType[] = [
   { label: "Average", value: "average" },
   { label: "Standard", value: "standard" },
   { label: "Deluxe", value: "deluxe" },
@@ -18,7 +23,7 @@ export const packageRoomOptions = [
 ];
 
 
-export const packageSeasonOptions = [
+export const packageSeasonOptions: OptionType[] = [
   { label: "Spring", value: "spring" },
   { label: "Summer", value: "summer" },
   { label: "Autumn", value: "autumn" },

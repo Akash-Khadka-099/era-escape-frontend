@@ -1,9 +1,10 @@
 import { apiEndpoints } from "@/services/apiEndpoints";
 import axiosInstance from "@/services/axiosInstance";
 import { useMutation } from "@tanstack/react-query";
+import { AxiosResponse } from "axios";
 
-const deleteFileMutation = (id) => {
-  return axiosInstance.delete(apiEndpoints.file.deleteFile.replace("{id}", id));
+const deleteFileMutation = (id: string | number): Promise<AxiosResponse> => {
+  return axiosInstance.delete(apiEndpoints.file.deleteFile.replace("{id}", String(id)));
 };
 
 const useDeleteFileMutation = () => {

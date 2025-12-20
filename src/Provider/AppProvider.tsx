@@ -1,9 +1,13 @@
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { ConfigProvider } from "antd";
-import PropTypes from "prop-types";
+import { ReactNode } from "react";
 import { BrowserRouter } from "react-router-dom";
 
-const AppProvider = ({ children }) => {
+interface AppProviderProps {
+  children: ReactNode;
+}
+
+const AppProvider = ({ children }: AppProviderProps) => {
   const queryClient = new QueryClient();
 
   return (
@@ -26,7 +30,4 @@ const AppProvider = ({ children }) => {
   );
 };
 
-AppProvider.propTypes = {
-  children: PropTypes.node.isRequired,
-};
 export default AppProvider;

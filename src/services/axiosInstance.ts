@@ -1,5 +1,9 @@
 import useAuthStore from "@/store/authStore";
-import axios from "axios";
+import axios, { AxiosError, InternalAxiosRequestConfig } from "axios";
+
+interface CustomAxiosRequestConfig extends InternalAxiosRequestConfig {
+  _retry?: boolean;
+}
 
 const axiosInstance = axios.create({
   baseURL: import.meta.env.VITE_API_URL,
@@ -7,7 +11,7 @@ const axiosInstance = axios.create({
 });
 
 // Add request interceptor to attach access token
-axiosInstance.interceptors.request.use((config) => {
+axiosInstance.interceptors.request.use((config: InternalAxiosRequestConfig) => {
   const accessToken = useAuthStore.getState().accessToken; // Use getState() for non-component code
   if (accessToken) {
     config.headers["Authorization"] = `Bearer ${accessToken}`;
@@ -18,8 +22,8 @@ axiosInstance.interceptors.request.use((config) => {
 // Add response interceptor for token refresh
 axiosInstance.interceptors.response.use(
   (response) => response,
-  async (error) => {
-    const originalRequest = error.config;
+  async (error: AxiosError) => {
+    const originalRequest = error.config as CustomAxiosRequestConfig;
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
       try {
