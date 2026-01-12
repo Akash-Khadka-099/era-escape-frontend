@@ -5,6 +5,7 @@ import {
   PolylineGraphics,
   BillboardGraphics,
   LabelGraphics,
+  Scene,
 } from "resium";
 import {
   Cartesian3,
@@ -35,12 +36,16 @@ const TrekTrailMap: React.FC = () => {
     description: string | null;
     images: string[];
     locationKey?: string | null;
+    travelTimeToNext?: string;
   }
 
   interface PathData {
     path: [number, number][];
     name: string | null;
     description: string | null;
+    distance?: string;
+    time?: string;
+    midpoint?: [number, number];
   }
 
   type TooltipState = {
@@ -60,6 +65,9 @@ const TrekTrailMap: React.FC = () => {
     y: 0,
     content: { name: "", pos: [0, 0] },
   });
+  const [hoveredMarkerIndex, setHoveredMarkerIndex] = useState<number | null>(
+    null
+  );
   console.log("drawerOpen", drawerOpen);
   console.log("markers in test", markers);
 
@@ -175,15 +183,64 @@ const TrekTrailMap: React.FC = () => {
                   const [lng, lat] = coord.split(",").map(Number);
                   return [lat, lng];
                 });
-              newPaths.push({ path, name, description });
+
+              // Calculate total distance
+              let totalDistance = 0;
+              for (let j = 0; j < path.length - 1; j++) {
+                const p1 = Cartesian3.fromDegrees(path[j][1], path[j][0]);
+                const p2 = Cartesian3.fromDegrees(
+                  path[j + 1][1],
+                  path[j + 1][0]
+                );
+                totalDistance += Cartesian3.distance(p1, p2);
+              }
+
+              const distanceKm = (totalDistance / 1000).toFixed(2);
+              // Estimate time (average trekking speed ~3km/h considering terrain)
+              const hours = totalDistance / 3000;
+              const timeStr =
+                hours < 1
+                  ? `${Math.round(hours * 60)} mins`
+                  : `${hours.toFixed(1)} hrs`;
+
+              // Find midpoint (point at half the distance)
+              let currentDist = 0;
+              let midpoint: [number, number] = path[0];
+              for (let j = 0; j < path.length - 1; j++) {
+                const p1 = Cartesian3.fromDegrees(path[j][1], path[j][0]);
+                const p2 = Cartesian3.fromDegrees(
+                  path[j + 1][1],
+                  path[j + 1][0]
+                );
+                const d = Cartesian3.distance(p1, p2);
+                if (currentDist + d >= totalDistance / 2) {
+                  midpoint = path[j];
+                  break;
+                }
+                currentDist += d;
+              }
+
+              newPaths.push({
+                path,
+                name,
+                description,
+                distance: `${distanceKm} km`,
+                time: timeStr,
+                midpoint,
+              });
             }
           }
         }
 
         setMarkers(
-          newMarkers.map((m) => ({
+          newMarkers.map((m, idx) => ({
             ...m,
             locationKey: getLocationIdFromHtml(m.description),
+            // Add dummy travel time to next marker (except for the last one)
+            travelTimeToNext:
+              idx < newMarkers.length - 1
+                ? `${(Math.random() * 4 + 1).toFixed(1)} hr`
+                : undefined,
           }))
         );
         setPaths(newPaths);
@@ -288,7 +345,9 @@ const TrekTrailMap: React.FC = () => {
           sceneModePicker={true}
           infoBox={false}
           selectionIndicator={false}
+          requestRenderMode={false}
         >
+          <Scene requestRenderMode={false} logarithmicDepthBuffer={true} />
           {/* Render Trails */}
           {paths.map((trail, index) => (
             <Entity
@@ -302,61 +361,148 @@ const TrekTrailMap: React.FC = () => {
                 )}
                 width={4}
                 material={Color.fromCssColorString("#ff2dc0fb")}
+                clampToGround={true}
               />
+              {trail.midpoint && (
+                <Entity
+                  position={Cartesian3.fromDegrees(
+                    trail.midpoint[1],
+                    trail.midpoint[0]
+                  )}
+                >
+                  <LabelGraphics
+                    text={`Total Trail: ${trail.distance} | Est. Time: ${trail.time}`}
+                    font="bold 12px sans-serif"
+                    fillColor={Color.WHITE}
+                    outlineColor={Color.BLACK}
+                    outlineWidth={2}
+                    style={2}
+                    verticalOrigin={VerticalOrigin.BOTTOM}
+                    pixelOffset={{ x: 0, y: -10 } as any}
+                    showBackground={true}
+                    backgroundColor={new Color(0, 0, 0, 0.7)}
+                    distanceDisplayCondition={{ near: 0, far: 100000 } as any}
+                    disableDepthTestDistance={Number.POSITIVE_INFINITY}
+                    eyeOffset={new Cartesian3(0, 0, -50)}
+                  />
+                </Entity>
+              )}
             </Entity>
           ))}
 
           {/* Render Markers */}
           {markers.map((marker, index) => (
-            <Entity
-              onClick={() => {
-                setSelectedMarkerName(marker.name || "Unknown Location");
-                setDrawerOpen(true);
-              }}
-              onMouseEnter={() => {
-                if (viewerRef.current?.cesiumElement) {
-                  viewerRef.current.cesiumElement.scene.canvas.style.cursor =
-                    "pointer";
-                }
-              }}
-              onMouseLeave={() => {
-                if (viewerRef.current?.cesiumElement) {
-                  viewerRef.current.cesiumElement.scene.canvas.style.cursor =
-                    "default";
-                }
-              }}
-              key={`marker-${index}`}
-              name={marker.name + "akash" || "Unknown Location"}
-              position={Cartesian3.fromDegrees(
-                marker.position[1],
-                marker.position[0]
-              )}
-              properties={{
-                isMarker: true,
-                position: marker.position,
-                images: marker.images,
-              }}
-            >
-              <BillboardGraphics
-                image={markerIcon}
-                width={32}
-                height={42}
-                verticalOrigin={VerticalOrigin.BOTTOM}
-              />
+            <React.Fragment key={`marker-fragment-${index}`}>
+              <Entity
+                onClick={() => {
+                  setSelectedMarkerName(marker.name || "Unknown Location");
+                  setDrawerOpen(true);
+                }}
+                onMouseEnter={() => {
+                  setHoveredMarkerIndex(index);
+                  if (viewerRef.current?.cesiumElement) {
+                    viewerRef.current.cesiumElement.scene.canvas.style.cursor =
+                      "pointer";
+                  }
+                }}
+                onMouseLeave={() => {
+                  setHoveredMarkerIndex(null);
+                  if (viewerRef.current?.cesiumElement) {
+                    viewerRef.current.cesiumElement.scene.canvas.style.cursor =
+                      "default";
+                  }
+                }}
+                name={marker.name + "akash" || "Unknown Location"}
+                position={Cartesian3.fromDegrees(
+                  marker.position[1],
+                  marker.position[0]
+                )}
+                properties={{
+                  isMarker: true,
+                  position: marker.position,
+                  images: marker.images,
+                }}
+              >
+                <BillboardGraphics
+                  image={markerIcon}
+                  width={32}
+                  height={42}
+                  verticalOrigin={VerticalOrigin.BOTTOM}
+                  disableDepthTestDistance={Number.POSITIVE_INFINITY}
+                  eyeOffset={new Cartesian3(0, 0, -10)}
+                />
 
-              <LabelGraphics
-                text={marker.name || ""}
-                font="14px sans-serif"
-                fillColor={Color.WHITE}
-                outlineColor={Color.BLACK}
-                outlineWidth={2}
-                style={2}
-                verticalOrigin={VerticalOrigin.BOTTOM}
-                pixelOffset={{ x: 0, y: -45 } as any}
-                showBackground={true}
-                backgroundColor={new Color(0, 0, 0, 0.5)}
-              />
-            </Entity>
+                <LabelGraphics
+                  text={marker.name || ""}
+                  font="14px sans-serif"
+                  fillColor={Color.WHITE}
+                  outlineColor={Color.BLACK}
+                  outlineWidth={2}
+                  style={2}
+                  verticalOrigin={VerticalOrigin.BOTTOM}
+                  pixelOffset={{ x: 0, y: -45 } as any}
+                  showBackground={true}
+                  backgroundColor={new Color(0, 0, 0, 0.5)}
+                  disableDepthTestDistance={Number.POSITIVE_INFINITY}
+                  eyeOffset={new Cartesian3(0, 0, -20)}
+                />
+              </Entity>
+
+              {/* Draw straight line to next marker with distance/time ONLY when hovered */}
+              {index < markers.length - 1 && hoveredMarkerIndex === index && (
+                <>
+                  <Entity>
+                    <PolylineGraphics
+                      positions={[
+                        Cartesian3.fromDegrees(
+                          marker.position[1],
+                          marker.position[0]
+                        ),
+                        Cartesian3.fromDegrees(
+                          markers[index + 1].position[1],
+                          markers[index + 1].position[0]
+                        ),
+                      ]}
+                      width={3}
+                      material={Color.YELLOW}
+                    />
+                  </Entity>
+
+                  {/* Midpoint Label for the straight line */}
+                  <Entity
+                    position={Cartesian3.fromDegrees(
+                      (marker.position[1] + markers[index + 1].position[1]) / 2,
+                      (marker.position[0] + markers[index + 1].position[0]) / 2
+                    )}
+                  >
+                    <LabelGraphics
+                      text={`Next Leg: ${(
+                        Cartesian3.distance(
+                          Cartesian3.fromDegrees(
+                            marker.position[1],
+                            marker.position[0]
+                          ),
+                          Cartesian3.fromDegrees(
+                            markers[index + 1].position[1],
+                            markers[index + 1].position[0]
+                          )
+                        ) / 1000
+                      ).toFixed(1)} km (${marker.travelTimeToNext})`}
+                      font="bold 12px sans-serif"
+                      fillColor={Color.YELLOW}
+                      outlineColor={Color.BLACK}
+                      outlineWidth={2}
+                      style={2}
+                      verticalOrigin={VerticalOrigin.CENTER}
+                      showBackground={true}
+                      backgroundColor={new Color(0, 0, 0, 0.8)}
+                      disableDepthTestDistance={Number.POSITIVE_INFINITY}
+                      eyeOffset={new Cartesian3(0, 0, -30)}
+                    />
+                  </Entity>
+                </>
+              )}
+            </React.Fragment>
           ))}
         </Viewer>
 

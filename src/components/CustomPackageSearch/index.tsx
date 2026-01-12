@@ -7,6 +7,7 @@ interface CustomPackageSearchProps {
   setSearchValue: (value: string) => void;
   onSearchHandler: (value: string) => void;
   isLoading?: boolean;
+  placeholder?: string;
 }
 
 const CustomPackageSearch: React.FC<CustomPackageSearchProps> = ({
@@ -14,6 +15,7 @@ const CustomPackageSearch: React.FC<CustomPackageSearchProps> = ({
   setSearchValue,
   onSearchHandler,
   isLoading = false,
+  placeholder = "Search Destinations",
 }) => {
   return (
     <>
@@ -29,7 +31,7 @@ const CustomPackageSearch: React.FC<CustomPackageSearchProps> = ({
         <Input.Search
           loading={isLoading}
           onSearch={onSearchHandler}
-          placeholder="Search Destinations"
+          placeholder={placeholder}
           style={{ height: "60px", borderRadius: "1.2rem", fontSize: "1rem" }}
           size="large"
           prefix={

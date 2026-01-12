@@ -29,6 +29,10 @@ interface ApiEndpoints {
   organization: {
     dashboardCard: string;
   };
+  trekBlogs: {
+    searchTrekBlogs: string,
+    getTrekBlogDetail: string
+  }
 }
 
 export const apiEndpoints: ApiEndpoints = {
@@ -36,10 +40,10 @@ export const apiEndpoints: ApiEndpoints = {
     fetch: "/api/users",
     create: "/api/users",
   },
-  login: "/api/login",
-  logout: "/api/logout",
-  forgetPassword: "/api/forget-password",
-  resetPassword: "/api/reset-password",
+  login: "/api/auth/login",
+  logout: "/api/auth/logout",
+  forgetPassword: "/api/auth/forget-password",
+  resetPassword: "/api/auth/reset-password",
   destination: {
     create: "/api/destinations/organization",
     fetchPost: "/api/destinations",
@@ -65,4 +69,8 @@ export const apiEndpoints: ApiEndpoints = {
   organization: {
     dashboardCard: "/api/organization/dashboard/cards",
   },
+  trekBlogs: {
+    searchTrekBlogs: "/api/trek-blogs-listing",
+    getTrekBlogDetail: "/api/users-trek-blogs/{slug}"
+  }
 };

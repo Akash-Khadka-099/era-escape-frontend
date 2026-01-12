@@ -1,250 +1,264 @@
-import React from 'react';
-import { Button, Tag, Typography, Card, Row, Col, Divider } from 'antd';
-import { 
-  FaHiking, 
-  FaMountain, 
-  FaClock, 
-  FaRoute, 
-  FaMapMarkedAlt, 
-  FaCloudSun, 
-  FaWind, 
-  FaSun, 
-  FaExclamationTriangle,
-  FaShare,
-  FaBookmark,
-  FaDownload,
-  FaWalking
-} from 'react-icons/fa';
-import { useNavigate } from 'react-router-dom';
-import { AreaChart, Area, XAxis, YAxis, Tooltip, ResponsiveContainer } from 'recharts';
-import { trekData } from './dummyData';
-import MiddleContentWrapper from '@/components/ContentWrappers/MiddleContentWrapper';
+import React, { useCallback, useEffect, useState } from "react";
+import { Typography, Select, Row, Col, Space, message, Flex } from "antd";
+import CustomPackageSearch from "@/components/CustomPackageSearch";
+import TrekCard from "./TrekCard";
+import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
+import { useSearchTrekBlogLists } from "@/services/trekServices/trekServices";
+import { useSearchParams } from "react-router-dom";
+import CustomPagination from "@/components/CustomPagination";
+import Lottie from "react-lottie";
+import NoDataFound from "@/assets/JsonAnimation/noDataFound.json";
 
-const { Title, Text, Paragraph } = Typography;
+const { Title, Text } = Typography;
+const { Option } = Select;
 
-const TrekTrails: React.FC = () => {
-  const navigate = useNavigate();
+const ExploreTrails: React.FC = () => {
+  const [pagination, setPagination] = useState({
+    page: 1,
+    pageSize: 9,
+  });
+  const [listedTrails, setListedTrails] = useState<any>({});
+  const [searchVal, setSearchVal] = useState("");
+
+  // Filter states
+  const [regionFilter, setRegionFilter] = useState("All");
+  const [difficultyFilter, setDifficultyFilter] = useState("All");
+  const [durationFilter, setDurationFilter] = useState("All");
+  const [elevationFilter, setElevationFilter] = useState("All");
+
+  const [searchParams, setSearchParams] = useSearchParams();
+  const searchQuery = searchParams.get("search");
+
+  const { mutateAsync, isPending } = useSearchTrekBlogLists();
+
+  const fetchData = useCallback(async () => {
+    try {
+      const query: any = {
+        q: searchQuery || "",
+        page: pagination.page,
+        limit: pagination.pageSize,
+      };
+
+      if (regionFilter !== "All") query.region = regionFilter;
+      if (difficultyFilter !== "All") query.difficulty = difficultyFilter;
+      if (durationFilter !== "All") query.duration = durationFilter;
+      if (elevationFilter !== "All") query.elevation = elevationFilter;
+
+      const response = await mutateAsync(query);
+      if (response?.status === 200) {
+        setListedTrails(response?.data || []);
+      }
+    } catch (error) {
+      console.error(error);
+      message.error("Error fetching trek trails");
+    }
+  }, [
+    pagination,
+    searchQuery,
+    regionFilter,
+    difficultyFilter,
+    durationFilter,
+    elevationFilter,
+    mutateAsync,
+  ]);
+
+  useEffect(() => {
+    if (searchQuery) {
+      setSearchVal(searchQuery);
+    }
+    fetchData();
+  }, [fetchData]);
+
+  const handleSearchSubmit = (value: string) => {
+    setSearchParams({ search: value });
+    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on search
+  };
+
+  const defaultOptions = {
+    loop: true,
+    autoplay: true,
+    animationData: NoDataFound,
+    rendererSettings: {
+      preserveAspectRatio: "xMidYMid slice",
+    },
+  };
 
   return (
-    <div style={{ backgroundColor: '#f5f5f5', minHeight: '100vh', paddingBottom: '40px' }}>
-      {/* Hero Section */}
-      <div style={{ 
-        position: 'relative', 
-        height: '500px', 
-        backgroundImage: 'url("https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80")', // Dummy image of mountains
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-        display: 'flex',
-        alignItems: 'flex-end',
-        padding: '40px'
-      }}>
-        <div style={{ 
-          position: 'absolute', 
-          top: 0, 
-          left: 0, 
-          right: 0, 
-          bottom: 0, 
-          background: 'linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7))' 
-        }} />
-        
-        <div style={{ position: 'relative', zIndex: 1, width: '100%', maxWidth: '1200px', margin: '0 auto', color: 'white' }}>
-          <div style={{ marginBottom: '16px' }}>
-            <Tag color="#108ee9" style={{ border: 'none', padding: '4px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '4px' }}>{trekData.difficulty.toUpperCase()}</Tag>
-            <Tag color="#555" style={{ border: 'none', padding: '4px 12px', fontSize: '12px', fontWeight: 'bold', borderRadius: '4px' }}>{trekData.type.toUpperCase()}</Tag>
-          </div>
-          <Title level={1} style={{ color: 'white', margin: '0 0 8px 0', fontSize: '48px' }}>{trekData.title}</Title>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end' }}>
-            <Text style={{ color: '#ddd', fontSize: '16px' }}>
-              <FaMapMarkedAlt style={{ marginRight: '8px' }} />
-              {trekData.location}
-            </Text>
-            <div style={{ display: 'flex', gap: '12px' }}>
-              <Button icon={<FaBookmark />} style={{ borderRadius: '8px' }}>Save</Button>
-              <Button icon={<FaShare />} style={{ borderRadius: '8px' }}>Share</Button>
-            </div>
-          </div>
+    <div
+      style={{
+        backgroundColor: "#f8f9fa",
+        minHeight: "100vh",
+        paddingBottom: "60px",
+      }}
+    >
+      <MiddleContentWrapper>
+        <div style={{ padding: "40px 0 20px 0" }}>
+          <Title level={1} style={{ marginBottom: "8px", fontWeight: "bold" }}>
+            Explore Trails
+          </Title>
+          <Text type="secondary" style={{ fontSize: "16px", color: "#52c41a" }}>
+            Discover the world's most breathtaking trekking routes and hidden
+            gems.
+          </Text>
         </div>
-      </div>
 
-      <MiddleContentWrapper extraStyles={{ marginTop: '-40px', position: 'relative', zIndex: 2 }}>
-        {/* Stats Cards */}
-        <Row gutter={[16, 16]} style={{ marginBottom: '24px' }}>
-          <Col xs={24} sm={12} md={6}>
-            <Card bordered={false} style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ color: '#2ecc71', fontSize: '24px', marginBottom: '8px' }}><FaHiking /></div>
-              <div style={{ fontSize: '12px', color: '#888', fontWeight: 'bold', letterSpacing: '1px' }}>DISTANCE</div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{trekData.stats.distance}</div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card bordered={false} style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ color: '#2ecc71', fontSize: '24px', marginBottom: '8px' }}><FaMountain /></div>
-              <div style={{ fontSize: '12px', color: '#888', fontWeight: 'bold', letterSpacing: '1px' }}>ELEVATION</div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{trekData.stats.elevation}</div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card bordered={false} style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ color: '#2ecc71', fontSize: '24px', marginBottom: '8px' }}><FaClock /></div>
-              <div style={{ fontSize: '12px', color: '#888', fontWeight: 'bold', letterSpacing: '1px' }}>EST. TIME</div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{trekData.stats.time}</div>
-            </Card>
-          </Col>
-          <Col xs={24} sm={12} md={6}>
-            <Card bordered={false} style={{ borderRadius: '12px', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}>
-              <div style={{ color: '#2ecc71', fontSize: '24px', marginBottom: '8px' }}><FaRoute /></div>
-              <div style={{ fontSize: '12px', color: '#888', fontWeight: 'bold', letterSpacing: '1px' }}>ROUTE TYPE</div>
-              <div style={{ fontSize: '20px', fontWeight: 'bold' }}>{trekData.stats.routeType}</div>
-            </Card>
-          </Col>
-        </Row>
+        {/* Search and Filters Bar */}
+        <div
+          style={{
+            backgroundColor: "#fff",
+            padding: "20px",
+            borderRadius: "12px",
+            marginBottom: "40px",
+            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+            display: "flex",
+            flexWrap: "wrap",
+            gap: "20px",
+            alignItems: "center",
+            justifyContent: "space-between",
+          }}
+        >
+          <div style={{ width: "100%", maxWidth: "400px" }}>
+            <CustomPackageSearch
+              searchValue={searchVal}
+              setSearchValue={setSearchVal}
+              onSearchHandler={handleSearchSubmit}
+              isLoading={isPending}
+              placeholder="Search by destination or trail..."
+            />
+          </div>
 
-        <Row gutter={[24, 24]}>
-          {/* Main Content Column */}
-          <Col xs={24} lg={16}>
-            {/* About Section */}
-            <Card bordered={false} style={{ borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <Title level={3}>About this trail</Title>
-              <Paragraph style={{ fontSize: '16px', lineHeight: '1.8', color: '#444' }}>
-                {trekData.description}
-              </Paragraph>
-              <Paragraph style={{ fontSize: '16px', lineHeight: '1.8', color: '#444' }}>
-                <Text strong style={{ color: '#2ecc71' }}>Note: </Text>
-                {trekData.note}
-              </Paragraph>
-              <div style={{ marginTop: '20px' }}>
-                {trekData.tags.map(tag => (
-                  <Tag key={tag} style={{ padding: '6px 16px', borderRadius: '20px', background: '#f0f2f5', border: 'none', fontSize: '14px', margin: '0 8px 8px 0' }}>
-                    {tag}
-                  </Tag>
-                ))}
-              </div>
-            </Card>
-
-            {/* Elevation Profile */}
-            <Card bordered={false} style={{ borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '20px' }}>
-                <Title level={3} style={{ margin: 0 }}>Elevation Profile</Title>
-                <Text type="secondary">Max Elevation: <strong style={{ color: '#000' }}>{trekData.stats.elevation}</strong></Text>
-              </div>
-              
-              {/* Recharts Elevation Chart */}
-              <div style={{ width: '100%', height: '300px' }}>
-                <ResponsiveContainer width="100%" height="100%">
-                  <AreaChart
-                    data={trekData.elevationProfile}
-                    margin={{
-                      top: 10,
-                      right: 30,
-                      left: 0,
-                      bottom: 0,
-                    }}
-                  >
-                    <defs>
-                      <linearGradient id="colorElev" x1="0" y1="0" x2="0" y2="1">
-                        <stop offset="5%" stopColor="#2ecc71" stopOpacity={0.8}/>
-                        <stop offset="95%" stopColor="#2ecc71" stopOpacity={0}/>
-                      </linearGradient>
-                    </defs>
-                    <XAxis dataKey="dist" />
-                    <YAxis />
-                    <Tooltip />
-                    <Area type="monotone" dataKey="elev" stroke="#2ecc71" fillOpacity={1} fill="url(#colorElev)" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </div>
-            </Card>
-          </Col>
-
-          {/* Sidebar Column */}
-          <Col xs={24} lg={8}>
-            {/* Map Preview Card */}
-            <Card 
-              bordered={false} 
-              style={{ padding: 0, borderRadius: '12px', overflow: 'hidden', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}
-              bodyStyle={{ padding: 0 }}
+          <Space size="middle" wrap>
+            <Select
+              defaultValue="All"
+              style={{ width: 120 }}
+              bordered={false}
+              className="custom-filter-select"
+              onChange={(val) => {
+                setRegionFilter(val);
+                setPagination((prev) => ({ ...prev, page: 1 }));
+              }}
             >
-              <div style={{ position: 'relative', height: '200px', backgroundColor: '#e0e0e0' }}>
-                {/* Map preview image */}
-                <img 
-                  src="./images/dummyTrailImage.png" 
-                  alt="Map Preview" 
-                  style={{ width: '100%', height: '100%', objectFit: 'cover', filter: 'blur(1px)' }} 
-                />
-                <div style={{ 
-                  position: 'absolute', 
-                  top: '50%', 
-                  left: '50%', 
-                  transform: 'translate(-50%, -50%)',
-                  zIndex: 2
-                }}>
-                  <Button 
-                    type="default" 
-                    icon={<FaMapMarkedAlt />} 
-                    style={{ fontWeight: 'bold', boxShadow: '0 4px 12px rgba(0,0,0,0.2)' }}
-                    onClick={() => navigate('/trek-trails/map')}
-                  >
-                    View Interactive Map
-                  </Button>
-                </div>
-              </div>
-              <div style={{ padding: '20px' }}>
-                <Title level={4} style={{ marginTop: 0 }}>Trail Actions</Title>
-                <Button type="primary" block icon={<FaWalking />} size="large" style={{ marginBottom: '12px', backgroundColor: '#2ecc71', borderColor: '#2ecc71', height: '48px', fontSize: '16px' }}>
-                  Start Navigation
-                </Button>
-                <Button block icon={<FaDownload />} size="large" style={{ height: '48px', fontSize: '16px' }}>
-                  Download GPX
-                </Button>
-              </div>
-            </Card>
+              <Option value="All">Region: All</Option>
+              <Option value="Annapurna">Annapurna</Option>
+              <Option value="Everest">Everest</Option>
+            </Select>
 
-            {/* Current Conditions */}
-            <Card bordered={false} style={{ borderRadius: '12px', marginBottom: '24px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '16px' }}>
-                <Title level={4} style={{ margin: 0 }}>Current Conditions</Title>
-                <Tag color="green">Live</Tag>
-              </div>
-              
-              <div style={{ display: 'flex', alignItems: 'center', marginBottom: '20px' }}>
-                <FaCloudSun style={{ fontSize: '48px', color: '#f39c12', marginRight: '16px' }} />
-                <div>
-                  <div style={{ fontSize: '32px', fontWeight: 'bold' }}>{trekData.conditions.temp}</div>
-                  <div style={{ color: '#666' }}>{trekData.conditions.weather}</div>
-                </div>
-              </div>
-              
-              <Divider style={{ margin: '12px 0' }} />
-              
-              <Row gutter={16}>
-                <Col span={12}>
-                  <div style={{ fontSize: '12px', color: '#888' }}>Wind</div>
-                  <div style={{ fontWeight: 'bold' }}><FaWind style={{ marginRight: '6px' }} /> {trekData.conditions.wind}</div>
-                </Col>
-                <Col span={12}>
-                  <div style={{ fontSize: '12px', color: '#888' }}>Sunset</div>
-                  <div style={{ fontWeight: 'bold' }}><FaSun style={{ marginRight: '6px' }} /> {trekData.conditions.sunset}</div>
-                </Col>
-              </Row>
-            </Card>
+            <Select
+              defaultValue="All"
+              style={{ width: 130 }}
+              bordered={false}
+              className="custom-filter-select"
+              onChange={(val) => {
+                setDifficultyFilter(val);
+                setPagination((prev) => ({ ...prev, page: 1 }));
+              }}
+            >
+              <Option value="All">Difficulty: All</Option>
+              <Option value="Easy">Easy</Option>
+              <Option value="Moderate">Moderate</Option>
+              <Option value="Hard">Hard</Option>
+            </Select>
 
-            {/* Bear Activity Warning */}
-            <Card bordered={false} style={{ borderRadius: '12px', backgroundColor: '#fff7e6', border: '1px solid #ffe58f' }}>
-              <div style={{ display: 'flex', gap: '12px' }}>
-                <FaExclamationTriangle style={{ color: '#faad14', fontSize: '24px', marginTop: '4px' }} />
-                <div>
-                  <div style={{ fontWeight: 'bold', color: '#d46b08', marginBottom: '4px' }}>Bear Activity</div>
-                  <div style={{ fontSize: '13px', color: '#d46b08' }}>
-                    Recent bear sightings near the Panorama Point. Carry bear spray and hike in groups.
-                  </div>
-                </div>
-              </div>
-            </Card>
-          </Col>
-        </Row>
+            <Select
+              defaultValue="All"
+              style={{ width: 130 }}
+              bordered={false}
+              className="custom-filter-select"
+              onChange={(val) => {
+                setDurationFilter(val);
+                setPagination((prev) => ({ ...prev, page: 1 }));
+              }}
+            >
+              <Option value="All">Duration: All</Option>
+              <Option value="Short">Short</Option>
+              <Option value="Long">Long</Option>
+            </Select>
+
+            <Select
+              defaultValue="All"
+              style={{ width: 130 }}
+              bordered={false}
+              className="custom-filter-select"
+              onChange={(val) => {
+                setElevationFilter(val);
+                setPagination((prev) => ({ ...prev, page: 1 }));
+              }}
+            >
+              <Option value="All">Elevation: All</Option>
+              <Option value="High">High</Option>
+              <Option value="Low">Low</Option>
+            </Select>
+          </Space>
+        </div>
+
+        {/* Trails Grid */}
+        {!isPending && !listedTrails?.data?.length ? (
+          <Flex
+            vertical
+            align="center"
+            className="mt-4"
+            justify="center"
+            style={{ width: "100%", minHeight: "300px" }}
+          >
+            <Lottie options={defaultOptions} height={300} width={300} />
+            <Title level={5} type="secondary">
+              No trails found matching your criteria.
+            </Title>
+          </Flex>
+        ) : (
+          <>
+            <Row gutter={[24, 24]}>
+              {listedTrails?.data?.map((trail: any) => (
+                <Col xs={24} sm={12} lg={8} key={trail._id || trail.id}>
+                  <TrekCard
+                    id={trail._id || trail.id}
+                    title={trail.title}
+                    days={Number(trail?.averageDurationDays || trail.duration || 0)}
+                    elevation={`${
+                      trail?.maxAltitudeMeter || trail.elevation || "N/A"
+                    }`}
+                    description={trail?.shortNotes || trail.overview || ""}
+                    images={[trail?.featuredImage?.path]}
+                    trekSlug={trail?.slug}
+                  />
+                </Col>
+              ))}
+            </Row>
+
+            <div
+              style={{
+                marginTop: "2rem",
+                display: "flex",
+                justifyContent: "center",
+              }}
+            >
+              <CustomPagination
+                onChange={(value: number) =>
+                  setPagination((oldState) => ({
+                    ...oldState,
+                    page: value,
+                  }))
+                }
+                paginationDetail={{
+                  page: listedTrails?.pagination?.page || 1,
+                  totalData: listedTrails?.pagination?.total || 0,
+                  pageSize: listedTrails?.pagination?.limit || 9,
+                }}
+              />
+            </div>
+          </>
+        )}
       </MiddleContentWrapper>
+
+      <style>{`
+        .custom-filter-select .ant-select-selector {
+          background-color: #f8f9fa !important;
+          border-radius: 6px !important;
+          padding: 0 12px !important;
+        }
+      `}</style>
     </div>
   );
-}
+};
 
-export default TrekTrails;
+export default ExploreTrails;

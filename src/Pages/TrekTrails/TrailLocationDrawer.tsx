@@ -6,7 +6,6 @@ import {
   Button,
   Typography,
   Badge,
-  Rate,
   Space,
 } from "antd";
 import {
