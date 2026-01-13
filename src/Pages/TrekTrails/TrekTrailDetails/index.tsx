@@ -586,7 +586,7 @@ const TrekTrailDetail: React.FC = () => {
                       fontWeight: "bold",
                       boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
                     }}
-                    onClick={() => navigate("/trek-trails/map")}
+                    onClick={() => navigate(`/trek-trails/map/${slug}`)}
                   >
                     View Interactive Map
                   </Button>

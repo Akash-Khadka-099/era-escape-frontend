@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import {
   Viewer,
   Entity,
@@ -17,6 +17,9 @@ import {
   VerticalOrigin,
   Cartographic,
   Math as CesiumMath,
+  SceneMode,
+  createWorldTerrainAsync,
+  HeightReference,
 } from "cesium";
 import { Tooltip, Button, Space } from "antd";
 import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
@@ -24,37 +27,40 @@ import "cesium/Build/Cesium/Widgets/widgets.css";
 import { getLocationIdFromHtml } from "@/utils/helper";
 import TrailLocationDrawer from "../TrailLocationDrawer";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
+import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
+import { useParams } from "react-router-dom";
+import axiosInstance from "@/services/axiosInstance";
 
 // Premium Marker Icon
 const markerIcon =
   "https://raw.githubusercontent.com/pointhi/leaflet-color-markers/master/img/marker-icon-2x-red.png";
 
+interface MarkerData {
+  position: [number, number];
+  name: string | null;
+  description: string | null;
+  images: string[];
+  locationKey?: string | null;
+  travelTimeToNext?: string;
+}
+
+interface PathData {
+  path: [number, number][];
+  name: string | null;
+  description: string | null;
+  distance?: string;
+  time?: string;
+  midpoint?: [number, number];
+}
+
+type TooltipState = {
+  show: boolean;
+  x: number;
+  y: number;
+  content: { name: string; pos: [number, number] };
+};
+
 const TrekTrailMap: React.FC = () => {
-  interface MarkerData {
-    position: [number, number];
-    name: string | null;
-    description: string | null;
-    images: string[];
-    locationKey?: string | null;
-    travelTimeToNext?: string;
-  }
-
-  interface PathData {
-    path: [number, number][];
-    name: string | null;
-    description: string | null;
-    distance?: string;
-    time?: string;
-    midpoint?: [number, number];
-  }
-
-  type TooltipState = {
-    show: boolean;
-    x: number;
-    y: number;
-    content: { name: string; pos: [number, number] };
-  };
-
   const [markers, setMarkers] = useState<MarkerData[]>([]);
   const [paths, setPaths] = useState<PathData[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
@@ -68,17 +74,90 @@ const TrekTrailMap: React.FC = () => {
   const [hoveredMarkerIndex, setHoveredMarkerIndex] = useState<number | null>(
     null
   );
-  console.log("drawerOpen", drawerOpen);
-  console.log("markers in test", markers);
+  const [sceneMode] = useState<SceneMode>(SceneMode.SCENE3D);
+  const [terrainProvider, setTerrainProvider] = useState<any>(null);
+  const { slug } = useParams();
 
-  const kmlUrl = "/kmlFiles/demo-abc-I.kml";
+  const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "");
+
+  // const kmlUrl = "/kmlFiles/demo-abc-I.kml";
+
+  const kmlUrl = useMemo(() => {
+    const path = trekDetailResponse?.data?.kmlFile?.path;
+    if (!path) return null;
+    const baseUrl = import.meta.env.VITE_API_URL || "";
+    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    return `${cleanBaseUrl}/${cleanPath}`;
+  }, [trekDetailResponse]);
   const viewerRef = useRef<any>(null);
 
   useEffect(() => {
+    const destinations = trekDetailResponse?.data?.destinations;
+    if (destinations && destinations.length > 0) {
+      const newMarkers: MarkerData[] = destinations.map((dest: any) => {
+        // Defensive parsing of latLong to handle various data formats from the API
+        let lat = 0,
+          lng = 0;
+        console.log(
+          "Processing destination:",
+          dest.name,
+          "latLong:",
+          dest.latLong,
+          "type:",
+          typeof dest.latLong
+        );
+        if (typeof dest.latLong === "string" && dest.latLong.includes(",")) {
+          const parts = dest.latLong.split(",");
+          lat = parseFloat(parts[0] || "0");
+          lng = parseFloat(parts[1] || "0");
+        } else if (Array.isArray(dest.latLong) && dest.latLong.length >= 2) {
+          lat = parseFloat(dest.latLong[0] || "0");
+          lng = parseFloat(dest.latLong[1] || "0");
+        } else if (dest.latLong && typeof dest.latLong === "object") {
+          lat = parseFloat(dest.latLong.lat || dest.latLong.latitude || 0);
+          lng = parseFloat(
+            dest.latLong.lng || dest.latLong.long || dest.latLong.longitude || 0
+          );
+        }
+        return {
+          position: [lat, lng],
+          name: dest.name,
+          description: dest.description,
+          images: dest.images || [],
+          locationKey: dest.id || dest._id,
+          travelTimeToNext: dest.travelTimeToNext
+            ? `${dest.travelTimeToNext} hr`
+            : undefined,
+        };
+      });
+
+      const pathCoords: [number, number][] = newMarkers.map((m) => m.position);
+      const newPaths: PathData[] = [
+        {
+          path: pathCoords,
+          name: "Main Trail",
+          description: "Trail generated from destinations",
+        },
+      ];
+
+      setMarkers(newMarkers);
+      setPaths(newPaths);
+    }
+  }, [trekDetailResponse]);
+
+  useEffect(() => {
     const fetchKml = async () => {
+      // Skip KML fetch if we already have destinations in the response
+      if (trekDetailResponse?.data?.destinations?.length > 0 || !kmlUrl) return;
+
+      console.log("Fetching KML from:", kmlUrl);
       try {
-        const response = await fetch(kmlUrl);
-        const text = await response.text();
+        const response = await axiosInstance.get(kmlUrl, {
+          responseType: "text",
+        });
+        const text = response.data;
+        console.log("KML content preview:", text.substring(0, 200));
         const parser = new DOMParser();
         const kml = parser.parseFromString(text, "text/xml");
 
@@ -249,7 +328,25 @@ const TrekTrailMap: React.FC = () => {
       }
     };
 
-    fetchKml();
+    if (
+      kmlUrl &&
+      (!trekDetailResponse?.data?.destinations ||
+        trekDetailResponse.data.destinations.length === 0)
+    ) {
+      fetchKml();
+    }
+  }, [kmlUrl, trekDetailResponse]);
+
+  useEffect(() => {
+    const initTerrain = async () => {
+      try {
+        const provider = await createWorldTerrainAsync();
+        setTerrainProvider(provider);
+      } catch (error) {
+        console.error("Failed to load terrain:", error);
+      }
+    };
+    initTerrain();
   }, []);
 
   useEffect(() => {
@@ -346,6 +443,8 @@ const TrekTrailMap: React.FC = () => {
           infoBox={false}
           selectionIndicator={false}
           requestRenderMode={false}
+          terrainProvider={terrainProvider}
+          sceneMode={sceneMode}
         >
           <Scene requestRenderMode={false} logarithmicDepthBuffer={true} />
           {/* Render Trails */}
@@ -412,7 +511,7 @@ const TrekTrailMap: React.FC = () => {
                       "default";
                   }
                 }}
-                name={marker.name + "akash" || "Unknown Location"}
+                name={marker.name || "Unknown Location"}
                 position={Cartesian3.fromDegrees(
                   marker.position[1],
                   marker.position[0]
@@ -430,6 +529,7 @@ const TrekTrailMap: React.FC = () => {
                   verticalOrigin={VerticalOrigin.BOTTOM}
                   disableDepthTestDistance={Number.POSITIVE_INFINITY}
                   eyeOffset={new Cartesian3(0, 0, -10)}
+                  heightReference={HeightReference.CLAMP_TO_GROUND}
                 />
 
                 <LabelGraphics
@@ -445,6 +545,7 @@ const TrekTrailMap: React.FC = () => {
                   backgroundColor={new Color(0, 0, 0, 0.5)}
                   disableDepthTestDistance={Number.POSITIVE_INFINITY}
                   eyeOffset={new Cartesian3(0, 0, -20)}
+                  heightReference={HeightReference.CLAMP_TO_GROUND}
                 />
               </Entity>
 

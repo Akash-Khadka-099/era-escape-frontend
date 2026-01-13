@@ -54,7 +54,7 @@ export const userRoutes: RouteItem[] = [
     element: <TrekTrails />,
   },
   {
-    path: "/trek-trails/map",
+    path: "/trek-trails/map/:slug",
     element: <TrekTrailMap />,
   },
   {
