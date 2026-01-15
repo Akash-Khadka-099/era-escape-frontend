@@ -17,7 +17,7 @@ interface TrekCardProps {
   elevation: string;
   description: string;
   images: string[];
-  trekSlug: string
+  trekSlug: string;
 }
 
 const TrekCard: React.FC<TrekCardProps> = ({
@@ -26,7 +26,7 @@ const TrekCard: React.FC<TrekCardProps> = ({
   elevation,
   description,
   images,
-  trekSlug
+  trekSlug,
 }) => {
   const navigate = useNavigate();
   const carouselRef = useRef<any>(null);
@@ -109,7 +109,7 @@ const TrekCard: React.FC<TrekCardProps> = ({
             effect="fade"
             style={{ height: "100%", width: "100%" }}
           >
-            {images.map((img, index) => (
+            {images?.map((img, index) => (
               <div key={index} style={{ height: "240px", width: "100%" }}>
                 <img
                   src={`${import.meta.env.VITE_API_URL}/${img}`}
@@ -143,10 +143,10 @@ const TrekCard: React.FC<TrekCardProps> = ({
           }}
         >
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <FaClock style={{ color: "#52c41a" }} /> {days} Days
+            <FaClock style={{ color: "#52c41a" }} /> {days || 0} Days
           </span>
           <span style={{ display: "flex", alignItems: "center", gap: "4px" }}>
-            <FaMountain style={{ color: "#52c41a" }} /> {elevation}m
+            <FaMountain style={{ color: "#52c41a" }} /> {elevation || "N/A"}m
           </span>
         </div>
       </div>

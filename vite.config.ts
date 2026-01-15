@@ -10,6 +10,16 @@ const __dirname = path.dirname(__filename);
 export default defineConfig({
   server: {
     port: 9999,
+    proxy: {
+      '/api': {
+        target: 'http://localhost:5555',
+        changeOrigin: true,
+      },
+      '/uploads': {
+        target: 'http://localhost:5555',
+        changeOrigin: true,
+      },
+    },
   },
   plugins: [react()],
   resolve: {

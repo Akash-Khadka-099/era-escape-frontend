@@ -116,8 +116,8 @@ const TrekTrailDetail: React.FC = () => {
           position: "relative",
           height: "500px",
           backgroundImage: `url("${
-            trekDetail.featuredImage?.path
-              ? `${baseUrl}/${trekDetail.featuredImage.path}`
+            trekDetail?.featuredImage?.path
+              ? `${baseUrl}/${trekDetail?.featuredImage?.path}`
               : "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
           }")`,
           backgroundSize: "cover",
@@ -160,7 +160,7 @@ const TrekTrailDetail: React.FC = () => {
                 borderRadius: "4px",
               }}
             >
-              {trekDetail.difficulty?.toUpperCase()}
+              {trekDetail?.difficulty?.toUpperCase()}
             </Tag>
             <Tag
               color="#555"
@@ -172,14 +172,14 @@ const TrekTrailDetail: React.FC = () => {
                 borderRadius: "4px",
               }}
             >
-              {trekDetail.country?.toUpperCase()}
+              {trekDetail?.country?.toUpperCase()}
             </Tag>
           </div>
           <Title
             level={1}
             style={{ color: "white", margin: "0 0 8px 0", fontSize: "48px" }}
           >
-            {trekDetail.title}
+            {trekDetail?.title}
           </Title>
           <div
             style={{
@@ -190,7 +190,7 @@ const TrekTrailDetail: React.FC = () => {
           >
             <Text style={{ color: "#ddd", fontSize: "16px" }}>
               <FaMapMarkedAlt style={{ marginRight: "8px" }} />
-              {trekDetail.trekRegion?.name || trekDetail.country}
+              {trekDetail?.trekRegion?.name || trekDetail?.country}
             </Text>
             <div style={{ display: "flex", gap: "12px" }}>
               <Button icon={<FaBookmark />} style={{ borderRadius: "8px" }}>
@@ -237,7 +237,7 @@ const TrekTrailDetail: React.FC = () => {
                 DISTANCE
               </div>
               <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail.distanceKm} km
+                {trekDetail?.distanceKm} km
               </div>
             </Card>
           </Col>
@@ -269,7 +269,7 @@ const TrekTrailDetail: React.FC = () => {
                 MAX ELEVATION
               </div>
               <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail.maxAltitudeMeter} m
+                {trekDetail?.maxAltitudeMeter} m
               </div>
             </Card>
           </Col>
@@ -301,7 +301,7 @@ const TrekTrailDetail: React.FC = () => {
                 DURATION
               </div>
               <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail.averageDurationDays} Days
+                {trekDetail?.averageDurationDays} Days
               </div>
             </Card>
           </Col>
@@ -333,7 +333,7 @@ const TrekTrailDetail: React.FC = () => {
                 DIFFICULTY
               </div>
               <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail.difficulty}
+                {trekDetail?.difficulty}
               </div>
             </Card>
           </Col>
@@ -365,7 +365,7 @@ const TrekTrailDetail: React.FC = () => {
                 BEST SEASON
               </div>
               <div style={{ fontSize: "16px", fontWeight: "bold" }}>
-                {trekDetail.recommendedSeasons?.join(", ")}
+                {trekDetail?.recommendedSeasons?.join(", ")}
               </div>
             </Card>
           </Col>
@@ -386,7 +386,7 @@ const TrekTrailDetail: React.FC = () => {
               {/* Tags Section */}
               <div style={{ marginBottom: "24px" }}>
                 <Space wrap>
-                  {trekDetail.tags?.map((tag: string) => (
+                  {trekDetail?.tags?.map((tag: string) => (
                     <Tag
                       key={tag}
                       style={{
@@ -405,7 +405,7 @@ const TrekTrailDetail: React.FC = () => {
               </div>
 
               {/* Blog Content Section */}
-              {trekDetail.blogContent?.map((content: any, index: number) => (
+              {trekDetail?.blogContent?.map((content: any, index: number) => (
                 <Card
                   key={index}
                   bordered={false}
@@ -415,9 +415,9 @@ const TrekTrailDetail: React.FC = () => {
                     boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
                   }}
                 >
-                  <Title level={3}>{content.title}</Title>
+                  <Title level={3}>{content?.title}</Title>
 
-                  {content.images && content.images.length > 0 && (
+                  {content?.images && content?.images?.length > 0 && (
                     <div
                       style={{
                         marginBottom: "24px",
@@ -428,15 +428,15 @@ const TrekTrailDetail: React.FC = () => {
                       <Carousel
                         autoplay
                         effect="fade"
-                        arrows={content.images.length >= 2}
+                        arrows={content?.images?.length >= 2}
                         nextArrow={<NextArrow />}
                         prevArrow={<PrevArrow />}
                       >
-                        {content.images.map((img: any, imgIdx: number) => (
+                        {content?.images?.map((img: any, imgIdx: number) => (
                           <div key={imgIdx}>
                             <img
-                              src={`${baseUrl}/${img.path}`}
-                              alt={`${content.title} ${imgIdx}`}
+                              src={`${baseUrl}/${img?.path}`}
+                              alt={`${content?.title} ${imgIdx}`}
                               style={{
                                 width: "100%",
                                 height: "400px",
@@ -452,7 +452,7 @@ const TrekTrailDetail: React.FC = () => {
                   <div
                     className="blog-html-content"
                     dangerouslySetInnerHTML={{
-                      __html: content.htmlDescription,
+                      __html: content?.htmlDescription,
                     }}
                     style={{
                       fontSize: "16px",
@@ -474,7 +474,7 @@ const TrekTrailDetail: React.FC = () => {
                   color: "#444",
                 }}
               >
-                {trekDetail.highlights?.map(
+                {trekDetail?.highlights?.map(
                   (highlight: string, index: number) => (
                     <li key={index}>{highlight}</li>
                   )
@@ -505,16 +505,16 @@ const TrekTrailDetail: React.FC = () => {
                 <Text type="secondary">
                   Max Elevation:{" "}
                   <strong style={{ color: "#000" }}>
-                    {trekDetail.maxAltitudeMeter}m
+                    {trekDetail?.maxAltitudeMeter}m
                   </strong>
                 </Text>
               </div>
 
-              <ElevationChart data={trekDetail.destinations || []} />
+              <ElevationChart data={trekDetail?.destinations || []} />
             </Card>
 
             {/* FAQs Section */}
-            {trekDetail.faqs && trekDetail.faqs.length > 0 && (
+            {trekDetail?.faqs && trekDetail?.faqs?.length > 0 && (
               <Card
                 bordered={false}
                 style={{
@@ -525,12 +525,12 @@ const TrekTrailDetail: React.FC = () => {
               >
                 <Title level={3}>Frequently Asked Questions</Title>
                 <Collapse ghost expandIconPosition="end">
-                  {trekDetail.faqs.map((faq: any, index: number) => (
+                  {trekDetail?.faqs?.map((faq: any, index: number) => (
                     <Panel
-                      header={<Text strong>{faq.question}</Text>}
+                      header={<Text strong>{faq?.question}</Text>}
                       key={index}
                     >
-                      <Paragraph>{faq.answer}</Paragraph>
+                      <Paragraph>{faq?.answer}</Paragraph>
                     </Panel>
                   ))}
                 </Collapse>

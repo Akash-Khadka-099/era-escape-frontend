@@ -22,9 +22,13 @@ import {
   HeightReference,
 } from "cesium";
 import { Tooltip, Button, Space } from "antd";
-import { PlusOutlined, MinusOutlined } from "@ant-design/icons";
+import {
+  PlusOutlined,
+  MinusOutlined,
+  AimOutlined,
+  ExpandOutlined,
+} from "@ant-design/icons";
 import "cesium/Build/Cesium/Widgets/widgets.css";
-import { getLocationIdFromHtml } from "@/utils/helper";
 import TrailLocationDrawer from "../TrailLocationDrawer";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
@@ -40,7 +44,7 @@ interface MarkerData {
   name: string | null;
   description: string | null;
   images: string[];
-  locationKey?: string | null;
+  destinationSlug?: string | null;
   travelTimeToNext?: string;
 }
 
@@ -64,32 +68,58 @@ const TrekTrailMap: React.FC = () => {
   const [markers, setMarkers] = useState<MarkerData[]>([]);
   const [paths, setPaths] = useState<PathData[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [selectedMarkerName, setSelectedMarkerName] = useState<string>("");
+  const [slectedDestinationSlug, setSelectedDestinationSlug] = useState<string>("");
   const [tooltip, setTooltip] = useState<TooltipState>({
     show: false,
     x: 0,
     y: 0,
     content: { name: "", pos: [0, 0] },
   });
+
+  console.log("markers",markers)
   const [hoveredMarkerIndex, setHoveredMarkerIndex] = useState<number | null>(
     null
   );
+  const [debugLogs, setDebugLogs] = useState<string[]>([]);
+  const addLog = (msg: string) =>
+    setDebugLogs((prev) => [...prev.slice(-4), msg]); // Keep last 5 logs
   const [sceneMode] = useState<SceneMode>(SceneMode.SCENE3D);
   const [terrainProvider, setTerrainProvider] = useState<any>(null);
   const { slug } = useParams();
 
+  console.warn("kml fetch debugs", debugLogs);
   const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "");
 
   // const kmlUrl = "/kmlFiles/demo-abc-I.kml";
 
   const kmlUrl = useMemo(() => {
-    const path = trekDetailResponse?.data?.kmlFile?.path;
+    const kmlFile = trekDetailResponse?.data?.kmlFile;
+    if (!kmlFile) return null;
+
+    let path = "";
+    if (typeof kmlFile === "string") {
+      path = kmlFile;
+    } else if (Array.isArray(kmlFile) && kmlFile.length > 0) {
+      path = kmlFile?.[0]?.path as string;
+    } else if (typeof kmlFile === "object") {
+      path = kmlFile?.path;
+    }
+
     if (!path) return null;
+    if (path.startsWith("http")) return path;
+
     const baseUrl = import.meta.env.VITE_API_URL || "";
     const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+
+    // In development, use relative path to leverage Vite proxy and avoid CORS
+    if (import.meta.env.DEV) {
+      return `/${cleanPath}`;
+    }
+
     const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
     return `${cleanBaseUrl}/${cleanPath}`;
   }, [trekDetailResponse]);
+
   const viewerRef = useRef<any>(null);
 
   useEffect(() => {
@@ -99,243 +129,241 @@ const TrekTrailMap: React.FC = () => {
         // Defensive parsing of latLong to handle various data formats from the API
         let lat = 0,
           lng = 0;
-        console.log(
-          "Processing destination:",
-          dest.name,
-          "latLong:",
-          dest.latLong,
-          "type:",
-          typeof dest.latLong
-        );
-        if (typeof dest.latLong === "string" && dest.latLong.includes(",")) {
-          const parts = dest.latLong.split(",");
+
+        const latLong = dest?.latLong;
+
+        if (typeof latLong === "string" && latLong.includes(",")) {
+          const parts = latLong.split(",");
           lat = parseFloat(parts[0] || "0");
           lng = parseFloat(parts[1] || "0");
-        } else if (Array.isArray(dest.latLong) && dest.latLong.length >= 2) {
-          lat = parseFloat(dest.latLong[0] || "0");
-          lng = parseFloat(dest.latLong[1] || "0");
-        } else if (dest.latLong && typeof dest.latLong === "object") {
-          lat = parseFloat(dest.latLong.lat || dest.latLong.latitude || 0);
+        } else if (Array.isArray(latLong) && latLong.length >= 2) {
+          lat = parseFloat(latLong[0] || "0");
+          lng = parseFloat(latLong[1] || "0");
+        } else if (latLong && typeof latLong === "object") {
+          lat = parseFloat(latLong.lat || latLong.latitude || 0);
           lng = parseFloat(
-            dest.latLong.lng || dest.latLong.long || dest.latLong.longitude || 0
+            latLong.lng || latLong.long || latLong.longitude || 0
           );
         }
         return {
           position: [lat, lng],
-          name: dest.name,
-          description: dest.description,
-          images: dest.images || [],
-          locationKey: dest.id || dest._id,
-          travelTimeToNext: dest.travelTimeToNext
+          name: dest?.name,
+          description: dest?.description,
+          images: dest?.images || [],
+          locationKey: dest?.locationKey || "",
+          destinationSlug: dest?.slug || "",
+          travelTimeToNext: dest?.travelTimeToNext
             ? `${dest.travelTimeToNext} hr`
             : undefined,
         };
       });
 
-      const pathCoords: [number, number][] = newMarkers.map((m) => m.position);
-      const newPaths: PathData[] = [
-        {
-          path: pathCoords,
-          name: "Main Trail",
-          description: "Trail generated from destinations",
-        },
-      ];
-
       setMarkers(newMarkers);
-      setPaths(newPaths);
+      setPaths([]); // Clear paths to ensure we only show KML trails
     }
   }, [trekDetailResponse]);
 
   useEffect(() => {
     const fetchKml = async () => {
-      // Skip KML fetch if we already have destinations in the response
-      if (trekDetailResponse?.data?.destinations?.length > 0 || !kmlUrl) return;
+      if (!kmlUrl) {
+        addLog("No KML URL found.");
+        return;
+      }
 
-      console.log("Fetching KML from:", kmlUrl);
+      addLog(`Fetching KML: ${kmlUrl.split("/").pop()}`);
       try {
         const response = await axiosInstance.get(kmlUrl, {
           responseType: "text",
         });
         const text = response.data;
-        console.log("KML content preview:", text.substring(0, 200));
+        addLog(`KML Loaded: ${text.length} chars`);
+
         const parser = new DOMParser();
         const kml = parser.parseFromString(text, "text/xml");
 
-        const styleMap: { [key: string]: string | null } = {};
-        const cascadingStyles = kml.getElementsByTagName("gx:CascadingStyle");
-        for (let i = 0; i < cascadingStyles.length; i++) {
-          const style = cascadingStyles[i];
-          const styleId = style.getAttribute("kml:id");
-          if (styleId) {
-            const balloonStyle = style.getElementsByTagName("BalloonStyle")[0];
-            if (balloonStyle) {
-              const textElement = balloonStyle.getElementsByTagName("text")[0];
-              if (textElement) {
-                styleMap[`#${styleId}`] =
-                  textElement.textContent?.trim() || null;
-              }
-            }
-          }
+        const parserError = kml.getElementsByTagName("parsererror")[0];
+        if (parserError) {
+          addLog(
+            `XML Parse Error: ${parserError.textContent?.slice(0, 50)}...`
+          );
         }
 
-        const styleMaps = kml.getElementsByTagName("StyleMap");
-        for (let i = 0; i < styleMaps.length; i++) {
-          const styleMapEl = styleMaps[i];
-          const styleMapId = styleMapEl.getAttribute("id");
-          if (styleMapId) {
-            const pairs = styleMapEl.getElementsByTagName("Pair");
-            for (let j = 0; j < pairs.length; j++) {
-              const pair = pairs[j];
-              const key = pair.getElementsByTagName("key")[0]?.textContent;
-              if (key === "normal" || key === "highlight") {
-                const styleUrl =
-                  pair.getElementsByTagName("styleUrl")[0]?.textContent;
-                if (styleUrl && styleMap[styleUrl]) {
-                  styleMap[`#${styleMapId}`] = styleMap[styleUrl];
-                  break;
+        const newPathsFromKml: PathData[] = [];
+
+        const getElements = (root: Element | Document, localName: string) => {
+          const lowerName = localName.toLowerCase();
+          const elements = root.getElementsByTagName(localName);
+          if (elements.length > 0) return Array.from(elements);
+          return Array.from(root.querySelectorAll(`*`)).filter(
+            (el) => el.localName?.toLowerCase() === lowerName
+          );
+        };
+
+        const parseCoordinates = (coordsRaw: string): [number, number][] => {
+          return coordsRaw
+            .trim()
+            .split(/[\s\n\r]+/)
+            .map((coord) => {
+              const parts = coord.split(",").map((s) => s.trim());
+              if (parts.length >= 2) {
+                const lng = parseFloat(parts[0]);
+                const lat = parseFloat(parts[1]);
+                if (!isNaN(lat) && !isNaN(lng)) {
+                  return [lat, lng] as [number, number];
                 }
               }
+              return null;
+            })
+            .filter((p): p is [number, number] => p !== null);
+        };
+
+        const findParentMetadata = (el: Element) => {
+          let parent = el.parentElement;
+          while (
+            parent &&
+            parent.localName?.toLowerCase() !== "placemark" &&
+            parent.localName?.toLowerCase() !== "kml"
+          ) {
+            parent = parent.parentElement;
+          }
+          const name = parent
+            ? parent.getElementsByTagName("name")[0]?.textContent || ""
+            : "";
+          const description = parent
+            ? parent.getElementsByTagName("description")[0]?.textContent || null
+            : null;
+          return { parent, name, description };
+        };
+
+        const processPath = (
+          path: [number, number][],
+          name: string,
+          description: string | null
+        ): PathData => {
+          let totalDistance = 0;
+          for (let k = 0; k < path.length - 1; k++) {
+            const p1 = Cartesian3.fromDegrees(path[k][1], path[k][0]);
+            const p2 = Cartesian3.fromDegrees(path[k + 1][1], path[k + 1][0]);
+            totalDistance += Cartesian3.distance(p1, p2);
+          }
+
+          const distanceKm = (totalDistance / 1000).toFixed(2);
+          const hours = totalDistance / 3000;
+          const timeStr =
+            hours < 1
+              ? `${Math.round(hours * 60)} mins`
+              : `${hours.toFixed(1)} hrs`;
+
+          let currentDist = 0;
+          let midpoint: [number, number] = path[0];
+          for (let k = 0; k < path.length - 1; k++) {
+            const p1 = Cartesian3.fromDegrees(path[k][1], path[k][0]);
+            const p2 = Cartesian3.fromDegrees(path[k + 1][1], path[k + 1][0]);
+            const d = Cartesian3.distance(p1, p2);
+            if (currentDist + d >= totalDistance / 2) {
+              midpoint = path[k];
+              break;
+            }
+            currentDist += d;
+          }
+
+          return {
+            path,
+            name: name || "KML Trail Segment",
+            description,
+            distance: `${distanceKm} km`,
+            time: timeStr,
+            midpoint,
+          };
+        };
+
+        const lineStrings = getElements(kml, "LineString");
+        addLog(`Found ${lineStrings.length} LineStrings`);
+        lineStrings.forEach((ls) => {
+          const coordsElement = getElements(ls, "coordinates")[0];
+          const coordsRaw = coordsElement?.textContent?.trim();
+          if (coordsRaw) {
+            const path = parseCoordinates(coordsRaw);
+            if (path.length > 1) {
+              const metadata = findParentMetadata(ls);
+              newPathsFromKml.push(
+                processPath(
+                  path,
+                  metadata.name || "KML Trail Segment",
+                  metadata.description
+                )
+              );
             }
           }
-        }
+        });
 
-        const placemarks = kml.getElementsByTagName("Placemark");
-        const newMarkers: MarkerData[] = [];
-        const newPaths: PathData[] = [];
-
-        for (let i = 0; i < placemarks.length; i++) {
-          const placemark = placemarks[i];
-          const name =
-            placemark.getElementsByTagName("name")[0]?.textContent || "";
-
-          let description = null;
-          const descElement = placemark.getElementsByTagName("description")[0];
-          if (descElement) {
-            description = descElement.textContent || descElement.innerHTML;
-            description = description?.trim() || null;
-          }
-
-          if (!description) {
-            const styleUrlElement =
-              placemark.getElementsByTagName("styleUrl")[0];
-            if (styleUrlElement) {
-              const styleUrl = styleUrlElement.textContent?.trim();
-              if (styleUrl && styleMap[styleUrl]) {
-                description = styleMap[styleUrl];
-              }
-            }
-          }
-
-          const images: string[] = [];
-          const imageTags = placemark.getElementsByTagName("gx:imageUrl");
-          for (let j = 0; j < imageTags.length; j++) {
-            let url = imageTags[j].textContent?.trim() || "";
-            url = url.replace("{size}", "800");
-            images.push(url);
-          }
-
-          const point = placemark.getElementsByTagName("Point")[0];
-          if (point) {
-            const coords = point
-              .getElementsByTagName("coordinates")[0]
-              ?.textContent?.trim();
-            if (coords) {
-              const [lng, lat] = coords.split(",").map(Number);
-              newMarkers.push({
-                position: [lat, lng],
-                name,
-                description,
-                images,
-              });
-            }
-          }
-
-          const lineString = placemark.getElementsByTagName("LineString")[0];
-          if (lineString) {
-            const coordsRaw = lineString
-              .getElementsByTagName("coordinates")[0]
-              ?.textContent?.trim();
-            if (coordsRaw) {
-              const path: [number, number][] = coordsRaw
-                .split(/\s+/)
-                .map((coord) => {
-                  const [lng, lat] = coord.split(",").map(Number);
-                  return [lat, lng];
-                });
-
-              // Calculate total distance
-              let totalDistance = 0;
-              for (let j = 0; j < path.length - 1; j++) {
-                const p1 = Cartesian3.fromDegrees(path[j][1], path[j][0]);
-                const p2 = Cartesian3.fromDegrees(
-                  path[j + 1][1],
-                  path[j + 1][0]
-                );
-                totalDistance += Cartesian3.distance(p1, p2);
-              }
-
-              const distanceKm = (totalDistance / 1000).toFixed(2);
-              // Estimate time (average trekking speed ~3km/h considering terrain)
-              const hours = totalDistance / 3000;
-              const timeStr =
-                hours < 1
-                  ? `${Math.round(hours * 60)} mins`
-                  : `${hours.toFixed(1)} hrs`;
-
-              // Find midpoint (point at half the distance)
-              let currentDist = 0;
-              let midpoint: [number, number] = path[0];
-              for (let j = 0; j < path.length - 1; j++) {
-                const p1 = Cartesian3.fromDegrees(path[j][1], path[j][0]);
-                const p2 = Cartesian3.fromDegrees(
-                  path[j + 1][1],
-                  path[j + 1][0]
-                );
-                const d = Cartesian3.distance(p1, p2);
-                if (currentDist + d >= totalDistance / 2) {
-                  midpoint = path[j];
-                  break;
+        const tracks = getElements(kml, "Track");
+        addLog(`Found ${tracks.length} Tracks`);
+        tracks.forEach((track) => {
+          const coordElements = getElements(track, "coord");
+          const path: [number, number][] = coordElements
+            .map((el) => {
+              const coordStr = el.textContent?.trim();
+              if (coordStr) {
+                const parts = coordStr.split(/[\s,]+/).map((s) => s.trim());
+                if (parts.length >= 2) {
+                  const lng = parseFloat(parts[0]);
+                  const lat = parseFloat(parts[1]);
+                  if (!isNaN(lat) && !isNaN(lng)) {
+                    return [lat, lng] as [number, number];
+                  }
                 }
-                currentDist += d;
               }
+              return null;
+            })
+            .filter((p): p is [number, number] => p !== null);
 
-              newPaths.push({
+          if (path.length > 1) {
+            const metadata = findParentMetadata(track);
+            newPathsFromKml.push(
+              processPath(
                 path,
-                name,
-                description,
-                distance: `${distanceKm} km`,
-                time: timeStr,
-                midpoint,
-              });
+                metadata.name || "KML Track Segment",
+                metadata.description
+              )
+            );
+          }
+        });
+
+        if (newPathsFromKml.length === 0) {
+          addLog("No XML paths. Trying Regex...");
+          const coordRegex =
+            /<[\w:]*coordinates[^>]*>([\s\S]*?)<\/[\w:]*coordinates>/gi;
+          let match;
+          while ((match = coordRegex.exec(text)) !== null) {
+            const coordsRaw = match[1].trim();
+            const path = parseCoordinates(coordsRaw);
+            if (path.length > 5) {
+              newPathsFromKml.push(
+                processPath(path, `Trail Segment (Regex)`, null)
+              );
             }
           }
         }
 
-        setMarkers(
-          newMarkers.map((m, idx) => ({
-            ...m,
-            locationKey: getLocationIdFromHtml(m.description),
-            // Add dummy travel time to next marker (except for the last one)
-            travelTimeToNext:
-              idx < newMarkers.length - 1
-                ? `${(Math.random() * 4 + 1).toFixed(1)} hr`
-                : undefined,
-          }))
-        );
-        setPaths(newPaths);
-      } catch (error) {
+        addLog(`Total Paths: ${newPathsFromKml.length}`);
+        if (newPathsFromKml.length > 0) {
+          setPaths(newPathsFromKml);
+        } else {
+          addLog("No valid paths found.");
+        }
+      } catch (error: any) {
         console.error("Error fetching or parsing KML:", error);
+        addLog(`Error: ${error.message}`);
       }
     };
 
-    if (
-      kmlUrl &&
-      (!trekDetailResponse?.data?.destinations ||
-        trekDetailResponse.data.destinations.length === 0)
-    ) {
+    if (kmlUrl) {
       fetchKml();
+    } else {
+      addLog("Waiting for KML URL...");
     }
-  }, [kmlUrl, trekDetailResponse]);
+  }, [kmlUrl]);
 
   useEffect(() => {
     const initTerrain = async () => {
@@ -354,7 +382,9 @@ const TrekTrailMap: React.FC = () => {
       const viewer = viewerRef.current.cesiumElement;
 
       // Zoom to the FIRST marker if available, otherwise zoom to all
-      if (markers.length > 0) {
+      if (paths.length > 0) {
+        viewer.flyTo(viewer.entities, { duration: 3 });
+      } else if (markers.length > 0) {
         const firstMarker = markers[0];
         viewer.camera.flyTo({
           destination: Cartesian3.fromDegrees(
@@ -364,8 +394,6 @@ const TrekTrailMap: React.FC = () => {
           ),
           duration: 3,
         });
-      } else if (paths.length > 0) {
-        viewer.zoomTo(viewer.entities);
       }
 
       const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -376,7 +404,7 @@ const TrekTrailMap: React.FC = () => {
         if (defined(pickedObject) && pickedObject.id instanceof Entity) {
           const entity = pickedObject.id;
           if (entity.properties && entity.properties.hasProperty("isMarker")) {
-            setSelectedMarkerName(entity.name || "Unknown Location");
+            setSelectedDestinationSlug(entity?.slug);
             setDrawerOpen(true);
           }
         }
@@ -420,8 +448,75 @@ const TrekTrailMap: React.FC = () => {
     }
   }, [markers, paths]);
 
+  const handleFocusToStart = () => {
+    if (viewerRef.current?.cesiumElement) {
+      let targetPosition: Cartesian3 | undefined;
+
+      if (markers.length > 0) {
+        const firstMarker = markers[0];
+        targetPosition = Cartesian3.fromDegrees(
+          firstMarker.position[1],
+          firstMarker.position[0],
+          5000
+        );
+      } else if (paths.length > 0 && paths[0].path.length > 0) {
+        // Fallback to first point of the first path if no markers
+        const firstPoint = paths[0].path[0];
+        targetPosition = Cartesian3.fromDegrees(
+          firstPoint[1],
+          firstPoint[0],
+          5000
+        );
+      }
+
+      if (targetPosition) {
+        viewerRef.current.cesiumElement.camera.flyTo({
+          destination: targetPosition,
+          duration: 2,
+        });
+      }
+    }
+  };
+
+  const handleFitToTrail = () => {
+    if (viewerRef.current?.cesiumElement) {
+      viewerRef.current.cesiumElement.flyTo(
+        viewerRef.current.cesiumElement.entities,
+        {
+          duration: 2,
+        }
+      );
+    }
+  };
+
   return (
     <MiddleContentWrapper>
+      {/* Navigation Controls */}
+      <div
+        style={{
+          display: "flex",
+          justifyContent: "flex-start",
+          gap: "10px",
+          marginBottom: "10px",
+        }}
+      >
+        <Button
+          type="primary"
+          size="small"
+          icon={<AimOutlined />}
+          onClick={handleFocusToStart}
+        >
+          Focus to Start
+        </Button>
+        <Button
+          size="small"
+          type="primary"
+          icon={<ExpandOutlined />}
+          onClick={handleFitToTrail}
+        >
+          Fit to Trail
+        </Button>
+      </div>
       <div style={{ height: "85vh", width: "100%", position: "relative" }}>
         <style>
           {`
@@ -458,8 +553,8 @@ const TrekTrailMap: React.FC = () => {
                 positions={trail.path.map(([lat, lng]) =>
                   Cartesian3.fromDegrees(lng, lat)
                 )}
-                width={4}
-                material={Color.fromCssColorString("#ff2dc0fb")}
+                width={5}
+                material={Color.DEEPSKYBLUE}
                 clampToGround={true}
               />
               {trail.midpoint && (
@@ -494,7 +589,7 @@ const TrekTrailMap: React.FC = () => {
             <React.Fragment key={`marker-fragment-${index}`}>
               <Entity
                 onClick={() => {
-                  setSelectedMarkerName(marker.name || "Unknown Location");
+                  setSelectedDestinationSlug(marker?.destinationSlug || "Unknown Location");
                   setDrawerOpen(true);
                 }}
                 onMouseEnter={() => {
@@ -662,7 +757,7 @@ const TrekTrailMap: React.FC = () => {
         <TrailLocationDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          title={selectedMarkerName}
+          destinationSlug={slectedDestinationSlug}
         />
 
         {/* Zoom Controls */}

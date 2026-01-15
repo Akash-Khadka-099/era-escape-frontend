@@ -1,276 +1,732 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Drawer,
-  Slider,
   Card,
   Button,
   Typography,
-  Badge,
   Space,
+  Tag,
+  List,
+  Modal,
+  Carousel,
+  Image,
+  Divider,
+  Avatar,
 } from "antd";
 import {
-  StarFilled,
   EnvironmentOutlined,
-  CoffeeOutlined,
-  WifiOutlined,
+  ClockCircleOutlined,
+  PhoneOutlined,
+  MailOutlined,
+  CalendarOutlined,
+  TeamOutlined,
+  HomeOutlined,
+  RiseOutlined,
+  CheckCircleOutlined,
+  RightOutlined,
 } from "@ant-design/icons";
+import { useParams } from "react-router-dom";
+import { useFetchDestinationHotels } from "@/services/trekServices/trekServices";
 
 const { Title, Text } = Typography;
 
 interface TrailLocationDrawerProps {
   open: boolean;
   onClose: () => void;
-  title: string;
+  destinationSlug: string;
 }
-
-const dummyHotels = [
-  {
-    id: 1,
-    name: "Mountain View Lodge",
-    type: "Guesthouse",
-    rating: 4.8,
-    price: 1200,
-    amenities: ["Wifi", "Breakfast"],
-    image:
-      "https://images.unsplash.com/photo-1566073771259-6a8506099945?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-  },
-  {
-    id: 2,
-    name: "River's Edge Hotel",
-    type: "Hotel",
-    rating: 4.5,
-    price: 2500,
-    amenities: ["Wifi", "Parking"],
-    image:
-      "https://images.unsplash.com/photo-1520250497591-112f2f40a3f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-  },
-  {
-    id: 3,
-    name: "Alpine Base Camp",
-    type: "Lodge",
-    rating: 4.9,
-    price: 800,
-    amenities: ["Breakfast", "Hot Shower"],
-    image:
-      "https://images.unsplash.com/photo-1504280390367-361c6d9f38f4?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80",
-  },
-];
 
 const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
   open,
   onClose,
-  title,
+  destinationSlug,
 }) => {
-  return (
-    <Drawer
-      title={
-        <div style={{ padding: "8px 0" }}>
-          <Title level={4} style={{ margin: 0 }}>
-            {title}
-          </Title>
-          <Text type="secondary" style={{ fontSize: "12px" }}>
-            <EnvironmentOutlined /> Nearby Accommodations
-          </Text>
-        </div>
-      }
-      placement="right"
-      onClose={onClose}
-      open={open}
-      width={420}
-      mask={true}
-      styles={{
-        header: { borderBottom: "1px solid #f0f0f0" },
-        body: { padding: "24px", background: "#fafafa" },
-      }}
-    >
-      <div
-        style={{
-          marginBottom: "32px",
-          background: "#fff",
-          padding: "20px",
-          borderRadius: "16px",
-          boxShadow: "0 2px 8px rgba(0,0,0,0.04)",
-        }}
-      >
-        <Title level={5} style={{ marginBottom: "20px", fontSize: "16px" }}>
-          Filter by Price
-        </Title>
-        <div style={{ padding: "0 10px" }}>
-          <Slider
-            range
-            defaultValue={[500, 3000]}
-            min={0}
-            max={5000}
-            step={100}
-            marks={{ 0: "Rs0", 5000: "Rs5k" }}
-            trackStyle={[{ backgroundColor: "#2ecc71" }]}
-            handleStyle={[
-              {
-                borderColor: "#2ecc71",
-                backgroundColor: "#fff",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              },
-              {
-                borderColor: "#2ecc71",
-                backgroundColor: "#fff",
-                boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
-              },
-            ]}
-          />
-        </div>
-      </div>
+  const { slug } = useParams();
+  const { data } = useFetchDestinationHotels({
+    trekBlogSlug: slug || "",
+    destinationSlug: destinationSlug || "",
+  });
 
-      <div style={{ display: "flex", flexDirection: "column", gap: "24px" }}>
-        <Title level={5} style={{ margin: 0, fontSize: "16px" }}>
-          Available Hotels ({dummyHotels.length})
-        </Title>
-        {dummyHotels.map((hotel) => (
-          <Card
-            key={hotel.id}
-            hoverable
-            cover={
-              <div style={{ position: "relative" }}>
-                <img
-                  alt={hotel.name}
-                  src={hotel.image}
-                  style={{ height: "200px", width: "100%", objectFit: "cover" }}
-                />
-                <Badge
-                  count={hotel.type}
-                  style={{
-                    position: "absolute",
-                    top: "12px",
-                    right: "12px",
-                    backgroundColor: "rgba(0,0,0,0.6)",
-                    backdropFilter: "blur(4px)",
-                    border: "none",
-                    padding: "0 12px",
-                    height: "24px",
-                    lineHeight: "24px",
-                    borderRadius: "12px",
-                  }}
-                />
-              </div>
-            }
-            bodyStyle={{ padding: "20px" }}
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [selectedHotel, setSelectedHotel] = useState<any>(null);
+
+  const destination = data?.destination;
+  const hotels = data?.hotels || [];
+
+  const handleViewDetails = (hotel: any) => {
+    setSelectedHotel(hotel);
+    setIsModalOpen(true);
+  };
+
+  const getImageUrl = (path: string) => {
+    if (!path) return "";
+    if (path.startsWith("http")) return path;
+    const baseUrl = import.meta.env.VITE_API_URL || "";
+    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
+    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
+    return `${cleanBaseUrl}/${cleanPath}`;
+  };
+
+  // Pastel Green-Blue Theme Colors
+  const themeColor = "#00474f"; // Dark Cyan/Teal for text
+  const primaryColor = "#13c2c2"; // Cyan for buttons
+  const secondaryColor = "#52c41a"; // Green for accents
+  const lightBg = "#f0fcf9"; // Very light mint/cyan background
+  const cardBg = "#ffffff";
+
+  // Gradient for Header: Light Cyan to Light Green
+  const headerGradient = "linear-gradient(135deg, #e6fffb 0%, #f6ffed 100%)";
+
+  return (
+    <>
+      <Drawer
+        title={null}
+        placement="right"
+        onClose={onClose}
+        open={open}
+        width={500}
+        mask={true}
+        styles={{
+          body: {
+            padding: 0,
+            background: "#f8fafc",
+          },
+        }}
+        closeIcon={
+          <div
             style={{
-              borderRadius: "20px",
-              overflow: "hidden",
-              border: "none",
-              boxShadow: "0 10px 20px rgba(0,0,0,0.05)",
+              background: "white",
+              borderRadius: "50%",
+              padding: "8px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
             }}
           >
-            <div
+            <RightOutlined style={{ fontSize: "16px", color: themeColor }} />
+          </div>
+        }
+      >
+        {/* Header Section with Light Gradient */}
+        <div
+          style={{
+            background: headerGradient,
+            padding: "40px 24px 24px",
+            color: themeColor,
+            position: "relative",
+            overflow: "hidden",
+            borderBottom: "1px solid rgba(0,0,0,0.03)",
+          }}
+        >
+          <div
+            style={{
+              position: "absolute",
+              top: 0,
+              left: 0,
+              right: 0,
+              bottom: 0,
+              backgroundImage:
+                "url('https://www.transparenttextures.com/patterns/cubes.png')",
+              opacity: 0.05,
+            }}
+          />
+          <div style={{ position: "relative", zIndex: 1 }}>
+            <Tag
+              color="white"
               style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "flex-start",
+                border: "none",
+                color: themeColor,
                 marginBottom: "8px",
+                boxShadow: "0 2px 4px rgba(0,0,0,0.05)",
+                fontWeight: 600,
               }}
             >
-              <Title level={5} style={{ margin: 0, fontSize: "17px" }}>
-                {hotel.name}
-              </Title>
+              <EnvironmentOutlined /> Destination
+            </Tag>
+            <Title
+              level={2}
+              style={{
+                margin: "0 0 8px 0",
+                color: themeColor,
+                fontWeight: 700,
+              }}
+            >
+              {destination?.name || destinationSlug}
+            </Title>
+            <Space size={16} style={{ opacity: 0.8, color: themeColor }}>
+              <Space>
+                <RiseOutlined /> {destination?.altitude}m Altitude
+              </Space>
+              <Divider
+                type="vertical"
+                style={{ borderColor: "rgba(0,0,0,0.1)" }}
+              />
+              <Space>
+                <ClockCircleOutlined /> {destination?.travelTimeToNext} hrs to
+                next
+              </Space>
+            </Space>
+          </div>
+        </div>
+
+        <div style={{ padding: "24px" }}>
+          {destination && (
+            <div style={{ marginBottom: "32px" }}>
+              {/* Tags & Facilities Grid */}
               <div
                 style={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "4px",
-                  background: "#fff9e6",
-                  padding: "2px 8px",
-                  borderRadius: "6px",
+                  display: "grid",
+                  gridTemplateColumns: "1fr 1fr",
+                  gap: "16px",
+                  marginBottom: "24px",
                 }}
               >
-                <StarFilled style={{ color: "#fadb14", fontSize: "14px" }} />
-                <Text strong style={{ fontSize: "14px" }}>
-                  {hotel.rating}
-                </Text>
-              </div>
-            </div>
-
-            <Space style={{ marginBottom: "16px" }} size={[8, 8]} wrap>
-              {hotel.amenities.map((amenity) => (
-                <Tag
-                  key={amenity}
+                <div
                   style={{
-                    borderRadius: "4px",
-                    border: "none",
-                    background: "#f0f2f5",
-                    fontSize: "11px",
+                    background: cardBg,
+                    padding: "16px",
+                    borderRadius: "16px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
+                    border: `1px solid ${lightBg}`,
                   }}
                 >
-                  {amenity === "Wifi" && <WifiOutlined />}
-                  {amenity === "Breakfast" && <CoffeeOutlined />}
-                  {amenity}
-                </Tag>
-              ))}
-            </Space>
+                  <Text
+                    type="secondary"
+                    style={{
+                      fontSize: "12px",
+                      display: "block",
+                      marginBottom: "8px",
+                      color: themeColor,
+                      fontWeight: 600,
+                      opacity: 0.7,
+                    }}
+                  >
+                    HIGHLIGHTS
+                  </Text>
+                  <Space wrap size={[4, 8]}>
+                    {destination.tags?.map((tag: string) => (
+                      <Tag
+                        key={tag}
+                        color="cyan"
+                        style={{
+                          borderRadius: "12px",
+                          border: "none",
+                          background: lightBg,
+                          color: themeColor,
+                          fontWeight: 500,
+                        }}
+                      >
+                        {tag}
+                      </Tag>
+                    ))}
+                  </Space>
+                </div>
 
-            <div
-              style={{
-                display: "flex",
-                justifyContent: "space-between",
-                alignItems: "center",
-                marginTop: "8px",
-              }}
-            >
-              <div>
-                <Text
-                  type="secondary"
-                  style={{ fontSize: "12px", display: "block" }}
+                <div
+                  style={{
+                    background: cardBg,
+                    padding: "16px",
+                    borderRadius: "16px",
+                    boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
+                    border: `1px solid ${lightBg}`,
+                  }}
                 >
-                  Starting from
-                </Text>
-                <Text strong style={{ fontSize: "18px", color: "#2ecc71" }}>
-                  Rs {hotel.price}
-                </Text>
-                <Text type="secondary" style={{ fontSize: "12px" }}>
-                  {" "}
-                  / night
-                </Text>
+                  <Text
+                    type="secondary"
+                    style={{
+                      fontSize: "12px",
+                      display: "block",
+                      marginBottom: "8px",
+                      color: themeColor,
+                      fontWeight: 600,
+                      opacity: 0.7,
+                    }}
+                  >
+                    FACILITIES
+                  </Text>
+                  <List
+                    size="small"
+                    split={false}
+                    dataSource={destination.facilities}
+                    renderItem={(item: any) => (
+                      <List.Item style={{ padding: "2px 0" }}>
+                        <Text style={{ fontSize: "13px", color: "#444" }}>
+                          <CheckCircleOutlined
+                            style={{
+                              color: secondaryColor,
+                              marginRight: "6px",
+                            }}
+                          />
+                          {item}
+                        </Text>
+                      </List.Item>
+                    )}
+                  />
+                </div>
               </div>
-              <Button
-                type="primary"
+            </div>
+          )}
+
+          <div
+            style={{
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "space-between",
+              marginBottom: "16px",
+            }}
+          >
+            <Title level={4} style={{ margin: 0, color: "#333" }}>
+              Accommodations
+            </Title>
+            <Tag
+              color={primaryColor}
+              style={{ borderRadius: "12px", border: "none" }}
+            >
+              {hotels.length} Available
+            </Tag>
+          </div>
+
+          <div
+            style={{ display: "flex", flexDirection: "column", gap: "20px" }}
+          >
+            {hotels?.map((hotel: any) => (
+              <Card
+                key={hotel._id}
+                hoverable
+                bordered={false}
                 style={{
-                  borderRadius: "10px",
-                  height: "40px",
-                  padding: "0 24px",
-                  background: "#000",
-                  border: "none",
+                  borderRadius: "20px",
+                  overflow: "hidden",
+                  boxShadow: "0 8px 24px rgba(0,0,0,0.04)",
+                  transition: "all 0.3s ease",
+                  background: cardBg,
+                }}
+                bodyStyle={{ padding: "0" }}
+              >
+                <div style={{ display: "flex", flexDirection: "column" }}>
+                  <div style={{ position: "relative", height: "180px" }}>
+                    {hotel.images && hotel.images.length > 0 ? (
+                      <img
+                        alt={hotel.title}
+                        src={getImageUrl(hotel.images[0].path)}
+                        style={{
+                          height: "100%",
+                          width: "100%",
+                          objectFit: "cover",
+                        }}
+                      />
+                    ) : (
+                      <div
+                        style={{
+                          height: "100%",
+                          width: "100%",
+                          background: "#f0f2f5",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                        }}
+                      >
+                        <HomeOutlined
+                          style={{ fontSize: "32px", color: "#bfbfbf" }}
+                        />
+                      </div>
+                    )}
+                    <div
+                      style={{
+                        position: "absolute",
+                        top: "12px",
+                        left: "12px",
+                        display: "flex",
+                        gap: "8px",
+                      }}
+                    >
+                      {hotel.hotelType?.map((type: string) => (
+                        <Tag
+                          key={type}
+                          color="rgba(255,255,255,0.9)"
+                          style={{
+                            border: "none",
+                            color: themeColor,
+                            borderRadius: "8px",
+                            margin: 0,
+                            fontWeight: 600,
+                            boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
+                          }}
+                        >
+                          {type}
+                        </Tag>
+                      ))}
+                    </div>
+                  </div>
+
+                  <div style={{ padding: "20px" }}>
+                    <div
+                      style={{
+                        display: "flex",
+                        justifyContent: "space-between",
+                        alignItems: "start",
+                        marginBottom: "12px",
+                      }}
+                    >
+                      <Title level={5} style={{ margin: 0, fontSize: "18px" }}>
+                        {hotel.title}
+                      </Title>
+                    </div>
+
+                    <Space
+                      direction="vertical"
+                      size={8}
+                      style={{ width: "100%", marginBottom: "20px" }}
+                    >
+                      <Space>
+                        <Avatar
+                          size="small"
+                          icon={<PhoneOutlined />}
+                          style={{
+                            backgroundColor: lightBg,
+                            color: themeColor,
+                          }}
+                        />
+                        <Text>{hotel.phoneNumber}</Text>
+                      </Space>
+                      {hotel.secondaryPhoneNumbers?.length > 0 && (
+                        <Space>
+                          <Avatar
+                            size="small"
+                            icon={<PhoneOutlined />}
+                            style={{
+                              backgroundColor: lightBg,
+                              color: themeColor,
+                            }}
+                          />
+                          <Text type="secondary">
+                            {hotel.secondaryPhoneNumbers.join(", ")}
+                          </Text>
+                        </Space>
+                      )}
+                    </Space>
+
+                    <Button
+                      type="primary"
+                      block
+                      size="large"
+                      style={{
+                        borderRadius: "12px",
+                        height: "44px",
+                        background: `linear-gradient(135deg, ${primaryColor} 0%, ${secondaryColor} 100%)`,
+                        boxShadow: "0 4px 14px rgba(19, 194, 194, 0.3)",
+                        border: "none",
+                        fontWeight: 600,
+                      }}
+                      onClick={() => handleViewDetails(hotel)}
+                    >
+                      View Details
+                    </Button>
+                  </div>
+                </div>
+              </Card>
+            ))}
+          </div>
+        </div>
+      </Drawer>
+
+      <Modal
+        title={null}
+        open={isModalOpen}
+        onCancel={() => setIsModalOpen(false)}
+        footer={null}
+        width={800}
+        centered
+        styles={{
+          content: {
+            borderRadius: "24px",
+            padding: "1rem",
+            overflow: "hidden",
+          },
+        }}
+        closeIcon={
+          <div
+            style={{
+              background: "white",
+              borderRadius: "50%",
+              width: "32px",
+              height: "32px",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+            }}
+          >
+            <span style={{ fontSize: "18px", lineHeight: 1 }}>×</span>
+          </div>
+        }
+      >
+        {selectedHotel && (
+          <div style={{ maxHeight: "800px", overflowY: "auto" }}>
+            {selectedHotel.images && selectedHotel.images.length > 0 && (
+              <Carousel autoplay effect="fade">
+                {selectedHotel.images.map((img: any) => (
+                  <div key={img._id}>
+                    <div
+                      style={{
+                        height: "400px",
+                        width: "100%",
+                        position: "relative",
+                        display: "flex",
+                        justifyContent: "center",
+                        alignItems: "center",
+                        background: "#f0f0f0",
+                      }}
+                    >
+                      <Image
+                        src={getImageUrl(img.path)}
+                        style={{
+                          height: "100%",
+                          width: "100%",
+                          objectFit: "cover",
+                        }}
+                        preview={false}
+                      />
+                      <div
+                        style={{
+                          position: "absolute",
+                          bottom: 0,
+                          left: 0,
+                          right: 0,
+                          background:
+                            "linear-gradient(to top, rgba(0,0,0,0.7), transparent)",
+                          padding: "40px 24px 24px",
+                          color: "white",
+                        }}
+                      >
+                        <Title level={3} style={{ color: "white", margin: 0 }}>
+                          {selectedHotel.title}
+                        </Title>
+                        <Space style={{ marginTop: "8px" }}>
+                          <Tag color="cyan">
+                            {selectedHotel.hotelType?.join(", ")}
+                          </Tag>
+                        </Space>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+              </Carousel>
+            )}
+
+            <div style={{ padding: "32px" }}>
+              <div
+                style={{
+                  display: "grid",
+                  gridTemplateColumns: "2fr 1fr",
+                  gap: "32px",
                 }}
               >
-                Book Now
-              </Button>
+                <div>
+                  <Title level={5}>About this place</Title>
+                  {selectedHotel.description ? (
+                    <div
+                      dangerouslySetInnerHTML={{
+                        __html: selectedHotel.description,
+                      }}
+                      style={{ color: "#666", lineHeight: "1.6" }}
+                    />
+                  ) : (
+                    <Text type="secondary">No description available.</Text>
+                  )}
+
+                  <Divider />
+
+                  <Title level={5}>Amenities</Title>
+                  <Space wrap size={[8, 12]}>
+                    {selectedHotel.facilities?.map((f: string) => (
+                      <Tag
+                        key={f}
+                        style={{
+                          padding: "6px 12px",
+                          borderRadius: "8px",
+                          fontSize: "14px",
+                          border: "1px solid #d9d9d9",
+                          background: "transparent",
+                          color: themeColor,
+                        }}
+                      >
+                        {f}
+                      </Tag>
+                    ))}
+                  </Space>
+                </div>
+
+                <div
+                  style={{
+                    background: "#f8fafc",
+                    padding: "24px",
+                    borderRadius: "16px",
+                    height: "fit-content",
+                    border: `1px solid ${lightBg}`,
+                  }}
+                >
+                  <Title level={5} style={{ marginTop: 0 }}>
+                    Property Details
+                  </Title>
+                  <Space
+                    direction="vertical"
+                    size={16}
+                    style={{ width: "100%" }}
+                  >
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <Avatar
+                        icon={<TeamOutlined />}
+                        style={{ backgroundColor: lightBg, color: themeColor }}
+                      />
+                      <div>
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: "12px", display: "block" }}
+                        >
+                          Proprietor
+                        </Text>
+                        <Text strong>{selectedHotel.proprietorName}</Text>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <Avatar
+                        icon={<CalendarOutlined />}
+                        style={{ backgroundColor: lightBg, color: themeColor }}
+                      />
+                      <div>
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: "12px", display: "block" }}
+                        >
+                          Established
+                        </Text>
+                        <Text strong>{selectedHotel.establishedDate}</Text>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "12px",
+                      }}
+                    >
+                      <Avatar
+                        icon={<HomeOutlined />}
+                        style={{ backgroundColor: lightBg, color: themeColor }}
+                      />
+                      <div>
+                        <Text
+                          type="secondary"
+                          style={{ fontSize: "12px", display: "block" }}
+                        >
+                          Capacity
+                        </Text>
+                        <Text strong>
+                          {selectedHotel.totalRooms} Rooms •{" "}
+                          {selectedHotel.approximateTravellersCapacity} Guests
+                        </Text>
+                      </div>
+                    </div>
+
+                    <Divider style={{ margin: "12px 0" }} />
+
+                    <Button
+                      type="primary"
+                      block
+                      icon={<PhoneOutlined />}
+                      size="large"
+                      style={{
+                        borderRadius: "8px",
+                        background: primaryColor,
+                        border: "none",
+                      }}
+                    >
+                      {selectedHotel.phoneNumber}
+                    </Button>
+
+                    {selectedHotel.email && (
+                      <Button
+                        block
+                        icon={<MailOutlined />}
+                        size="large"
+                        style={{
+                          borderRadius: "8px",
+                          borderColor: primaryColor,
+                          color: themeColor,
+                        }}
+                      >
+                        {selectedHotel.email}
+                      </Button>
+                    )}
+
+                    {selectedHotel.secondaryPhoneNumbers?.length > 0 && (
+                      <div style={{ marginTop: "8px" }}>
+                        <Text
+                          type="secondary"
+                          style={{
+                            fontSize: "12px",
+                            display: "block",
+                            marginBottom: "8px",
+                          }}
+                        >
+                          Alternative Contacts
+                        </Text>
+                        <Space
+                          direction="vertical"
+                          size={8}
+                          style={{ width: "100%" }}
+                        >
+                          {selectedHotel.secondaryPhoneNumbers.map(
+                            (phone: string, index: number) => (
+                              <div
+                                key={index}
+                                style={{
+                                  display: "flex",
+                                  alignItems: "center",
+                                  gap: "8px",
+                                  padding: "8px 12px",
+                                  background: "white",
+                                  borderRadius: "6px",
+                                  border: `1px solid ${lightBg}`,
+                                  color: themeColor,
+                                  fontSize: "13px",
+                                }}
+                              >
+                                <PhoneOutlined
+                                  style={{ fontSize: "12px", opacity: 0.7 }}
+                                />
+                                {phone}
+                              </div>
+                            )
+                          )}
+                        </Space>
+                      </div>
+                    )}
+                  </Space>
+                </div>
+              </div>
             </div>
-          </Card>
-        ))}
-      </div>
-    </Drawer>
+          </div>
+        )}
+      </Modal>
+    </>
   );
 };
-
-const Tag = ({
-  children,
-  style,
-}: {
-  children: React.ReactNode;
-  style?: React.CSSProperties;
-}) => (
-  <span
-    style={{
-      padding: "4px 10px",
-      borderRadius: "6px",
-      fontSize: "12px",
-      background: "#f5f5f5",
-      color: "#555",
-      display: "inline-flex",
-      alignItems: "center",
-      gap: "6px",
-      ...style,
-    }}
-  >
-    {children}
-  </span>
-);
 
 export default TrailLocationDrawer;

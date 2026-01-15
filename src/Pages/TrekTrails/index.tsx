@@ -209,15 +209,17 @@ const ExploreTrails: React.FC = () => {
           <>
             <Row gutter={[24, 24]}>
               {listedTrails?.data?.map((trail: any) => (
-                <Col xs={24} sm={12} lg={8} key={trail._id || trail.id}>
+                <Col xs={24} sm={12} lg={8} key={trail?._id || trail?.id}>
                   <TrekCard
-                    id={trail._id || trail.id}
-                    title={trail.title}
-                    days={Number(trail?.averageDurationDays || trail.duration || 0)}
+                    id={trail?._id || trail?.id}
+                    title={trail?.title}
+                    days={Number(
+                      trail?.averageDurationDays || trail?.duration || 0
+                    )}
                     elevation={`${
-                      trail?.maxAltitudeMeter || trail.elevation || "N/A"
+                      trail?.maxAltitudeMeter || trail?.elevation || "N/A"
                     }`}
-                    description={trail?.shortNotes || trail.overview || ""}
+                    description={trail?.shortNotes || trail?.overview || ""}
                     images={[trail?.featuredImage?.path]}
                     trekSlug={trail?.slug}
                   />
