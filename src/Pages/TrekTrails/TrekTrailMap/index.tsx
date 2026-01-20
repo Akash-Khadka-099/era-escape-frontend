@@ -27,6 +27,8 @@ import {
   MinusOutlined,
   AimOutlined,
   ExpandOutlined,
+  ArrowsAltOutlined,
+  ShrinkOutlined,
 } from "@ant-design/icons";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import TrailLocationDrawer from "../TrailLocationDrawer";
@@ -34,6 +36,7 @@ import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrap
 import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
 import { useParams } from "react-router-dom";
 import axiosInstance from "@/services/axiosInstance";
+import TrekIntineraryPlans from "../TrekIntineraryPlans";
 
 // Premium Marker Icon
 const markerIcon =
@@ -68,7 +71,8 @@ const TrekTrailMap: React.FC = () => {
   const [markers, setMarkers] = useState<MarkerData[]>([]);
   const [paths, setPaths] = useState<PathData[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [slectedDestinationSlug, setSelectedDestinationSlug] = useState<string>("");
+  const [slectedDestinationSlug, setSelectedDestinationSlug] =
+    useState<string>("");
   const [tooltip, setTooltip] = useState<TooltipState>({
     show: false,
     x: 0,
@@ -76,15 +80,16 @@ const TrekTrailMap: React.FC = () => {
     content: { name: "", pos: [0, 0] },
   });
 
-  console.log("markers",markers)
+  console.log("markers", markers);
   const [hoveredMarkerIndex, setHoveredMarkerIndex] = useState<number | null>(
-    null
+    null,
   );
   const [debugLogs, setDebugLogs] = useState<string[]>([]);
   const addLog = (msg: string) =>
     setDebugLogs((prev) => [...prev.slice(-4), msg]); // Keep last 5 logs
   const [sceneMode] = useState<SceneMode>(SceneMode.SCENE3D);
   const [terrainProvider, setTerrainProvider] = useState<any>(null);
+  const [isMinimized, setIsMinimized] = useState(false);
   const { slug } = useParams();
 
   console.warn("kml fetch debugs", debugLogs);
@@ -142,7 +147,7 @@ const TrekTrailMap: React.FC = () => {
         } else if (latLong && typeof latLong === "object") {
           lat = parseFloat(latLong.lat || latLong.latitude || 0);
           lng = parseFloat(
-            latLong.lng || latLong.long || latLong.longitude || 0
+            latLong.lng || latLong.long || latLong.longitude || 0,
           );
         }
         return {
@@ -184,7 +189,7 @@ const TrekTrailMap: React.FC = () => {
         const parserError = kml.getElementsByTagName("parsererror")[0];
         if (parserError) {
           addLog(
-            `XML Parse Error: ${parserError.textContent?.slice(0, 50)}...`
+            `XML Parse Error: ${parserError.textContent?.slice(0, 50)}...`,
           );
         }
 
@@ -195,7 +200,7 @@ const TrekTrailMap: React.FC = () => {
           const elements = root.getElementsByTagName(localName);
           if (elements.length > 0) return Array.from(elements);
           return Array.from(root.querySelectorAll(`*`)).filter(
-            (el) => el.localName?.toLowerCase() === lowerName
+            (el) => el.localName?.toLowerCase() === lowerName,
           );
         };
 
@@ -238,7 +243,7 @@ const TrekTrailMap: React.FC = () => {
         const processPath = (
           path: [number, number][],
           name: string,
-          description: string | null
+          description: string | null,
         ): PathData => {
           let totalDistance = 0;
           for (let k = 0; k < path.length - 1; k++) {
@@ -290,8 +295,8 @@ const TrekTrailMap: React.FC = () => {
                 processPath(
                   path,
                   metadata.name || "KML Trail Segment",
-                  metadata.description
-                )
+                  metadata.description,
+                ),
               );
             }
           }
@@ -324,8 +329,8 @@ const TrekTrailMap: React.FC = () => {
               processPath(
                 path,
                 metadata.name || "KML Track Segment",
-                metadata.description
-              )
+                metadata.description,
+              ),
             );
           }
         });
@@ -340,7 +345,7 @@ const TrekTrailMap: React.FC = () => {
             const path = parseCoordinates(coordsRaw);
             if (path.length > 5) {
               newPathsFromKml.push(
-                processPath(path, `Trail Segment (Regex)`, null)
+                processPath(path, `Trail Segment (Regex)`, null),
               );
             }
           }
@@ -390,7 +395,7 @@ const TrekTrailMap: React.FC = () => {
           destination: Cartesian3.fromDegrees(
             firstMarker.position[1],
             firstMarker.position[0],
-            5000
+            5000,
           ),
           duration: 3,
         });
@@ -457,7 +462,7 @@ const TrekTrailMap: React.FC = () => {
         targetPosition = Cartesian3.fromDegrees(
           firstMarker.position[1],
           firstMarker.position[0],
-          5000
+          5000,
         );
       } else if (paths.length > 0 && paths[0].path.length > 0) {
         // Fallback to first point of the first path if no markers
@@ -465,7 +470,7 @@ const TrekTrailMap: React.FC = () => {
         targetPosition = Cartesian3.fromDegrees(
           firstPoint[1],
           firstPoint[0],
-          5000
+          5000,
         );
       }
 
@@ -484,7 +489,7 @@ const TrekTrailMap: React.FC = () => {
         viewerRef.current.cesiumElement.entities,
         {
           duration: 2,
-        }
+        },
       );
     }
   };
@@ -516,8 +521,26 @@ const TrekTrailMap: React.FC = () => {
         >
           Fit to Trail
         </Button>
+        <Button
+          size="small"
+          type="primary"
+          icon={isMinimized ? <ArrowsAltOutlined /> : <ShrinkOutlined />}
+          onClick={() => setIsMinimized(!isMinimized)}
+        >
+          {isMinimized ? "Maximize" : "Minimize"}
+        </Button>
       </div>
-      <div style={{ height: "85vh", width: "100%", position: "relative" }}>
+      <div
+        style={{
+          height: isMinimized ? "300px" : "85vh",
+          width: "100%",
+          position: "relative",
+          transition: "height 0.3s ease",
+          borderRadius: "16px",
+          overflow: "hidden",
+          border: "1px solid #f0f0f0",
+        }}
+      >
         <style>
           {`
           .cesium-viewer-bottom {
@@ -551,7 +574,7 @@ const TrekTrailMap: React.FC = () => {
             >
               <PolylineGraphics
                 positions={trail.path.map(([lat, lng]) =>
-                  Cartesian3.fromDegrees(lng, lat)
+                  Cartesian3.fromDegrees(lng, lat),
                 )}
                 width={5}
                 material={Color.DEEPSKYBLUE}
@@ -561,11 +584,11 @@ const TrekTrailMap: React.FC = () => {
                 <Entity
                   position={Cartesian3.fromDegrees(
                     trail.midpoint[1],
-                    trail.midpoint[0]
+                    trail.midpoint[0],
                   )}
                 >
                   <LabelGraphics
-                    text={`Total Trail: ${trail.distance} | Est. Time: ${trail.time}`}
+                    // text={`Total Trail: ${trail.distance} | Est. Time: ${trail.time}`}
                     font="bold 12px sans-serif"
                     fillColor={Color.WHITE}
                     outlineColor={Color.BLACK}
@@ -589,7 +612,9 @@ const TrekTrailMap: React.FC = () => {
             <React.Fragment key={`marker-fragment-${index}`}>
               <Entity
                 onClick={() => {
-                  setSelectedDestinationSlug(marker?.destinationSlug || "Unknown Location");
+                  setSelectedDestinationSlug(
+                    marker?.destinationSlug || "Unknown Location",
+                  );
                   setDrawerOpen(true);
                 }}
                 onMouseEnter={() => {
@@ -609,7 +634,7 @@ const TrekTrailMap: React.FC = () => {
                 name={marker.name || "Unknown Location"}
                 position={Cartesian3.fromDegrees(
                   marker.position[1],
-                  marker.position[0]
+                  marker.position[0],
                 )}
                 properties={{
                   isMarker: true,
@@ -652,11 +677,11 @@ const TrekTrailMap: React.FC = () => {
                       positions={[
                         Cartesian3.fromDegrees(
                           marker.position[1],
-                          marker.position[0]
+                          marker.position[0],
                         ),
                         Cartesian3.fromDegrees(
                           markers[index + 1].position[1],
-                          markers[index + 1].position[0]
+                          markers[index + 1].position[0],
                         ),
                       ]}
                       width={3}
@@ -668,7 +693,7 @@ const TrekTrailMap: React.FC = () => {
                   <Entity
                     position={Cartesian3.fromDegrees(
                       (marker.position[1] + markers[index + 1].position[1]) / 2,
-                      (marker.position[0] + markers[index + 1].position[0]) / 2
+                      (marker.position[0] + markers[index + 1].position[0]) / 2,
                     )}
                   >
                     <LabelGraphics
@@ -676,12 +701,12 @@ const TrekTrailMap: React.FC = () => {
                         Cartesian3.distance(
                           Cartesian3.fromDegrees(
                             marker.position[1],
-                            marker.position[0]
+                            marker.position[0],
                           ),
                           Cartesian3.fromDegrees(
                             markers[index + 1].position[1],
-                            markers[index + 1].position[0]
-                          )
+                            markers[index + 1].position[0],
+                          ),
                         ) / 1000
                       ).toFixed(1)} km (${marker.travelTimeToNext})`}
                       font="bold 12px sans-serif"
@@ -780,7 +805,7 @@ const TrekTrailMap: React.FC = () => {
                 if (viewerRef.current?.cesiumElement) {
                   viewerRef.current.cesiumElement.camera.zoomIn(
                     viewerRef.current.cesiumElement.camera.positionCartographic
-                      .height * 0.5
+                      .height * 0.5,
                   );
                 }
               }}
@@ -804,7 +829,7 @@ const TrekTrailMap: React.FC = () => {
                 if (viewerRef.current?.cesiumElement) {
                   viewerRef.current.cesiumElement.camera.zoomOut(
                     viewerRef.current.cesiumElement.camera.positionCartographic
-                      .height * 0.5
+                      .height * 0.5,
                   );
                 }
               }}
@@ -823,6 +848,9 @@ const TrekTrailMap: React.FC = () => {
             />
           </Space>
         </div>
+      </div>
+      <div className="my-4">
+        <TrekIntineraryPlans />
       </div>
     </MiddleContentWrapper>
   );

@@ -1,5 +1,14 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Typography, Select, Row, Col, Space, message, Flex } from "antd";
+import {
+  Typography,
+  Select,
+  Row,
+  Col,
+  Space,
+  message,
+  Flex,
+  Affix,
+} from "antd";
 import CustomPackageSearch from "@/components/CustomPackageSearch";
 import TrekCard from "./TrekCard";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
@@ -84,172 +93,196 @@ const ExploreTrails: React.FC = () => {
   };
 
   return (
-    <div
-      style={{
-        backgroundColor: "#f8f9fa",
-        minHeight: "100vh",
-        paddingBottom: "60px",
-      }}
-    >
+    <>
+      <Flex justify="center" align="center" style={{ marginBottom: "20px" }}>
+        <div style={{ width: "clamp(400px, 600px, 80%)" }}>
+          <CustomPackageSearch
+            searchValue={searchVal}
+            setSearchValue={setSearchVal}
+            onSearchHandler={handleSearchSubmit}
+            isLoading={isPending}
+            placeholder="Search by destination or trail..."
+          />
+        </div>
+      </Flex>
+
       <MiddleContentWrapper>
-        <div style={{ padding: "40px 0 20px 0" }}>
-          <Title level={1} style={{ marginBottom: "8px", fontWeight: "bold" }}>
-            Explore Trails
-          </Title>
-          <Text type="secondary" style={{ fontSize: "16px", color: "#52c41a" }}>
-            Discover the world's most breathtaking trekking routes and hidden
-            gems.
-          </Text>
-        </div>
-
-        {/* Search and Filters Bar */}
-        <div
-          style={{
-            backgroundColor: "#fff",
-            padding: "20px",
-            borderRadius: "12px",
-            marginBottom: "40px",
-            boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-            display: "flex",
-            flexWrap: "wrap",
-            gap: "20px",
-            alignItems: "center",
-            justifyContent: "space-between",
-          }}
-        >
-          <div style={{ width: "100%", maxWidth: "400px" }}>
-            <CustomPackageSearch
-              searchValue={searchVal}
-              setSearchValue={setSearchVal}
-              onSearchHandler={handleSearchSubmit}
-              isLoading={isPending}
-              placeholder="Search by destination or trail..."
-            />
-          </div>
-
-          <Space size="middle" wrap>
-            <Select
-              defaultValue="All"
-              style={{ width: 120 }}
-              bordered={false}
-              className="custom-filter-select"
-              onChange={(val) => {
-                setRegionFilter(val);
-                setPagination((prev) => ({ ...prev, page: 1 }));
-              }}
-            >
-              <Option value="All">Region: All</Option>
-              <Option value="Annapurna">Annapurna</Option>
-              <Option value="Everest">Everest</Option>
-            </Select>
-
-            <Select
-              defaultValue="All"
-              style={{ width: 130 }}
-              bordered={false}
-              className="custom-filter-select"
-              onChange={(val) => {
-                setDifficultyFilter(val);
-                setPagination((prev) => ({ ...prev, page: 1 }));
-              }}
-            >
-              <Option value="All">Difficulty: All</Option>
-              <Option value="Easy">Easy</Option>
-              <Option value="Moderate">Moderate</Option>
-              <Option value="Hard">Hard</Option>
-            </Select>
-
-            <Select
-              defaultValue="All"
-              style={{ width: 130 }}
-              bordered={false}
-              className="custom-filter-select"
-              onChange={(val) => {
-                setDurationFilter(val);
-                setPagination((prev) => ({ ...prev, page: 1 }));
-              }}
-            >
-              <Option value="All">Duration: All</Option>
-              <Option value="Short">Short</Option>
-              <Option value="Long">Long</Option>
-            </Select>
-
-            <Select
-              defaultValue="All"
-              style={{ width: 130 }}
-              bordered={false}
-              className="custom-filter-select"
-              onChange={(val) => {
-                setElevationFilter(val);
-                setPagination((prev) => ({ ...prev, page: 1 }));
-              }}
-            >
-              <Option value="All">Elevation: All</Option>
-              <Option value="High">High</Option>
-              <Option value="Low">Low</Option>
-            </Select>
-          </Space>
-        </div>
-
-        {/* Trails Grid */}
-        {!isPending && !listedTrails?.data?.length ? (
-          <Flex
-            vertical
-            align="center"
-            className="mt-4"
-            justify="center"
-            style={{ width: "100%", minHeight: "300px" }}
-          >
-            <Lottie options={defaultOptions} height={300} width={300} />
-            <Title level={5} type="secondary">
-              No trails found matching your criteria.
-            </Title>
-          </Flex>
-        ) : (
-          <>
-            <Row gutter={[24, 24]}>
-              {listedTrails?.data?.map((trail: any) => (
-                <Col xs={24} sm={12} lg={8} key={trail?._id || trail?.id}>
-                  <TrekCard
-                    id={trail?._id || trail?.id}
-                    title={trail?.title}
-                    days={Number(
-                      trail?.averageDurationDays || trail?.duration || 0
-                    )}
-                    elevation={`${
-                      trail?.maxAltitudeMeter || trail?.elevation || "N/A"
-                    }`}
-                    description={trail?.shortNotes || trail?.overview || ""}
-                    images={[trail?.featuredImage?.path]}
-                    trekSlug={trail?.slug}
-                  />
-                </Col>
-              ))}
-            </Row>
-
-            <div
-              style={{
-                marginTop: "2rem",
-                display: "flex",
-                justifyContent: "center",
-              }}
-            >
-              <CustomPagination
-                onChange={(value: number) =>
-                  setPagination((oldState) => ({
-                    ...oldState,
-                    page: value,
-                  }))
-                }
-                paginationDetail={{
-                  page: listedTrails?.pagination?.page || 1,
-                  totalData: listedTrails?.pagination?.total || 0,
-                  pageSize: listedTrails?.pagination?.limit || 9,
+        <Row gutter={24}>
+          {/* Sidebar Filters */}
+          <Col xs={24} lg={6}>
+            <Affix offsetTop={100}>
+              <div
+                style={{
+                  padding: "20px",
+                  border: "1px solid rgba(0,0,0,0.1)",
+                  borderRadius: "12px",
+                  backgroundColor: "#fff",
+                  height: "fit-content",
+                  maxHeight: "calc(100vh - 120px)",
+                  overflowY: "auto",
                 }}
-              />
+              >
+                <Title
+                  level={4}
+                  style={{ marginBottom: "20px", textAlign: "center" }}
+                >
+                  Filters
+                </Title>
+                <Flex vertical gap={16}>
+                  <div>
+                    <Text strong>Region</Text>
+                    <Select
+                      defaultValue="All"
+                      style={{ width: "100%", marginTop: "8px" }}
+                      className="custom-filter-select"
+                      onChange={(val) => {
+                        setRegionFilter(val);
+                        setPagination((prev) => ({ ...prev, page: 1 }));
+                      }}
+                    >
+                      <Option value="All">All</Option>
+                      <Option value="Annapurna">Annapurna</Option>
+                      <Option value="Everest">Everest</Option>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Text strong>Difficulty</Text>
+                    <Select
+                      defaultValue="All"
+                      style={{ width: "100%", marginTop: "8px" }}
+                      className="custom-filter-select"
+                      onChange={(val) => {
+                        setDifficultyFilter(val);
+                        setPagination((prev) => ({ ...prev, page: 1 }));
+                      }}
+                    >
+                      <Option value="All">All</Option>
+                      <Option value="Easy">Easy</Option>
+                      <Option value="Moderate">Moderate</Option>
+                      <Option value="Hard">Hard</Option>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Text strong>Duration</Text>
+                    <Select
+                      defaultValue="All"
+                      style={{ width: "100%", marginTop: "8px" }}
+                      className="custom-filter-select"
+                      onChange={(val) => {
+                        setDurationFilter(val);
+                        setPagination((prev) => ({ ...prev, page: 1 }));
+                      }}
+                    >
+                      <Option value="All">All</Option>
+                      <Option value="Short">Short</Option>
+                      <Option value="Long">Long</Option>
+                    </Select>
+                  </div>
+
+                  <div>
+                    <Text strong>Elevation</Text>
+                    <Select
+                      defaultValue="All"
+                      style={{ width: "100%", marginTop: "8px" }}
+                      className="custom-filter-select"
+                      onChange={(val) => {
+                        setElevationFilter(val);
+                        setPagination((prev) => ({ ...prev, page: 1 }));
+                      }}
+                    >
+                      <Option value="All">All</Option>
+                      <Option value="High">High</Option>
+                      <Option value="Low">Low</Option>
+                    </Select>
+                  </div>
+
+                  {/* Optional: Add a reset button if needed, but not strictly requested */}
+                </Flex>
+              </div>
+            </Affix>
+          </Col>
+
+          {/* Main Content */}
+          <Col xs={24} lg={18}>
+            <div style={{ marginBottom: "20px" }}>
+              <Title
+                level={1}
+                style={{ marginBottom: "8px", fontWeight: "bold" }}
+              >
+                Explore Trails
+              </Title>
+              <Text
+                type="secondary"
+                style={{ fontSize: "16px", color: "#52c41a" }}
+              >
+                Discover the world's most breathtaking trekking routes and
+                hidden gems.
+              </Text>
             </div>
-          </>
-        )}
+
+            {/* Trails Grid */}
+            {!isPending && !listedTrails?.data?.length ? (
+              <Flex
+                vertical
+                align="center"
+                className="mt-4"
+                justify="center"
+                style={{ width: "100%", minHeight: "300px" }}
+              >
+                <Lottie options={defaultOptions} height={300} width={300} />
+                <Title level={5} type="secondary">
+                  No trails found matching your criteria.
+                </Title>
+              </Flex>
+            ) : (
+              <>
+                <Row gutter={[24, 24]}>
+                  {listedTrails?.data?.map((trail: any) => (
+                    <Col xs={24} sm={12} lg={8} key={trail?._id || trail?.id}>
+                      <TrekCard
+                        id={trail?._id || trail?.id}
+                        title={trail?.title}
+                        days={Number(
+                          trail?.averageDurationDays || trail?.duration || 0
+                        )}
+                        elevation={`${
+                          trail?.maxAltitudeMeter || trail?.elevation || "N/A"
+                        }`}
+                        description={trail?.shortNotes || trail?.overview || ""}
+                        images={[trail?.featuredImage?.path]}
+                        trekSlug={trail?.slug}
+                      />
+                    </Col>
+                  ))}
+                </Row>
+
+                <div
+                  style={{
+                    marginTop: "2rem",
+                    display: "flex",
+                    justifyContent: "center",
+                  }}
+                >
+                  <CustomPagination
+                    onChange={(value: number) =>
+                      setPagination((oldState) => ({
+                        ...oldState,
+                        page: value,
+                      }))
+                    }
+                    paginationDetail={{
+                      page: listedTrails?.pagination?.page || 1,
+                      totalData: listedTrails?.pagination?.total || 0,
+                      pageSize: listedTrails?.pagination?.limit || 9,
+                    }}
+                  />
+                </div>
+              </>
+            )}
+          </Col>
+        </Row>
       </MiddleContentWrapper>
 
       <style>{`
@@ -259,7 +292,7 @@ const ExploreTrails: React.FC = () => {
           padding: 0 12px !important;
         }
       `}</style>
-    </div>
+    </>
   );
 };
 
