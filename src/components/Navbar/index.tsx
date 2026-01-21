@@ -94,14 +94,31 @@ const Navbar: React.FC = () => {
       >
         <Flex
           justify="space-between"
+          gap={16}
           style={{ padding: "0 2rem", background: "transparent" }}
         >
-          <div>Logo</div>
-          <div style={{ width: "85%" }}>
+          <div
+            className="brand-name "
+            style={{
+              fontSize: "24px",
+              fontWeight: 800,
+              color: "#2D5A5A",
+              cursor: "pointer",
+              fontFamily: "'Outfit', sans-serif",
+            }}
+            onClick={() => navigate("/")}
+          >
+            Era Escape
+          </div>
+          <div style={{ flexGrow: 1 }}>
             <Menu
               className="lg-menu-items"
               mode="horizontal"
-              style={{ lineHeight: "64px", background: "#fff" }}
+              style={{
+                lineHeight: "64px",
+                background: "#fff",
+                borderBottom: "none",
+              }}
               items={filterNavItems(menuItems, user?.role)}
               onClick={(e) => {
                 navigate(e.key);

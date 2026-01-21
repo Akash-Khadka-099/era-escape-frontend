@@ -1,130 +1,186 @@
 import React from "react";
 import { Layout, Row, Col, Typography, Flex } from "antd";
+import {
+  MailOutlined,
+  EnvironmentOutlined,
+  PhoneOutlined,
+  GlobalOutlined,
+  ShareAltOutlined,
+} from "@ant-design/icons";
 
 const { Footer } = Layout;
 const { Title, Text, Link } = Typography;
 
 const CustomFooter: React.FC = () => {
   return (
-    <Footer style={{ background: "whitesmoke", marginTop: "1rem" }}>
-      {/* Section: Social media */}
-      <Row
-        justify="space-between"
-        align="middle"
-        style={{ padding: "16px", borderBottom: "1px solid #ddd" }}
-      >
-        <Col xs={24} md={12} style={{ textAlign: "left" }}>
-          <Text strong>Get connected with us on social networks:</Text>
-        </Col>
-        <Col xs={24} md={12} style={{ textAlign: "right" }}>
-          <Link
-            href="#!"
-            style={{ marginRight: "16px", textDecoration: "none" }}
+    <Footer
+      style={{
+        background: "#F8F9FA",
+        padding: "80px 40px 40px",
+        borderTop: "1px solid #EEE",
+      }}
+    >
+      <Row gutter={[40, 40]} justify="space-between">
+        {/* Brand Section */}
+        <Col xs={24} lg={6}>
+          <div style={{ marginBottom: "24px" }}>
+            <Title
+              level={4}
+              style={{
+                color: "#2D5A5A",
+                fontWeight: 800,
+                margin: 0,
+                fontFamily: "'Outfit', sans-serif",
+              }}
+            >
+              Era Escape
+            </Title>
+          </div>
+          <Text
+            style={{
+              color: "#666",
+              lineHeight: 1.6,
+              display: "block",
+              marginBottom: "24px",
+            }}
           >
-            {/* <Icon type="facebook" /> */}
-            facebook
-          </Link>
-          <Link href="#!" style={{ marginRight: "16px" }}>
-            {/* <Icon type="twitter" /> */}
-            twitter
-          </Link>
-          <Link href="#!" style={{ marginRight: "16px" }}>
-            {/* <Icon type="google" /> */}
-            google
-          </Link>
-          <Link href="#!" style={{ marginRight: "16px" }}>
-            {/* <Icon type="instagram" /> */}
-            instagram
-          </Link>
-          <Link href="#!" style={{ marginRight: "16px" }}>
-            {/* <Icon type="linkedin" /> */}
-            linkedin
-          </Link>
+            Curating the world's most breathtaking paths for the conscious
+            wanderer. More than just a blog - a trailhead for your next
+            off-script.
+          </Text>
+          <Flex gap={16}>
+            <GlobalOutlined
+              style={{ fontSize: "20px", color: "#666", cursor: "pointer" }}
+            />
+            <ShareAltOutlined
+              style={{ fontSize: "20px", color: "#666", cursor: "pointer" }}
+            />
+            <MailOutlined
+              style={{ fontSize: "20px", color: "#666", cursor: "pointer" }}
+            />
+          </Flex>
         </Col>
-      </Row>
 
-      {/* Section: Links */}
-      <Row justify="center" style={{ padding: "24px 0" }}>
-        <Col xs={24} md={6} style={{ padding: "0 16px" }}>
-          <Title level={5}>
-            {/* <Icon type="bank" style={{ marginRight: '8px' }} /> */}
-            Company Name
+        {/* Explore Section */}
+        <Col xs={12} sm={8} lg={4}>
+          <Title
+            level={5}
+            style={{
+              fontSize: "14px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              marginBottom: "24px",
+            }}
+          >
+            Explore
           </Title>
-          <Text>Tour and Travel package in Nepal</Text>
-        </Col>
-
-        <Col xs={24} md={6} style={{ padding: "0 16px" }}>
-          <Title level={5}>Trip Ideas</Title>
-          <Flex vertical>
-            <Link href="#!">
-              Travel
+          <Flex vertical gap={12}>
+            <Link href="/trek-trails" style={{ color: "#666" }}>
+              All Treks
             </Link>
-            <Link href="#!">
-              Best Iteneries
+            <Link href="#!" style={{ color: "#666" }}>
+              Mountain Guides
             </Link>
-            <Link href="#!">
-              Authorized Organization
+            <Link href="#!" style={{ color: "#666" }}>
+              Expedition Gear
+            </Link>
+            <Link href="#!" style={{ color: "#666" }}>
+              Regional Map
             </Link>
           </Flex>
         </Col>
 
-        <Col xs={24} md={6} style={{ padding: "0 16px" }}>
-          <Title level={5}>Useful Links</Title>
-          <Flex vertical>
-            <Link href="#!">
-              Pricing
+        {/* Difficulty Section */}
+        <Col xs={12} sm={8} lg={4}>
+          <Title
+            level={5}
+            style={{
+              fontSize: "14px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              marginBottom: "24px",
+            }}
+          >
+            Difficulty
+          </Title>
+          <Flex vertical gap={12}>
+            <Link href="#!" style={{ color: "#666" }}>
+              Novice Routes
             </Link>
-            <Link href="#!">
-              Settings
+            <Link href="#!" style={{ color: "#666" }}>
+              Technical Peaks
             </Link>
-
-            <Link href="#!">
-              Help
+            <Link href="#!" style={{ color: "#666" }}>
+              Multi-day Treks
+            </Link>
+            <Link href="#!" style={{ color: "#666" }}>
+              Family Adventures
             </Link>
           </Flex>
         </Col>
 
-        <Col xs={24} md={6} style={{ padding: "0 16px" }}>
-          <Title level={5}>Contact</Title>
-          <Flex vertical>
-            <Text>
-              {/* <Icon type="home" style={{ marginRight: '8px' }} /> */}
-             Nepal, Kathmandu
-            </Text>
-            <Text>
-              {/* <Icon type="mail" style={{ marginRight: '8px' }} /> */}
-              akashkhadka099@example.com
-            </Text>
-            <Text>
-              {/* <Icon type="phone" style={{ marginRight: '8px' }} /> */}
-              +977 9877777765
-            </Text>
-            <Text>
-              {/* <Icon type="printer" style={{ marginRight: '8px' }} /> */}
-              +977 9877777766
-            </Text>
+        {/* Contact Section */}
+        <Col xs={24} sm={8} lg={6}>
+          <Title
+            level={5}
+            style={{
+              fontSize: "14px",
+              fontWeight: 700,
+              textTransform: "uppercase",
+              letterSpacing: "1px",
+              marginBottom: "24px",
+            }}
+          >
+            Contact
+          </Title>
+          <Flex vertical gap={16}>
+            <Flex align="center" gap={12}>
+              <MailOutlined style={{ color: "#666" }} />
+              <Text style={{ color: "#666" }}>hello@eraescape.com</Text>
+            </Flex>
+            <Flex align="center" gap={12}>
+              <EnvironmentOutlined style={{ color: "#666" }} />
+              <Text style={{ color: "#666" }}>Basecamp One, CO</Text>
+            </Flex>
+            <Flex align="center" gap={12}>
+              <PhoneOutlined style={{ color: "#666" }} />
+              <Text style={{ color: "#666" }}>+1 (555) 612-3456</Text>
+            </Flex>
           </Flex>
         </Col>
       </Row>
 
-      {/* Copyright */}
-      <Row
-        justify="center"
+      {/* Bottom Bar */}
+      <div
         style={{
-          backgroundColor: "rgba(0, 0, 0, 0.05)",
-          padding: "16px",
-          textAlign: "center",
+          marginTop: "80px",
+          paddingTop: "24px",
+          borderTop: "1px solid #EEE",
         }}
       >
-        <Col>
-          <Text>
-            © 2025 Copyright:{" "}
-            <Link href="https://mdbootstrap.com/" target="_blank">
-             PackageNepal.com
-            </Link>
-          </Text>
-        </Col>
-      </Row>
+        <Row justify="space-between" align="middle">
+          <Col xs={24} md={12}>
+            <Text style={{ fontSize: "12px", color: "#999" }}>
+              © 2026 Era Escape. All paths lead home.
+            </Text>
+          </Col>
+          <Col xs={24} md={12}>
+            <Flex gap={24} justify="end" className="footer-bottom-links">
+              <Link href="#!" style={{ fontSize: "12px", color: "#999" }}>
+                Privacy Policy
+              </Link>
+              <Link href="#!" style={{ fontSize: "12px", color: "#999" }}>
+                Terms of Service
+              </Link>
+              <Link href="#!" style={{ fontSize: "12px", color: "#999" }}>
+                Cookie Settings
+              </Link>
+            </Flex>
+          </Col>
+        </Row>
+      </div>
     </Footer>
   );
 };

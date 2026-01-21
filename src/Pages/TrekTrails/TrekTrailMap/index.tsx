@@ -29,6 +29,7 @@ import {
   ExpandOutlined,
   ArrowsAltOutlined,
   ShrinkOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import TrailLocationDrawer from "../TrailLocationDrawer";
@@ -382,23 +383,35 @@ const TrekTrailMap: React.FC = () => {
     initTerrain();
   }, []);
 
+  const initialZoomRef = useRef(false);
+
   useEffect(() => {
     if (viewerRef.current?.cesiumElement) {
       const viewer = viewerRef.current.cesiumElement;
 
-      // Zoom to the FIRST marker if available, otherwise zoom to all
-      if (paths.length > 0) {
-        viewer.flyTo(viewer.entities, { duration: 3 });
-      } else if (markers.length > 0) {
-        const firstMarker = markers[0];
-        viewer.camera.flyTo({
-          destination: Cartesian3.fromDegrees(
-            firstMarker.position[1],
-            firstMarker.position[0],
-            5000,
-          ),
-          duration: 3,
-        });
+      // Initial Zoom Logic: Wait for KML if expected
+      if (!initialZoomRef.current) {
+        const hasMarkers = markers.length > 0;
+        const hasPaths = paths.length > 0;
+        const isKmlExpected = !!kmlUrl;
+
+        if (isKmlExpected) {
+          if (hasPaths) {
+            // Small delay to ensure entities are rendered before flying
+            setTimeout(() => {
+              if (viewerRef.current?.cesiumElement) {
+                viewerRef.current.cesiumElement.flyTo(
+                  viewerRef.current.cesiumElement.entities,
+                  { duration: 3 },
+                );
+              }
+            }, 1000);
+            initialZoomRef.current = true;
+          }
+        } else if (hasMarkers) {
+          viewer.flyTo(viewer.entities, { duration: 3 });
+          initialZoomRef.current = true;
+        }
       }
 
       const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
@@ -409,7 +422,9 @@ const TrekTrailMap: React.FC = () => {
         if (defined(pickedObject) && pickedObject.id instanceof Entity) {
           const entity = pickedObject.id;
           if (entity.properties && entity.properties.hasProperty("isMarker")) {
-            setSelectedDestinationSlug(entity?.slug);
+            setSelectedDestinationSlug(
+              entity.properties.destinationSlug?.getValue() || "",
+            );
             setDrawerOpen(true);
           }
         }
@@ -451,7 +466,7 @@ const TrekTrailMap: React.FC = () => {
         handler.destroy();
       };
     }
-  }, [markers, paths]);
+  }, [markers, paths, kmlUrl]);
 
   const handleFocusToStart = () => {
     if (viewerRef.current?.cesiumElement) {
@@ -640,6 +655,7 @@ const TrekTrailMap: React.FC = () => {
                   isMarker: true,
                   position: marker.position,
                   images: marker.images,
+                  destinationSlug: marker.destinationSlug,
                 }}
               >
                 <BillboardGraphics
@@ -777,6 +793,32 @@ const TrekTrailMap: React.FC = () => {
           <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.8 }}>
             Powered by Package Nepal
           </p>
+        </div>
+
+        {/* Instruction Overlay */}
+        <div
+          style={{
+            position: "absolute",
+            bottom: "20px",
+            left: "20px",
+            background: "rgba(0, 0, 0, 0.6)",
+            backdropFilter: "blur(10px)",
+            padding: "8px 16px",
+            borderRadius: "8px",
+            color: "white",
+            zIndex: 100,
+            pointerEvents: "none",
+            border: "1px solid rgba(255, 255, 255, 0.1)",
+            fontSize: "12px",
+            display: "flex",
+            alignItems: "center",
+            gap: "8px",
+          }}
+        >
+          <InfoCircleOutlined style={{ color: "#1890ff" }} />
+          <span>
+            Click the pointers to view the stays and hotels in the map
+          </span>
         </div>
 
         <TrailLocationDrawer
