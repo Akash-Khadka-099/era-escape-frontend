@@ -17,6 +17,8 @@ const UserLayout = ({ children }: UserLayoutProps) => {
             width: "100%",
             background: "#fff",
             flex: 1,
+            margin: 0,
+            padding: 0,
           }}
         >
           {children}

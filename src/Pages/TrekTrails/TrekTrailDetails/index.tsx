@@ -87,7 +87,7 @@ const TrekTrailDetail: React.FC = () => {
   const navigate = useNavigate();
   const { slug } = useParams();
   const { data: trekDetailResponse, isLoading } = useGetTrekBlogDetail(
-    slug || ""
+    slug || "",
   );
 
   const trekDetail = trekDetailResponse?.data;
@@ -108,13 +108,17 @@ const TrekTrailDetail: React.FC = () => {
         backgroundColor: "#f5f5f5",
         minHeight: "100vh",
         paddingBottom: "40px",
+        width: "100%",
+        margin: 0,
+        padding: 0,
       }}
     >
       {/* Hero Section */}
       <div
+        className="hero-section"
         style={{
-          position: "relative",
-          height: "500px",
+          height: "70vh",
+          minHeight: "600px",
           backgroundImage: `url("${
             trekDetail?.featuredImage?.path
               ? `${baseUrl}/${trekDetail?.featuredImage?.path}`
@@ -124,7 +128,9 @@ const TrekTrailDetail: React.FC = () => {
           backgroundPosition: "center",
           display: "flex",
           alignItems: "flex-end",
-          padding: "40px",
+          padding: "60px 0",
+          width: "100%",
+          margin: 0,
         }}
       >
         <div
@@ -135,7 +141,7 @@ const TrekTrailDetail: React.FC = () => {
             right: 0,
             bottom: 0,
             background:
-              "linear-gradient(to bottom, rgba(0,0,0,0.1), rgba(0,0,0,0.7))",
+              "linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8))",
           }}
         />
 
@@ -144,54 +150,112 @@ const TrekTrailDetail: React.FC = () => {
             position: "relative",
             zIndex: 1,
             width: "100%",
-            maxWidth: "1200px",
+            maxWidth: "1500px",
             margin: "0 auto",
             color: "white",
+            animation: "fadeInUp 0.8s ease-out forwards",
+            padding: "0 40px", // Added padding to keep text away from edges
           }}
         >
-          <div style={{ marginBottom: "16px" }}>
+          <div
+            style={{
+              marginBottom: "24px",
+              display: "flex",
+              flexWrap: "wrap",
+              gap: "12px",
+            }}
+          >
             <Tag
-              color="#108ee9"
               style={{
-                border: "none",
-                padding: "4px 12px",
-                fontSize: "12px",
-                fontWeight: "bold",
-                borderRadius: "4px",
+                background: "rgba(255, 255, 255, 0.15)",
+                backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255, 255, 255, 0.3)",
+                padding: "6px 16px",
+                fontSize: "13px",
+                fontWeight: "600",
+                borderRadius: "30px",
+                margin: 0,
+                color: "#fff",
+                textTransform: "uppercase",
+                letterSpacing: "0.5px",
               }}
             >
-              {trekDetail?.difficulty?.toUpperCase()}
+              {trekDetail?.country}
             </Tag>
-            <Tag
-              color="#555"
-              style={{
-                border: "none",
-                padding: "4px 12px",
-                fontSize: "12px",
-                fontWeight: "bold",
-                borderRadius: "4px",
-              }}
-            >
-              {trekDetail?.country?.toUpperCase()}
-            </Tag>
+            {trekDetail?.categories?.map((category: any) => (
+              <Tag
+                key={category?._id}
+                style={{
+                  background: "rgba(255, 193, 7, 0.25)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255, 193, 7, 0.4)",
+                  padding: "6px 16px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  borderRadius: "30px",
+                  margin: 0,
+                  color: "#fff",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                {category?.title}
+              </Tag>
+            ))}
           </div>
           <Title
             level={1}
-            style={{ color: "white", margin: "0 0 8px 0", fontSize: "48px" }}
+            className="hero-title"
+            style={{
+              color: "white",
+              margin: "0 0 16px 0",
+              fontWeight: 800,
+              textShadow: "0 2px 10px rgba(0,0,0,0.3)",
+            }}
           >
             {trekDetail?.title}
           </Title>
           <div
+            className="hero-actions"
             style={{
               display: "flex",
               justifyContent: "space-between",
               alignItems: "flex-end",
             }}
           >
-            <Text style={{ color: "#ddd", fontSize: "16px" }}>
-              <FaMapMarkedAlt style={{ marginRight: "8px" }} />
-              {trekDetail?.trekRegion?.name || trekDetail?.country}
-            </Text>
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+                alignItems: "center",
+              }}
+            >
+              <FaMapMarkedAlt style={{ color: "#2ecc71", fontSize: "20px" }} />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {Array.isArray(trekDetail?.trekRegion) ? (
+                  trekDetail.trekRegion.map((region: any, idx: number) => (
+                    <Text
+                      key={region?._id}
+                      style={{
+                        color: "#eee",
+                        fontSize: "18px",
+                        fontWeight: 500,
+                      }}
+                    >
+                      {region?.name}
+                      {idx < trekDetail.trekRegion.length - 1 ? " • " : ""}
+                    </Text>
+                  ))
+                ) : (
+                  <Text
+                    style={{ color: "#eee", fontSize: "18px", fontWeight: 500 }}
+                  >
+                    {trekDetail?.trekRegion?.name || trekDetail?.country}
+                  </Text>
+                )}
+              </div>
+            </div>
             <div style={{ display: "flex", gap: "12px" }}>
               <Button icon={<FaBookmark />} style={{ borderRadius: "8px" }}>
                 Save
@@ -205,7 +269,13 @@ const TrekTrailDetail: React.FC = () => {
       </div>
 
       <MiddleContentWrapper
-        extraStyles={{ marginTop: "-40px", position: "relative", zIndex: 2 }}
+        extraStyles={{
+          marginTop: "-40px",
+          position: "relative",
+          zIndex: 2,
+          maxWidth: "1500px",
+          width: "95%",
+        }}
       >
         {/* Stats Cards */}
         <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
@@ -477,7 +547,7 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.highlights?.map(
                   (highlight: string, index: number) => (
                     <li key={index}>{highlight}</li>
-                  )
+                  ),
                 )}
               </ul>
             </Card>
@@ -592,38 +662,10 @@ const TrekTrailDetail: React.FC = () => {
                   </Button>
                 </div>
               </div>
-              <div style={{ padding: "20px" }}>
-                <Title level={4} style={{ marginTop: 0 }}>
-                  Trail Actions
-                </Title>
-                <Button
-                  type="primary"
-                  block
-                  icon={<FaWalking />}
-                  size="large"
-                  style={{
-                    marginBottom: "12px",
-                    backgroundColor: "#2ecc71",
-                    borderColor: "#2ecc71",
-                    height: "48px",
-                    fontSize: "16px",
-                  }}
-                >
-                  Start Navigation
-                </Button>
-                <Button
-                  block
-                  icon={<FaDownload />}
-                  size="large"
-                  style={{ height: "48px", fontSize: "16px" }}
-                >
-                  Download GPX
-                </Button>
-              </div>
             </Card>
 
             {/* Current Conditions */}
-            <Card
+            {/* <Card
               bordered={false}
               style={{
                 borderRadius: "12px",
@@ -687,10 +729,10 @@ const TrekTrailDetail: React.FC = () => {
                   </div>
                 </Col>
               </Row>
-            </Card>
+            </Card> */}
 
             {/* Bear Activity Warning */}
-            <Card
+            {/* <Card
               bordered={false}
               style={{
                 borderRadius: "12px",
@@ -722,7 +764,7 @@ const TrekTrailDetail: React.FC = () => {
                   </div>
                 </div>
               </div>
-            </Card>
+            </Card> */}
           </Col>
         </Row>
       </MiddleContentWrapper>
@@ -774,6 +816,43 @@ const TrekTrailDetail: React.FC = () => {
           display: flex !important;
           align-items: center;
           justify-content: center;
+        }
+        .hero-section {
+          width: 100% !important;
+          max-width: 100vw !important;
+          position: relative !important;
+          margin: 0 !important;
+          left: 0 !important;
+          right: 0 !important;
+        }
+        .hero-title {
+          font-size: 64px !important;
+          line-height: 1.1 !important;
+        }
+        @media (max-width: 768px) {
+          .hero-title {
+            font-size: 40px !important;
+          }
+          .hero-section {
+            height: auto !important;
+            min-height: 500px !important;
+            padding: 140px 0 60px 0 !important;
+          }
+          .hero-actions {
+            flex-direction: column;
+            align-items: flex-start !important;
+            gap: 20px;
+          }
+        }
+        @keyframes fadeInUp {
+          from {
+            opacity: 0;
+            transform: translateY(30px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
         }
       `}</style>
     </div>
