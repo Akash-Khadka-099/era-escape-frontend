@@ -20,6 +20,7 @@ import {
   SceneMode,
   createWorldTerrainAsync,
   HeightReference,
+  ArcType,
 } from "cesium";
 import { Tooltip, Button, Space } from "antd";
 import {
@@ -29,14 +30,13 @@ import {
   ExpandOutlined,
   ArrowsAltOutlined,
   ShrinkOutlined,
-  InfoCircleOutlined,
+  // InfoCircleOutlined,
 } from "@ant-design/icons";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import TrailLocationDrawer from "../TrailLocationDrawer";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
 import { useParams } from "react-router-dom";
-import axiosInstance from "@/services/axiosInstance";
 import TrekIntineraryPlans from "../TrekIntineraryPlans";
 
 // Premium Marker Icon
@@ -81,19 +81,14 @@ const TrekTrailMap: React.FC = () => {
     content: { name: "", pos: [0, 0] },
   });
 
-  console.log("markers", markers);
   const [hoveredMarkerIndex, setHoveredMarkerIndex] = useState<number | null>(
     null,
   );
-  const [debugLogs, setDebugLogs] = useState<string[]>([]);
-  const addLog = (msg: string) =>
-    setDebugLogs((prev) => [...prev.slice(-4), msg]); // Keep last 5 logs
   const [sceneMode] = useState<SceneMode>(SceneMode.SCENE3D);
   const [terrainProvider, setTerrainProvider] = useState<any>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const { slug } = useParams();
 
-  console.warn("kml fetch debugs", debugLogs);
   const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "");
 
   // const kmlUrl = "/kmlFiles/demo-abc-I.kml";
@@ -114,16 +109,9 @@ const TrekTrailMap: React.FC = () => {
     if (!path) return null;
     if (path.startsWith("http")) return path;
 
-    const baseUrl = import.meta.env.VITE_API_URL || "";
-    const cleanPath = path.startsWith("/") ? path.slice(1) : path;
-
-    // In development, use relative path to leverage Vite proxy and avoid CORS
-    if (import.meta.env.DEV) {
-      return `/${cleanPath}`;
-    }
-
-    const cleanBaseUrl = baseUrl.endsWith("/") ? baseUrl.slice(0, -1) : baseUrl;
-    return `${cleanBaseUrl}/${cleanPath}`;
+    // Use relative path to utilize Vite proxy and bypass CORS
+    const cleanPath = path.startsWith("/") ? path : `/${path}`;
+    return cleanPath;
   }, [trekDetailResponse]);
 
   const viewerRef = useRef<any>(null);
@@ -165,33 +153,34 @@ const TrekTrailMap: React.FC = () => {
       });
 
       setMarkers(newMarkers);
-      setPaths([]); // Clear paths to ensure we only show KML trails
+      // REMOVED: setPaths([]); // This was causing paths to be cleared when trekDetailResponse updated, even if KML URL was stable
     }
   }, [trekDetailResponse]);
 
   useEffect(() => {
     const fetchKml = async () => {
       if (!kmlUrl) {
-        addLog("No KML URL found.");
+        setPaths([]); // Clear paths if no KML
         return;
       }
 
-      addLog(`Fetching KML: ${kmlUrl.split("/").pop()}`);
       try {
-        const response = await axiosInstance.get(kmlUrl, {
-          responseType: "text",
-        });
-        const text = response.data;
-        addLog(`KML Loaded: ${text.length} chars`);
+        // Use native fetch to avoid axios interceptors (Auth headers) that might interfere with static files
+        const response = await fetch(kmlUrl);
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status hehe: ${response.status}`);
+        }
+
+        const text = await response.text();
 
         const parser = new DOMParser();
         const kml = parser.parseFromString(text, "text/xml");
 
         const parserError = kml.getElementsByTagName("parsererror")[0];
         if (parserError) {
-          addLog(
-            `XML Parse Error: ${parserError.textContent?.slice(0, 50)}...`,
-          );
+          const errorMsg = `XML Parse Error: ${parserError.textContent?.slice(0, 50)}...`;
+          console.error(errorMsg);
         }
 
         const newPathsFromKml: PathData[] = [];
@@ -206,21 +195,43 @@ const TrekTrailMap: React.FC = () => {
         };
 
         const parseCoordinates = (coordsRaw: string): [number, number][] => {
-          return coordsRaw
+          const tokens = coordsRaw
             .trim()
             .split(/[\s\n\r]+/)
-            .map((coord) => {
-              const parts = coord.split(",").map((s) => s.trim());
-              if (parts.length >= 2) {
-                const lng = parseFloat(parts[0]);
-                const lat = parseFloat(parts[1]);
+            .filter((t) => t.trim().length > 0);
+
+          // Check if tokens contain commas (Standard KML)
+          if (tokens.some((t) => t.includes(","))) {
+            return tokens
+              .map((t) => {
+                const parts = t.split(",").map((s) => s.trim());
+                if (parts.length >= 2) {
+                  const lng = parseFloat(parts[0]);
+                  const lat = parseFloat(parts[1]);
+                  if (!isNaN(lat) && !isNaN(lng)) {
+                    return [lat, lng] as [number, number];
+                  }
+                }
+                return null;
+              })
+              .filter((p): p is [number, number] => p !== null);
+          } else {
+            // Space separated fallback: lon lat [alt]
+            // Assume 3D (lon lat alt) if total count is divisible by 3, else 2D
+            const is3D = tokens.length % 3 === 0;
+            const stride = is3D ? 3 : 2;
+            const result: [number, number][] = [];
+            for (let i = 0; i < tokens.length; i += stride) {
+              if (i + 1 < tokens.length) {
+                const lng = parseFloat(tokens[i]);
+                const lat = parseFloat(tokens[i + 1]);
                 if (!isNaN(lat) && !isNaN(lng)) {
-                  return [lat, lng] as [number, number];
+                  result.push([lat, lng]);
                 }
               }
-              return null;
-            })
-            .filter((p): p is [number, number] => p !== null);
+            }
+            return result;
+          }
         };
 
         const findParentMetadata = (el: Element) => {
@@ -284,7 +295,6 @@ const TrekTrailMap: React.FC = () => {
         };
 
         const lineStrings = getElements(kml, "LineString");
-        addLog(`Found ${lineStrings.length} LineStrings`);
         lineStrings.forEach((ls) => {
           const coordsElement = getElements(ls, "coordinates")[0];
           const coordsRaw = coordsElement?.textContent?.trim();
@@ -295,8 +305,8 @@ const TrekTrailMap: React.FC = () => {
               newPathsFromKml.push(
                 processPath(
                   path,
-                  metadata.name || "KML Trail Segment",
-                  metadata.description,
+                  metadata?.name || "KML Trail Segment",
+                  metadata?.description,
                 ),
               );
             }
@@ -304,7 +314,6 @@ const TrekTrailMap: React.FC = () => {
         });
 
         const tracks = getElements(kml, "Track");
-        addLog(`Found ${tracks.length} Tracks`);
         tracks.forEach((track) => {
           const coordElements = getElements(track, "coord");
           const path: [number, number][] = coordElements
@@ -336,8 +345,7 @@ const TrekTrailMap: React.FC = () => {
           }
         });
 
-        if (newPathsFromKml.length === 0) {
-          addLog("No XML paths. Trying Regex...");
+        if (newPathsFromKml?.length === 0) {
           const coordRegex =
             /<[\w:]*coordinates[^>]*>([\s\S]*?)<\/[\w:]*coordinates>/gi;
           let match;
@@ -345,29 +353,28 @@ const TrekTrailMap: React.FC = () => {
             const coordsRaw = match[1].trim();
             const path = parseCoordinates(coordsRaw);
             if (path.length > 5) {
-              newPathsFromKml.push(
+              newPathsFromKml?.push(
                 processPath(path, `Trail Segment (Regex)`, null),
               );
             }
           }
         }
 
-        addLog(`Total Paths: ${newPathsFromKml.length}`);
         if (newPathsFromKml.length > 0) {
           setPaths(newPathsFromKml);
         } else {
-          addLog("No valid paths found.");
+          setPaths([]); // Ensure paths are cleared if KML is valid but empty/unparseable
         }
       } catch (error: any) {
         console.error("Error fetching or parsing KML:", error);
-        addLog(`Error: ${error.message}`);
+        setPaths([]); // Clear paths on error
       }
     };
 
     if (kmlUrl) {
       fetchKml();
     } else {
-      addLog("Waiting for KML URL...");
+      // setPaths([]); // Clear paths if KML URL becomes null
     }
   }, [kmlUrl]);
 
@@ -386,29 +393,30 @@ const TrekTrailMap: React.FC = () => {
   const initialZoomRef = useRef(false);
 
   useEffect(() => {
+    if (paths.length > 0 && viewerRef.current?.cesiumElement) {
+      // Force zoom to entities (markers + paths) when paths are loaded
+      viewerRef.current.cesiumElement.flyTo(
+        viewerRef.current.cesiumElement.entities,
+        { duration: 2 },
+      );
+    }
+  }, [paths]);
+
+  useEffect(() => {
     if (viewerRef.current?.cesiumElement) {
       const viewer = viewerRef.current.cesiumElement;
+
+      // Enable depth testing to ensure the trail renders correctly against the terrain
+      // This fixes visual "shifting" or floating issues
+      viewer.scene.globe.depthTestAgainstTerrain = true;
 
       // Initial Zoom Logic: Wait for KML if expected
       if (!initialZoomRef.current) {
         const hasMarkers = markers.length > 0;
-        const hasPaths = paths.length > 0;
+        // const hasPaths = paths.length > 0; // Handled by separate effect now
         const isKmlExpected = !!kmlUrl;
 
-        if (isKmlExpected) {
-          if (hasPaths) {
-            // Small delay to ensure entities are rendered before flying
-            setTimeout(() => {
-              if (viewerRef.current?.cesiumElement) {
-                viewerRef.current.cesiumElement.flyTo(
-                  viewerRef.current.cesiumElement.entities,
-                  { duration: 3 },
-                );
-              }
-            }, 1000);
-            initialZoomRef.current = true;
-          }
-        } else if (hasMarkers) {
+        if (!isKmlExpected && hasMarkers) {
           viewer.flyTo(viewer.entities, { duration: 3 });
           initialZoomRef.current = true;
         }
@@ -594,6 +602,7 @@ const TrekTrailMap: React.FC = () => {
                 width={5}
                 material={Color.DEEPSKYBLUE}
                 clampToGround={true}
+                arcType={ArcType.GEODESIC}
               />
               {trail.midpoint && (
                 <Entity
@@ -793,32 +802,6 @@ const TrekTrailMap: React.FC = () => {
           <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.8 }}>
             Powered by Package Nepal
           </p>
-        </div>
-
-        {/* Instruction Overlay */}
-        <div
-          style={{
-            position: "absolute",
-            bottom: "20px",
-            left: "20px",
-            background: "rgba(0, 0, 0, 0.6)",
-            backdropFilter: "blur(10px)",
-            padding: "8px 16px",
-            borderRadius: "8px",
-            color: "white",
-            zIndex: 100,
-            pointerEvents: "none",
-            border: "1px solid rgba(255, 255, 255, 0.1)",
-            fontSize: "12px",
-            display: "flex",
-            alignItems: "center",
-            gap: "8px",
-          }}
-        >
-          <InfoCircleOutlined style={{ color: "#1890ff" }} />
-          <span>
-            Click the pointers to view the stays and hotels in the map
-          </span>
         </div>
 
         <TrailLocationDrawer

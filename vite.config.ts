@@ -12,11 +12,11 @@ export default defineConfig({
     port: 9999,
     proxy: {
       '/api': {
-        target: 'http://localhost:5555',
+        target: 'https://api.eraescape.com',
         changeOrigin: true,
       },
       '/uploads': {
-        target: 'http://localhost:5555',
+        target: 'https://api.eraescape.com',
         changeOrigin: true,
       },
     },
