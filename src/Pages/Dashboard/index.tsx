@@ -1,4 +1,5 @@
 import React from "react";
+
 import "./Dashboard.css";
 import {
   ArrowRightOutlined,
@@ -13,6 +14,8 @@ import { Button, Tag } from "antd";
 import HeroImage from "@/assets/images/hero.png";
 import Trek1Image from "@/assets/images/trek1.png";
 import StoryImage from "@/assets/images/story.png";
+import { useFetchTrendingBlogsCategories } from "@/services/userHomepageServices/homepageServices";
+import CategoryCard from "@/Pages/Dashboard/components/CategoryCard";
 
 const Dashboard: React.FC = () => {
   const trendingTreks = [
@@ -50,6 +53,10 @@ const Dashboard: React.FC = () => {
     },
   ];
 
+  const { data } = useFetchTrendingBlogsCategories({});
+
+  console.log("data category", data);
+
   return (
     <div className="new-dashboard">
       {/* Hero Section */}
@@ -76,20 +83,22 @@ const Dashboard: React.FC = () => {
         </div>
       </section>
 
-      {/* Filters Section */}
-      <section className="filters-section">
-        <div className="filters-container">
-          <div className="filters-title">
-            <h2>Find Your Pace</h2>
-            <p>Filter expeditions by terrain and difficulty.</p>
+      {/* Explore Landscapes Section */}
+      <section className="explore-landscapes-section">
+        <div className="explore-container">
+          <div className="explore-header">
+            <h2>Explore Landscapes</h2>
+            <p>
+              Discover your next journey through our curated categories, from
+              the serene depths of tropical forests to the peak of the highest
+              mountains.
+            </p>
           </div>
-          <div className="filter-buttons">
-            <button className="filter-btn active">Moderate</button>
-            <button className="filter-btn">Hard</button>
-            <button className="filter-btn">Easy</button>
-            <button className="filter-btn">
-              <CompassOutlined /> Region
-            </button>
+
+          <div className="landscapes-grid">
+            {data?.map((category: any) => (
+              <CategoryCard key={category.id} category={category} />
+            ))}
           </div>
         </div>
       </section>

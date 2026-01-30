@@ -21,8 +21,10 @@ import {
   createWorldTerrainAsync,
   HeightReference,
   ArcType,
+  BoundingSphere,
+  HeadingPitchRange,
 } from "cesium";
-import { Tooltip, Button, Space } from "antd";
+import { Tooltip, Button, Space, Alert } from "antd";
 import {
   PlusOutlined,
   MinusOutlined,
@@ -30,7 +32,7 @@ import {
   ExpandOutlined,
   ArrowsAltOutlined,
   ShrinkOutlined,
-  // InfoCircleOutlined,
+  InfoCircleOutlined,
 } from "@ant-design/icons";
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import TrailLocationDrawer from "../TrailLocationDrawer";
@@ -394,11 +396,7 @@ const TrekTrailMap: React.FC = () => {
 
   useEffect(() => {
     if (paths.length > 0 && viewerRef.current?.cesiumElement) {
-      // Force zoom to entities (markers + paths) when paths are loaded
-      viewerRef.current.cesiumElement.flyTo(
-        viewerRef.current.cesiumElement.entities,
-        { duration: 2 },
-      );
+      handleFitToTrail();
     }
   }, [paths]);
 
@@ -417,7 +415,7 @@ const TrekTrailMap: React.FC = () => {
         const isKmlExpected = !!kmlUrl;
 
         if (!isKmlExpected && hasMarkers) {
-          viewer.flyTo(viewer.entities, { duration: 3 });
+          handleFitToTrail();
           initialZoomRef.current = true;
         }
       }
@@ -507,13 +505,31 @@ const TrekTrailMap: React.FC = () => {
   };
 
   const handleFitToTrail = () => {
-    if (viewerRef.current?.cesiumElement) {
-      viewerRef.current.cesiumElement.flyTo(
-        viewerRef.current.cesiumElement.entities,
-        {
-          duration: 2,
-        },
-      );
+    const viewer = viewerRef.current?.cesiumElement;
+    if (!viewer) return;
+
+    const points: Cartesian3[] = [];
+    markers.forEach((m) =>
+      points.push(Cartesian3.fromDegrees(m.position[1], m.position[0])),
+    );
+    paths.forEach((p) =>
+      p.path.forEach((coord) =>
+        points.push(Cartesian3.fromDegrees(coord[1], coord[0])),
+      ),
+    );
+
+    if (points.length > 0) {
+      const sphere = BoundingSphere.fromPoints(points);
+      viewer.camera.flyToBoundingSphere(sphere, {
+        duration: 2,
+        offset: new HeadingPitchRange(
+          0,
+          CesiumMath.toRadians(-45),
+          sphere.radius * 2.2, // Tighter zoom factor
+        ),
+      });
+    } else {
+      viewer.flyTo(viewer.entities, { duration: 2 });
     }
   };
 
@@ -553,6 +569,18 @@ const TrekTrailMap: React.FC = () => {
           {isMinimized ? "Maximize" : "Minimize"}
         </Button>
       </div>
+      {trekDetailResponse?.data?.isWalkedTrail === false && (
+        <Alert
+          message="This is an imaginary trail line drawn for reference purposes. We will be providing the real trail path in the near future."
+          type="warning"
+          banner
+          showIcon
+          icon={<InfoCircleOutlined />}
+          style={{
+            margin: "1rem 0",
+          }}
+        />
+      )}
       <div
         style={{
           height: isMinimized ? "300px" : "85vh",
@@ -722,18 +750,7 @@ const TrekTrailMap: React.FC = () => {
                     )}
                   >
                     <LabelGraphics
-                      text={`Next Leg: ${(
-                        Cartesian3.distance(
-                          Cartesian3.fromDegrees(
-                            marker.position[1],
-                            marker.position[0],
-                          ),
-                          Cartesian3.fromDegrees(
-                            markers[index + 1].position[1],
-                            markers[index + 1].position[0],
-                          ),
-                        ) / 1000
-                      ).toFixed(1)} km (${marker.travelTimeToNext})`}
+                      text={`Estimated. Time: ${marker.travelTimeToNext}`}
                       font="bold 12px sans-serif"
                       fillColor={Color.YELLOW}
                       outlineColor={Color.BLACK}

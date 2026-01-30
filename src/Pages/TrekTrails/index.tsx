@@ -37,13 +37,15 @@ const ExploreTrails: React.FC = () => {
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("search");
+  const categoryQuery = searchParams.get("category");
 
   const { mutateAsync, isPending } = useSearchTrekBlogLists();
 
   const fetchData = useCallback(async () => {
     try {
+      const activeSearch = searchQuery || categoryQuery || "";
       const query: any = {
-        q: searchQuery || "",
+        q: activeSearch,
         page: pagination.page,
         limit: pagination.pageSize,
       };
@@ -64,6 +66,7 @@ const ExploreTrails: React.FC = () => {
   }, [
     pagination,
     searchQuery,
+    categoryQuery,
     regionFilter,
     difficultyFilter,
     durationFilter,
@@ -72,11 +75,12 @@ const ExploreTrails: React.FC = () => {
   ]);
 
   useEffect(() => {
-    if (searchQuery) {
-      setSearchVal(searchQuery);
+    const activeSearch = searchQuery || categoryQuery;
+    if (activeSearch) {
+      setSearchVal(activeSearch);
     }
     fetchData();
-  }, [fetchData]);
+  }, [fetchData, searchQuery, categoryQuery]);
 
   const handleSearchSubmit = (value: string) => {
     setSearchParams({ search: value });
@@ -245,7 +249,7 @@ const ExploreTrails: React.FC = () => {
                         id={trail?._id || trail?.id}
                         title={trail?.title}
                         days={Number(
-                          trail?.averageDurationDays || trail?.duration || 0
+                          trail?.averageDurationDays || trail?.duration || 0,
                         )}
                         elevation={`${
                           trail?.maxAltitudeMeter || trail?.elevation || "N/A"

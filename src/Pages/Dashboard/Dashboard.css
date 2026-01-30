@@ -144,52 +144,39 @@ h4,
   background-color: rgba(255, 255, 255, 0.3);
 }
 
-/* Filters Section */
-.filters-section {
-  background-color: #f2f0ea;
-  padding: 40px 20px;
+/* Explore Landscapes Section */
+.explore-landscapes-section {
+  padding: 80px 20px;
+  background-color: var(--white);
 }
 
-.filters-container {
-  max-width: 1200px;
+.explore-container {
+  max-width: 1400px;
   margin: 0 auto;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
 }
 
-.filters-title h2 {
-  font-size: 28px;
-  margin-bottom: 8px;
+.explore-header {
+  margin-bottom: 40px;
+  max-width: 600px;
 }
 
-.filters-title p {
+.explore-header h2 {
+  font-size: 36px;
+  font-weight: 800;
+  margin-bottom: 16px;
+  color: var(--text-color);
+}
+
+.explore-header p {
   color: var(--text-light);
+  line-height: 1.6;
+  font-size: 16px;
 }
 
-.filter-buttons {
-  display: flex;
-  gap: 12px;
-}
-
-.filter-btn {
-  padding: 10px 24px;
-  border-radius: 30px;
-  border: 1px solid #ddd;
-  background: white;
-  cursor: pointer;
-  font-weight: 500;
-  transition: var(--transition);
-}
-
-.filter-btn.active {
-  background-color: #c17d64;
-  color: white;
-  border-color: #c17d64;
-}
-
-.filter-btn:hover:not(.active) {
-  background-color: #eee;
+.landscapes-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
 }
 
 /* Trending Section */
