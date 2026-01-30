@@ -17,22 +17,17 @@ import {
   FaClock,
   FaRoute,
   FaMapMarkedAlt,
-  FaCloudSun,
-  FaWind,
-  FaSun,
   FaExclamationTriangle,
   FaShare,
   FaBookmark,
-  FaDownload,
-  FaWalking,
   FaCalendarAlt,
 } from "react-icons/fa";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
-import { trekData } from "../dummyData";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
 import ElevationChart from "@/components/Charts/ElevationChart";
+import TrekWeather from "./TrekWeather";
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -664,72 +659,17 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
 
-            {/* Current Conditions */}
-            {/* <Card
-              bordered={false}
-              style={{
-                borderRadius: "12px",
-                marginBottom: "24px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "16px",
+            {/* Weather Section */}
+            {trekDetail?.weatherConditions && (
+              <TrekWeather
+                weather={{
+                  weatherData: trekDetail.weatherConditions.weatherData,
+                  source: trekDetail.weatherConditions.source,
+                  updatedAt: trekDetail.weatherConditions.updatedAt,
                 }}
-              >
-                <Title level={4} style={{ margin: 0 }}>
-                  Current Conditions
-                </Title>
-                <Tag color="green">Live</Tag>
-              </div>
-
-              <div
-                style={{
-                  display: "flex",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                }}
-              >
-                <FaCloudSun
-                  style={{
-                    fontSize: "48px",
-                    color: "#f39c12",
-                    marginRight: "16px",
-                  }}
-                />
-                <div>
-                  <div style={{ fontSize: "32px", fontWeight: "bold" }}>
-                    {trekData.conditions.temp}
-                  </div>
-                  <div style={{ color: "#666" }}>
-                    {trekData.conditions.weather}
-                  </div>
-                </div>
-              </div>
-
-              <Divider style={{ margin: "12px 0" }} />
-
-              <Row gutter={16}>
-                <Col span={12}>
-                  <div style={{ fontSize: "12px", color: "#888" }}>Wind</div>
-                  <div style={{ fontWeight: "bold" }}>
-                    <FaWind style={{ marginRight: "6px" }} />{" "}
-                    {trekData.conditions.wind}
-                  </div>
-                </Col>
-                <Col span={12}>
-                  <div style={{ fontSize: "12px", color: "#888" }}>Sunset</div>
-                  <div style={{ fontWeight: "bold" }}>
-                    <FaSun style={{ marginRight: "6px" }} />{" "}
-                    {trekData.conditions.sunset}
-                  </div>
-                </Col>
-              </Row>
-            </Card> */}
+                locationName={trekDetail.title}
+              />
+            )}
 
             {/* Bear Activity Warning */}
             {/* <Card
