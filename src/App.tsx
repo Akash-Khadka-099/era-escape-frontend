@@ -3,17 +3,28 @@ import AppProvider from "@/Provider/AppProvider";
 import axios from "axios";
 import { useEffect } from "react";
 import useAuthStore from "@/store/authStore";
+import { useGoogleOneTapLogin } from "@react-oauth/google";
+import { useGoogleAuth } from "@/hooks/useGoogleAuth";
 
 import { userRoutes } from "@/Routes/userRoutes";
 import UserLayout from "@/layout/UserLayout";
 import ResetPasswordForm from "@/Pages/LoginRegister/ResetPassword";
-// import { GlobalSpinner } from "@/components/Feedback";
+
+const GoogleOneTapHandler = () => {
+  const { isAuthenticated } = useAuthStore();
+  const { handleGoogleSuccess, handleGoogleError } = useGoogleAuth();
+
+  useGoogleOneTapLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleError,
+    disabled: isAuthenticated,
+  });
+
+  return null;
+};
 
 const App = () => {
-  const { setAccessToken, user } = useAuthStore();
-  // const [isLoading, setIsLoading] = useState(true);
-
-  console.log("user details", user);
+  const { setAccessToken } = useAuthStore();
 
   useEffect(() => {
     const initializeAuth = async () => {
@@ -21,27 +32,21 @@ const App = () => {
         const { data } = await axios.post(
           `${import.meta.env.VITE_API_URL}/api/auth/refresh`,
           null,
-
-          { withCredentials: true }
+          { withCredentials: true },
         );
         setAccessToken(data.access_token);
       } catch (error) {
         console.error("Unable to refresh token:", error);
-      } finally {
-        // setIsLoading(false);
       }
     };
 
     initializeAuth();
   }, [setAccessToken]);
 
-  // if (isLoading) {
-  //   return <GlobalSpinner />;
-  // }
-
   return (
     <>
       <AppProvider>
+        <GoogleOneTapHandler />
         <Routes>
           {userRoutes.map((item, index) => (
             <Route

@@ -45,11 +45,6 @@ const Navbar: React.FC = () => {
       icon: <UserOutlined />,
       onClick: () => setIsLogoutOpen(true),
     },
-    {
-      label: "2nd menu item",
-      key: "2",
-      icon: <UserOutlined />,
-    },
   ];
 
   const filterNavItems = (items: MenuItem[], userRole: string): any[] => {

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import ForgetPassword from "@/Pages/LoginRegister/ForgetPassword";
 import LoginForm from "@/Pages/LoginRegister/LoginForm";
 import RegisterForm from "@/Pages/LoginRegister/RegisterForm";
+import GoogleAuth from "@/Pages/LoginRegister/GoogleAuth";
 import { Button, Flex, Image, Modal } from "antd";
 
 interface LoginRegisterProps {
@@ -9,7 +10,10 @@ interface LoginRegisterProps {
   handleCloseLoginModal: () => void;
 }
 
-const LoginRegister: React.FC<LoginRegisterProps> = ({ isLoginModalOpen, handleCloseLoginModal }) => {
+const LoginRegister: React.FC<LoginRegisterProps> = ({
+  isLoginModalOpen,
+  handleCloseLoginModal,
+}) => {
   const [isLoginPage, setIsLoginPage] = useState(true);
   const [isForgetPassword, setIsForgetPassword] = useState(false);
   return (
@@ -51,6 +55,7 @@ const LoginRegister: React.FC<LoginRegisterProps> = ({ isLoginModalOpen, handleC
               ) : (
                 <RegisterForm handleCloseLoginModal={handleCloseLoginModal} />
               )}
+              <GoogleAuth handleCloseLoginModal={handleCloseLoginModal} />
             </div>
           </>
         )}
