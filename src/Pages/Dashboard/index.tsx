@@ -188,7 +188,9 @@ const Dashboard: React.FC = () => {
         <div className="newsletter-icon">
           <CompassOutlined />
         </div>
-        <h2 className="newsletter-title">The Trailhead Dispatch</h2>
+        <h2 className="newsletter-title cabin-sketch-bold">
+          The Trailhead Dispatch
+        </h2>
         <p className="newsletter-subtitle">
           Join 20,000+ adventurers. Weekly trek reports, gear testing, and
           hidden gems delivered to your inbox.
