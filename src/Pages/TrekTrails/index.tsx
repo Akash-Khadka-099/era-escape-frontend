@@ -1,14 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import {
-  Typography,
-  Select,
-  Row,
-  Col,
-  Space,
-  message,
-  Flex,
-  Affix,
-} from "antd";
+import { Typography, Select, Row, Col, message, Flex, Affix } from "antd";
 import CustomPackageSearch from "@/components/CustomPackageSearch";
 import TrekCard from "./TrekCard";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
@@ -17,6 +8,7 @@ import { useSearchParams } from "react-router-dom";
 import CustomPagination from "@/components/CustomPagination";
 import Lottie from "react-lottie";
 import NoDataFound from "@/assets/JsonAnimation/noDataFound.json";
+import { SEO } from "@/components/SEO";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -98,6 +90,11 @@ const ExploreTrails: React.FC = () => {
 
   return (
     <>
+      <SEO
+        title="Explore Trekking Trails"
+        description="Discover the world's most breathtaking trekking routes and hidden gems. From Annapurna to Everest, find your next adventure."
+        canonical={`${window.location.origin}/trek-trails`}
+      />
       <Flex justify="center" align="center" style={{ marginBottom: "20px" }}>
         <div style={{ width: "clamp(400px, 600px, 80%)" }}>
           <CustomPackageSearch

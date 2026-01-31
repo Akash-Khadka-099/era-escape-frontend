@@ -17,7 +17,6 @@ import {
   FaClock,
   FaRoute,
   FaMapMarkedAlt,
-  FaExclamationTriangle,
   FaShare,
   FaBookmark,
   FaCalendarAlt,
@@ -28,6 +27,7 @@ import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrap
 import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
 import ElevationChart from "@/components/Charts/ElevationChart";
 import TrekWeather from "./TrekWeather";
+import { SEO } from "@/components/SEO";
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -97,6 +97,27 @@ const TrekTrailDetail: React.FC = () => {
 
   const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5555";
 
+  const trekSchema = {
+    "@context": "https://schema.org",
+    "@type": "TouristAttraction",
+    name: trekDetail?.title,
+    description: trekDetail?.shortNotes || trekDetail?.overview,
+    image: trekDetail?.featuredImage?.path
+      ? `${baseUrl}/${trekDetail?.featuredImage?.path}`
+      : undefined,
+    touristType: "Trekking",
+    location: {
+      "@type": "Place",
+      name: Array.isArray(trekDetail?.trekRegion)
+        ? trekDetail.trekRegion.map((r: any) => r.name).join(", ")
+        : trekDetail?.trekRegion?.name,
+      address: {
+        "@type": "PostalAddress",
+        addressCountry: trekDetail?.country,
+      },
+    },
+  };
+
   return (
     <div
       style={{
@@ -108,6 +129,17 @@ const TrekTrailDetail: React.FC = () => {
         padding: 0,
       }}
     >
+      <SEO
+        title={trekDetail?.title}
+        description={trekDetail?.shortNotes || trekDetail?.overview}
+        canonical={`${window.location.origin}/trek-trails/detail/${trekDetail?.slug}`}
+        schema={trekSchema}
+        ogImage={
+          trekDetail?.featuredImage?.path
+            ? `${baseUrl}/${trekDetail?.featuredImage?.path}`
+            : undefined
+        }
+      />
       {/* Hero Section */}
       <div
         className="hero-section"

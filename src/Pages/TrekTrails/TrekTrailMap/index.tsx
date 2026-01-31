@@ -92,6 +92,7 @@ const TrekTrailMap: React.FC = () => {
   const { slug } = useParams();
 
   const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "");
+  console.log("trekDetailResponse",trekDetailResponse)
 
   // const kmlUrl = "/kmlFiles/demo-abc-I.kml";
 
@@ -814,10 +815,10 @@ const TrekTrailMap: React.FC = () => {
           }}
         >
           <h3 style={{ margin: 0, fontSize: "18px", fontWeight: "600" }}>
-            3D Trek Trail
+            3D Trek Trail of {trekDetailResponse?.data?.title}
           </h3>
           <p style={{ margin: "4px 0 0", fontSize: "12px", opacity: 0.8 }}>
-            Powered by Package Nepal
+            Powered by Era Escape
           </p>
         </div>
 
