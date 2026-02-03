@@ -27,6 +27,7 @@ import {
 } from "@ant-design/icons";
 import { useParams } from "react-router-dom";
 import { useFetchDestinationHotels } from "@/services/trekServices/trekServices";
+import { hotelTypeOptions } from "@/constant/constant";
 
 const { Title, Text } = Typography;
 
@@ -52,6 +53,10 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
 
   const destination = data?.destination;
   const hotels = data?.hotels || [];
+
+  const getHotelTypeLabel = (value: string) => {
+    return hotelTypeOptions.find((opt) => opt.value === value)?.label || value;
+  };
 
   const handleViewDetails = (hotel: any) => {
     setSelectedHotel(hotel);
@@ -173,56 +178,14 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
         <div style={{ padding: "24px" }}>
           {destination && (
             <div style={{ marginBottom: "32px" }}>
-              {/* Tags & Facilities Grid */}
               <div
                 style={{
                   display: "grid",
-                  gridTemplateColumns: "1fr 1fr",
+                  gridTemplateColumns: "1fr",
                   gap: "16px",
                   marginBottom: "24px",
                 }}
               >
-                <div
-                  style={{
-                    background: cardBg,
-                    padding: "16px",
-                    borderRadius: "16px",
-                    boxShadow: "0 4px 12px rgba(0,0,0,0.02)",
-                    border: `1px solid ${lightBg}`,
-                  }}
-                >
-                  <Text
-                    type="secondary"
-                    style={{
-                      fontSize: "12px",
-                      display: "block",
-                      marginBottom: "8px",
-                      color: themeColor,
-                      fontWeight: 600,
-                      opacity: 0.7,
-                    }}
-                  >
-                    HIGHLIGHTS
-                  </Text>
-                  <Space wrap size={[4, 8]}>
-                    {destination.tags?.map((tag: string) => (
-                      <Tag
-                        key={tag}
-                        color="cyan"
-                        style={{
-                          borderRadius: "12px",
-                          border: "none",
-                          background: lightBg,
-                          color: themeColor,
-                          fontWeight: 500,
-                        }}
-                      >
-                        {tag}
-                      </Tag>
-                    ))}
-                  </Space>
-                </div>
-
                 <div
                   style={{
                     background: cardBg,
@@ -341,7 +304,7 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
                         gap: "8px",
                       }}
                     >
-                      {hotel.hotelType?.map((type: string) => (
+                      {hotel?.hotelType?.map((type: string) => (
                         <Tag
                           key={type}
                           color="rgba(255,255,255,0.9)"
@@ -354,7 +317,7 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
                             boxShadow: "0 2px 4px rgba(0,0,0,0.1)",
                           }}
                         >
-                          {type}
+                          {getHotelTypeLabel(type)}
                         </Tag>
                       ))}
                     </div>
@@ -505,7 +468,9 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
                         </Title>
                         <Space style={{ marginTop: "8px" }}>
                           <Tag color="cyan">
-                            {selectedHotel.hotelType?.join(", ")}
+                            {selectedHotel.hotelType
+                              ?.map((type: string) => getHotelTypeLabel(type))
+                              .join(", ")}
                           </Tag>
                         </Space>
                       </div>
@@ -524,38 +489,42 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
                 }}
               >
                 <div>
-                  <Title level={5}>About this place</Title>
-                  {selectedHotel.description ? (
-                    <div
-                      dangerouslySetInnerHTML={{
-                        __html: selectedHotel.description,
-                      }}
-                      style={{ color: "#666", lineHeight: "1.6" }}
-                    />
-                  ) : (
-                    <Text type="secondary">No description available.</Text>
+                  {selectedHotel.description && (
+                    <>
+                      <Title level={5}>About this place</Title>
+                      <div
+                        dangerouslySetInnerHTML={{
+                          __html: selectedHotel.description,
+                        }}
+                        style={{ color: "#666", lineHeight: "1.6" }}
+                      />
+                      <Divider />
+                    </>
                   )}
 
-                  <Divider />
-
-                  <Title level={5}>Amenities</Title>
-                  <Space wrap size={[8, 12]}>
-                    {selectedHotel.facilities?.map((f: string) => (
-                      <Tag
-                        key={f}
-                        style={{
-                          padding: "6px 12px",
-                          borderRadius: "8px",
-                          fontSize: "14px",
-                          border: "1px solid #d9d9d9",
-                          background: "transparent",
-                          color: themeColor,
-                        }}
-                      >
-                        {f}
-                      </Tag>
-                    ))}
-                  </Space>
+                  {selectedHotel.facilities &&
+                    selectedHotel.facilities.length > 0 && (
+                      <>
+                        <Title level={5}>Amenities</Title>
+                        <Space wrap size={[8, 12]}>
+                          {selectedHotel.facilities?.map((f: string) => (
+                            <Tag
+                              key={f}
+                              style={{
+                                padding: "6px 12px",
+                                borderRadius: "8px",
+                                fontSize: "14px",
+                                border: "1px solid #d9d9d9",
+                                background: "transparent",
+                                color: themeColor,
+                              }}
+                            >
+                              {f}
+                            </Tag>
+                          ))}
+                        </Space>
+                      </>
+                    )}
                 </div>
 
                 <div
@@ -575,90 +544,113 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
                     size={16}
                     style={{ width: "100%" }}
                   >
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                      }}
-                    >
-                      <Avatar
-                        icon={<TeamOutlined />}
-                        style={{ backgroundColor: lightBg, color: themeColor }}
-                      />
-                      <div>
-                        <Text
-                          type="secondary"
-                          style={{ fontSize: "12px", display: "block" }}
-                        >
-                          Proprietor
-                        </Text>
-                        <Text strong>{selectedHotel.proprietorName}</Text>
+                    {selectedHotel.proprietorName && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                        }}
+                      >
+                        <Avatar
+                          icon={<TeamOutlined />}
+                          style={{
+                            backgroundColor: lightBg,
+                            color: themeColor,
+                          }}
+                        />
+                        <div>
+                          <Text
+                            type="secondary"
+                            style={{ fontSize: "12px", display: "block" }}
+                          >
+                            Proprietor
+                          </Text>
+                          <Text strong>{selectedHotel.proprietorName}</Text>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                      }}
-                    >
-                      <Avatar
-                        icon={<CalendarOutlined />}
-                        style={{ backgroundColor: lightBg, color: themeColor }}
-                      />
-                      <div>
-                        <Text
-                          type="secondary"
-                          style={{ fontSize: "12px", display: "block" }}
-                        >
-                          Established
-                        </Text>
-                        <Text strong>{selectedHotel.establishedDate}</Text>
+                    {selectedHotel.establishedDate && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                        }}
+                      >
+                        <Avatar
+                          icon={<CalendarOutlined />}
+                          style={{
+                            backgroundColor: lightBg,
+                            color: themeColor,
+                          }}
+                        />
+                        <div>
+                          <Text
+                            type="secondary"
+                            style={{ fontSize: "12px", display: "block" }}
+                          >
+                            Established
+                          </Text>
+                          <Text strong>{selectedHotel.establishedDate}</Text>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                      }}
-                    >
-                      <Avatar
-                        icon={<HomeOutlined />}
-                        style={{ backgroundColor: lightBg, color: themeColor }}
-                      />
-                      <div>
-                        <Text
-                          type="secondary"
-                          style={{ fontSize: "12px", display: "block" }}
-                        >
-                          Capacity
-                        </Text>
-                        <Text strong>
-                          {selectedHotel.totalRooms} Rooms •{" "}
-                          {selectedHotel.approximateTravellersCapacity} Guests
-                        </Text>
+                    {(selectedHotel.totalRooms ||
+                      selectedHotel.approximateTravellersCapacity) && (
+                      <div
+                        style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                        }}
+                      >
+                        <Avatar
+                          icon={<HomeOutlined />}
+                          style={{
+                            backgroundColor: lightBg,
+                            color: themeColor,
+                          }}
+                        />
+                        <div>
+                          <Text
+                            type="secondary"
+                            style={{ fontSize: "12px", display: "block" }}
+                          >
+                            Capacity
+                          </Text>
+                          <Text strong>
+                            {selectedHotel.totalRooms &&
+                              `${selectedHotel.totalRooms} Rooms`}
+                            {selectedHotel.totalRooms &&
+                              selectedHotel.approximateTravellersCapacity &&
+                              " • "}
+                            {selectedHotel.approximateTravellersCapacity &&
+                              `${selectedHotel.approximateTravellersCapacity} Guests`}
+                          </Text>
+                        </div>
                       </div>
-                    </div>
+                    )}
 
                     <Divider style={{ margin: "12px 0" }} />
 
-                    <Button
-                      type="primary"
-                      block
-                      icon={<PhoneOutlined />}
-                      size="large"
-                      style={{
-                        borderRadius: "8px",
-                        background: primaryColor,
-                        border: "none",
-                      }}
-                    >
-                      {selectedHotel.phoneNumber}
-                    </Button>
+                    {selectedHotel.phoneNumber && (
+                      <Button
+                        type="primary"
+                        block
+                        icon={<PhoneOutlined />}
+                        size="large"
+                        style={{
+                          borderRadius: "8px",
+                          background: primaryColor,
+                          border: "none",
+                        }}
+                      >
+                        {selectedHotel.phoneNumber}
+                      </Button>
+                    )}
 
                     {selectedHotel.email && (
                       <Button
@@ -713,7 +705,7 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
                                 />
                                 {phone}
                               </div>
-                            )
+                            ),
                           )}
                         </Space>
                       </div>
