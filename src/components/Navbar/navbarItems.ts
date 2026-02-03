@@ -12,11 +12,11 @@ export const menuItems: NavMenuItem[] = [
     label: "Home",
     role: "*",
   },
-  {
-    key: "/destinations",
-    label: "Destinations",
-    role: "*",
-  },
+  // {
+  //   key: "/destinations",
+  //   label: "Destinations",
+  //   role: "*",
+  // },
   // {
   //   key: routeLists.package,
   //   label: "Packages",

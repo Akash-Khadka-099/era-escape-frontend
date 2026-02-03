@@ -29,3 +29,10 @@ export const packageSeasonOptions: OptionType[] = [
   { label: "Autumn", value: "autumn" },
   { label: "Winter", value: "winter" },
 ];
+
+export const hotelTypeOptions: OptionType[] = [
+  { label: "Tea House", value: "TEA_HOUSE" },
+  { label: "Snacks & Meal", value: "SNACKS_MEAL" },
+  { label: "Guest House / Home Stay", value: "GUEST_HOUSE_HOME_STAY" },
+];
+
