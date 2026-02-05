@@ -50,8 +50,15 @@ interface MarkerData {
   name: string | null;
   description: string | null;
   images: string[];
+  locationKey?: string;
   destinationSlug?: string | null;
   travelTimeToNext?: string;
+  hasMultipleNextDestination?: boolean;
+  routeTimes?: {
+    timeToTravel: number;
+    toPosition: [number, number];
+    toTrailDestination: any;
+  }[];
 }
 
 interface PathData {
@@ -92,7 +99,6 @@ const TrekTrailMap: React.FC = () => {
   const { slug } = useParams();
 
   const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "");
-  console.log("trekDetailResponse",trekDetailResponse)
 
   // const kmlUrl = "/kmlFiles/demo-abc-I.kml";
 
@@ -121,13 +127,14 @@ const TrekTrailMap: React.FC = () => {
 
   useEffect(() => {
     const destinations = trekDetailResponse?.data?.destinations;
-    if (destinations && destinations.length > 0) {
-      const newMarkers: MarkerData[] = destinations.map((dest: any) => {
-        // Defensive parsing of latLong to handle various data formats from the API
+    if (
+      destinations &&
+      Array.isArray(destinations) &&
+      destinations?.length > 0
+    ) {
+      const parseLatLong = (latLong: any): [number, number] => {
         let lat = 0,
           lng = 0;
-
-        const latLong = dest?.latLong;
 
         if (typeof latLong === "string" && latLong.includes(",")) {
           const parts = latLong.split(",");
@@ -142,9 +149,22 @@ const TrekTrailMap: React.FC = () => {
             latLong.lng || latLong.long || latLong.longitude || 0,
           );
         }
+        return [lat, lng];
+      };
+
+      const newMarkers: MarkerData[] = destinations.map((dest: any) => {
+        const [lat, lng] = parseLatLong(dest?.latLong);
+
+        const processedRouteTimes = dest?.routeTimes
+          ?.filter((rt: any) => rt?.toTrailDestination?.latLong)
+          ?.map((rt: any) => ({
+            ...rt,
+            toPosition: parseLatLong(rt?.toTrailDestination?.latLong),
+          }));
+
         return {
           position: [lat, lng],
-          name: dest?.name,
+          name: dest?.name || "Unnamed Point",
           description: dest?.description,
           images: dest?.images || [],
           locationKey: dest?.locationKey || "",
@@ -152,11 +172,12 @@ const TrekTrailMap: React.FC = () => {
           travelTimeToNext: dest?.travelTimeToNext
             ? `${dest.travelTimeToNext} hr`
             : undefined,
+          hasMultipleNextDestination: dest?.hasMultipleNextDestination,
+          routeTimes: processedRouteTimes,
         };
       });
 
       setMarkers(newMarkers);
-      // REMOVED: setPaths([]); // This was causing paths to be cleared when trekDetailResponse updated, even if KML URL was stable
     }
   }, [trekDetailResponse]);
 
@@ -723,47 +744,104 @@ const TrekTrailMap: React.FC = () => {
                 />
               </Entity>
 
-              {/* Draw straight line to next marker with distance/time ONLY when hovered */}
-              {index < markers.length - 1 && hoveredMarkerIndex === index && (
+              {/* Draw straight line to next marker(s) with distance/time ONLY when hovered */}
+              {hoveredMarkerIndex === index && (
                 <>
-                  <Entity>
-                    <PolylineGraphics
-                      positions={[
-                        Cartesian3.fromDegrees(
-                          marker.position[1],
-                          marker.position[0],
-                        ),
-                        Cartesian3.fromDegrees(
-                          markers[index + 1].position[1],
-                          markers[index + 1].position[0],
-                        ),
-                      ]}
-                      width={3}
-                      material={Color.YELLOW}
-                    />
-                  </Entity>
+                  {marker.hasMultipleNextDestination &&
+                  marker.routeTimes &&
+                  marker.routeTimes.length > 0
+                    ? marker.routeTimes.map((rt, rtIndex) => (
+                        <React.Fragment key={`route-${index}-${rtIndex}`}>
+                          <Entity>
+                            <PolylineGraphics
+                              positions={[
+                                Cartesian3.fromDegrees(
+                                  marker.position[1],
+                                  marker.position[0],
+                                ),
+                                Cartesian3.fromDegrees(
+                                  rt.toPosition[1],
+                                  rt.toPosition[0],
+                                ),
+                              ]}
+                              width={3}
+                              material={Color.YELLOW}
+                            />
+                          </Entity>
+                          <Entity
+                            position={Cartesian3.fromDegrees(
+                              (marker.position[1] + rt.toPosition[1]) / 2,
+                              (marker.position[0] + rt.toPosition[0]) / 2,
+                            )}
+                          >
+                            <LabelGraphics
+                              text={`Estimated. Time: ${rt.timeToTravel} hr`}
+                              font="bold 12px sans-serif"
+                              fillColor={Color.YELLOW}
+                              outlineColor={Color.BLACK}
+                              outlineWidth={2}
+                              style={2}
+                              verticalOrigin={VerticalOrigin.CENTER}
+                              showBackground={true}
+                              backgroundColor={new Color(0, 0, 0, 0.8)}
+                              disableDepthTestDistance={
+                                Number.POSITIVE_INFINITY
+                              }
+                              eyeOffset={new Cartesian3(0, 0, -30)}
+                            />
+                          </Entity>
+                        </React.Fragment>
+                      ))
+                    : index < markers.length - 1 && (
+                        <>
+                          <Entity>
+                            <PolylineGraphics
+                              positions={[
+                                Cartesian3.fromDegrees(
+                                  marker.position[1],
+                                  marker.position[0],
+                                ),
+                                Cartesian3.fromDegrees(
+                                  markers[index + 1].position[1],
+                                  markers[index + 1].position[0],
+                                ),
+                              ]}
+                              width={3}
+                              material={Color.YELLOW}
+                            />
+                          </Entity>
 
-                  {/* Midpoint Label for the straight line */}
-                  <Entity
-                    position={Cartesian3.fromDegrees(
-                      (marker.position[1] + markers[index + 1].position[1]) / 2,
-                      (marker.position[0] + markers[index + 1].position[0]) / 2,
-                    )}
-                  >
-                    <LabelGraphics
-                      text={`Estimated. Time: ${marker.travelTimeToNext}`}
-                      font="bold 12px sans-serif"
-                      fillColor={Color.YELLOW}
-                      outlineColor={Color.BLACK}
-                      outlineWidth={2}
-                      style={2}
-                      verticalOrigin={VerticalOrigin.CENTER}
-                      showBackground={true}
-                      backgroundColor={new Color(0, 0, 0, 0.8)}
-                      disableDepthTestDistance={Number.POSITIVE_INFINITY}
-                      eyeOffset={new Cartesian3(0, 0, -30)}
-                    />
-                  </Entity>
+                          {/* Midpoint Label for the straight line */}
+                          {marker.travelTimeToNext && (
+                            <Entity
+                              position={Cartesian3.fromDegrees(
+                                (marker.position[1] +
+                                  markers[index + 1].position[1]) /
+                                  2,
+                                (marker.position[0] +
+                                  markers[index + 1].position[0]) /
+                                  2,
+                              )}
+                            >
+                              <LabelGraphics
+                                text={`Estimated. Time: ${marker.travelTimeToNext}`}
+                                font="bold 12px sans-serif"
+                                fillColor={Color.YELLOW}
+                                outlineColor={Color.BLACK}
+                                outlineWidth={2}
+                                style={2}
+                                verticalOrigin={VerticalOrigin.CENTER}
+                                showBackground={true}
+                                backgroundColor={new Color(0, 0, 0, 0.8)}
+                                disableDepthTestDistance={
+                                  Number.POSITIVE_INFINITY
+                                }
+                                eyeOffset={new Cartesian3(0, 0, -30)}
+                              />
+                            </Entity>
+                          )}
+                        </>
+                      )}
                 </>
               )}
             </React.Fragment>
