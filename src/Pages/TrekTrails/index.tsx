@@ -110,7 +110,7 @@ const ExploreTrails: React.FC = () => {
       <MiddleContentWrapper>
         <Row gutter={24}>
           {/* Sidebar Filters */}
-          <Col xs={24} lg={6}>
+          <Col xs={0} lg={6}>
             <Affix offsetTop={100}>
               <div
                 style={{
@@ -241,7 +241,7 @@ const ExploreTrails: React.FC = () => {
               <>
                 <Row gutter={[24, 24]}>
                   {listedTrails?.data?.map((trail: any) => (
-                    <Col xs={24} sm={12} lg={8} key={trail?._id || trail?.id}>
+                    <Col xs={24} sm={12} lg={12} xl={8} key={trail?._id || trail?.id}>
                       <TrekCard
                         id={trail?._id || trail?.id}
                         title={trail?.title}
