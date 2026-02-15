@@ -307,14 +307,7 @@ const TrekTrailDetail: React.FC = () => {
       >
         {/* Stats Cards */}
         <Row gutter={[16, 16]} style={{ margin: "12px 0px 18px 0px" }}>
-          <Col
-            xs={24}
-            sm={12}
-            md={4}
-            style={{
-              padding: "0px",
-            }}
-          >
+          <Col xs={24} sm={12} md={4} className="stats-col-padding-xs">
             <Card
               bordered={false}
               style={{
@@ -346,14 +339,7 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
           </Col>
-          <Col
-            xs={24}
-            sm={12}
-            md={5}
-            style={{
-              padding: "0px",
-            }}
-          >
+          <Col xs={24} sm={12} md={5} className="stats-col-padding-xs">
             <Card
               bordered={false}
               style={{
@@ -385,14 +371,7 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
           </Col>
-          <Col
-            xs={24}
-            sm={12}
-            md={5}
-            style={{
-              padding: "0px",
-            }}
-          >
+          <Col xs={24} sm={12} md={5} className="stats-col-padding-xs">
             <Card
               bordered={false}
               style={{
@@ -424,14 +403,7 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
           </Col>
-          <Col
-            xs={24}
-            sm={12}
-            md={5}
-            style={{
-              padding: "0px",
-            }}
-          >
+          <Col xs={24} sm={12} md={5} className="stats-col-padding-xs">
             <Card
               bordered={false}
               style={{
@@ -463,14 +435,7 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
           </Col>
-          <Col
-            xs={24}
-            sm={12}
-            md={5}
-            style={{
-              padding: "0px",
-            }}
-          >
+          <Col xs={24} sm={12} md={5} className="stats-col-padding-xs">
             <Card
               bordered={false}
               style={{
@@ -855,6 +820,11 @@ const TrekTrailDetail: React.FC = () => {
             flex-direction: column;
             align-items: flex-start !important;
             gap: 20px;
+          }
+        }
+        @media (max-width: 575px) {
+          .stats-col-padding-xs {
+            padding: 0 !important;
           }
         }
         @keyframes fadeInUp {
