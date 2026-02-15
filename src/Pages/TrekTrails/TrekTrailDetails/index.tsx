@@ -192,23 +192,25 @@ const TrekTrailDetail: React.FC = () => {
               gap: "12px",
             }}
           >
-            <Tag
-              style={{
-                background: "rgba(255, 255, 255, 0.15)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                padding: "6px 16px",
-                fontSize: "13px",
-                fontWeight: "600",
-                borderRadius: "30px",
-                margin: 0,
-                color: "#fff",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}
-            >
-              {trekDetail?.country}
-            </Tag>
+            {trekDetail?.country && (
+              <Tag
+                style={{
+                  background: "rgba(255, 255, 255, 0.15)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  padding: "6px 16px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  borderRadius: "30px",
+                  margin: 0,
+                  color: "#fff",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                {trekDetail.country}
+              </Tag>
+            )}
             {trekDetail?.categories?.map((category: any) => (
               <Tag
                 key={category?._id}
@@ -301,12 +303,18 @@ const TrekTrailDetail: React.FC = () => {
           position: "relative",
           zIndex: 2,
           maxWidth: "1500px",
-          width: "95%",
         }}
       >
         {/* Stats Cards */}
-        <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-          <Col xs={24} sm={12} md={4}>
+        <Row gutter={[16, 16]} style={{ margin: "12px 0px 18px 0px" }}>
+          <Col
+            xs={24}
+            sm={12}
+            md={4}
+            style={{
+              padding: "0px",
+            }}
+          >
             <Card
               bordered={false}
               style={{
@@ -338,7 +346,14 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={5}>
+          <Col
+            xs={24}
+            sm={12}
+            md={5}
+            style={{
+              padding: "0px",
+            }}
+          >
             <Card
               bordered={false}
               style={{
@@ -370,7 +385,14 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={5}>
+          <Col
+            xs={24}
+            sm={12}
+            md={5}
+            style={{
+              padding: "0px",
+            }}
+          >
             <Card
               bordered={false}
               style={{
@@ -402,7 +424,14 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={5}>
+          <Col
+            xs={24}
+            sm={12}
+            md={5}
+            style={{
+              padding: "0px",
+            }}
+          >
             <Card
               bordered={false}
               style={{
@@ -434,7 +463,14 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
           </Col>
-          <Col xs={24} sm={12} md={5}>
+          <Col
+            xs={24}
+            sm={12}
+            md={5}
+            style={{
+              padding: "0px",
+            }}
+          >
             <Card
               bordered={false}
               style={{
@@ -461,7 +497,7 @@ const TrekTrailDetail: React.FC = () => {
               >
                 BEST SEASON
               </div>
-              <div style={{ fontSize: "16px", fontWeight: "bold" }}>
+              <div style={{ fontSize: "20px", fontWeight: "bold" }}>
                 {trekDetail?.recommendedSeasons?.join(", ")}
               </div>
             </Card>
@@ -506,10 +542,15 @@ const TrekTrailDetail: React.FC = () => {
                 <Card
                   key={index}
                   bordered={false}
+                  styles={{
+                    body: { padding: 0 },
+                    header: { padding: 0 },
+                  }}
                   style={{
                     borderRadius: "12px",
                     marginBottom: "24px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                    boxShadow: "none",
+                    padding: 0,
                   }}
                 >
                   <Title level={3}>{content?.title}</Title>
