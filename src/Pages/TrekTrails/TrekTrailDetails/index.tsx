@@ -306,8 +306,8 @@ const TrekTrailDetail: React.FC = () => {
         }}
       >
         {/* Stats Cards */}
-        <Row gutter={[16, 16]} style={{ margin: "12px 0px 18px 0px" }}>
-          <Col xs={24} sm={12} md={4} className="stats-col-padding-xs">
+        <div className="stats-grid" style={{ margin: "12px 0px 18px 0px" }}>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -338,8 +338,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.distanceKm} km
               </div>
             </Card>
-          </Col>
-          <Col xs={24} sm={12} md={5} className="stats-col-padding-xs">
+          </div>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -370,8 +370,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.maxAltitudeMeter} m
               </div>
             </Card>
-          </Col>
-          <Col xs={24} sm={12} md={5} className="stats-col-padding-xs">
+          </div>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -402,8 +402,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.averageDurationDays} Days
               </div>
             </Card>
-          </Col>
-          <Col xs={24} sm={12} md={5} className="stats-col-padding-xs">
+          </div>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -434,8 +434,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.difficulty}
               </div>
             </Card>
-          </Col>
-          <Col xs={24} sm={12} md={5} className="stats-col-padding-xs">
+          </div>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -466,8 +466,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.recommendedSeasons?.join(", ")}
               </div>
             </Card>
-          </Col>
-        </Row>
+          </div>
+        </div>
 
         <Row gutter={[24, 24]}>
           {/* Main Content Column */}
@@ -806,6 +806,11 @@ const TrekTrailDetail: React.FC = () => {
         .hero-title {
           font-size: 64px !important;
           line-height: 1.1 !important;
+        }
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 16px;
         }
         @media (max-width: 768px) {
           .hero-title {
