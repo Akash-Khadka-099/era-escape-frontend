@@ -192,23 +192,25 @@ const TrekTrailDetail: React.FC = () => {
               gap: "12px",
             }}
           >
-            <Tag
-              style={{
-                background: "rgba(255, 255, 255, 0.15)",
-                backdropFilter: "blur(8px)",
-                border: "1px solid rgba(255, 255, 255, 0.3)",
-                padding: "6px 16px",
-                fontSize: "13px",
-                fontWeight: "600",
-                borderRadius: "30px",
-                margin: 0,
-                color: "#fff",
-                textTransform: "uppercase",
-                letterSpacing: "0.5px",
-              }}
-            >
-              {trekDetail?.country}
-            </Tag>
+            {trekDetail?.country && (
+              <Tag
+                style={{
+                  background: "rgba(255, 255, 255, 0.15)",
+                  backdropFilter: "blur(8px)",
+                  border: "1px solid rgba(255, 255, 255, 0.3)",
+                  padding: "6px 16px",
+                  fontSize: "13px",
+                  fontWeight: "600",
+                  borderRadius: "30px",
+                  margin: 0,
+                  color: "#fff",
+                  textTransform: "uppercase",
+                  letterSpacing: "0.5px",
+                }}
+              >
+                {trekDetail.country}
+              </Tag>
+            )}
             {trekDetail?.categories?.map((category: any) => (
               <Tag
                 key={category?._id}
@@ -301,12 +303,11 @@ const TrekTrailDetail: React.FC = () => {
           position: "relative",
           zIndex: 2,
           maxWidth: "1500px",
-          width: "95%",
         }}
       >
         {/* Stats Cards */}
-        <Row gutter={[16, 16]} style={{ marginBottom: "24px" }}>
-          <Col xs={24} sm={12} md={4}>
+        <div className="stats-grid" style={{ margin: "12px 0px 18px 0px" }}>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -337,8 +338,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.distanceKm} km
               </div>
             </Card>
-          </Col>
-          <Col xs={24} sm={12} md={5}>
+          </div>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -369,8 +370,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.maxAltitudeMeter} m
               </div>
             </Card>
-          </Col>
-          <Col xs={24} sm={12} md={5}>
+          </div>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -401,8 +402,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.averageDurationDays} Days
               </div>
             </Card>
-          </Col>
-          <Col xs={24} sm={12} md={5}>
+          </div>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -433,8 +434,8 @@ const TrekTrailDetail: React.FC = () => {
                 {trekDetail?.difficulty}
               </div>
             </Card>
-          </Col>
-          <Col xs={24} sm={12} md={5}>
+          </div>
+          <div>
             <Card
               bordered={false}
               style={{
@@ -461,12 +462,12 @@ const TrekTrailDetail: React.FC = () => {
               >
                 BEST SEASON
               </div>
-              <div style={{ fontSize: "16px", fontWeight: "bold" }}>
+              <div style={{ fontSize: "20px", fontWeight: "bold" }}>
                 {trekDetail?.recommendedSeasons?.join(", ")}
               </div>
             </Card>
-          </Col>
-        </Row>
+          </div>
+        </div>
 
         <Row gutter={[24, 24]}>
           {/* Main Content Column */}
@@ -506,10 +507,15 @@ const TrekTrailDetail: React.FC = () => {
                 <Card
                   key={index}
                   bordered={false}
+                  styles={{
+                    body: { padding: 0 },
+                    header: { padding: 0 },
+                  }}
                   style={{
                     borderRadius: "12px",
                     marginBottom: "24px",
-                    boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                    boxShadow: "none",
+                    padding: 0,
                   }}
                 >
                   <Title level={3}>{content?.title}</Title>
@@ -801,6 +807,11 @@ const TrekTrailDetail: React.FC = () => {
           font-size: 64px !important;
           line-height: 1.1 !important;
         }
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 16px;
+        }
         @media (max-width: 768px) {
           .hero-title {
             font-size: 40px !important;
@@ -814,6 +825,11 @@ const TrekTrailDetail: React.FC = () => {
             flex-direction: column;
             align-items: flex-start !important;
             gap: 20px;
+          }
+        }
+        @media (max-width: 575px) {
+          .stats-col-padding-xs {
+            padding: 0 !important;
           }
         }
         @keyframes fadeInUp {
