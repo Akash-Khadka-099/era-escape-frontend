@@ -34,7 +34,7 @@ const { Title, Text } = Typography;
 interface TrailLocationDrawerProps {
   open: boolean;
   onClose: () => void;
-  destinationSlug: string;
+  destinationSlug?: string;
 }
 
 const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({

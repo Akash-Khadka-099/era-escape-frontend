@@ -39,7 +39,7 @@ import TrailLocationDrawer from "../TrailLocationDrawer";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
 import { useParams } from "react-router-dom";
-import TrekIntineraryPlans from "../TrekIntineraryPlans";
+import ItineraryTimeline from "../components/ItineraryTimeline";
 
 // Premium Marker Icon
 const markerIcon =
@@ -77,11 +77,14 @@ type TooltipState = {
   content: { name: string; pos: [number, number] };
 };
 
-const TrekTrailMap: React.FC = () => {
+const TrekTrailMap: React.FC<{
+  hideWrapper?: boolean;
+  hideItinerary?: boolean;
+}> = ({ hideWrapper = false, hideItinerary = false }) => {
   const [markers, setMarkers] = useState<MarkerData[]>([]);
   const [paths, setPaths] = useState<PathData[]>([]);
   const [drawerOpen, setDrawerOpen] = useState(false);
-  const [slectedDestinationSlug, setSelectedDestinationSlug] =
+  const [selectedDestinationSlug, setSelectedDestinationSlug] =
     useState<string>("");
   const [tooltip, setTooltip] = useState<TooltipState>({
     show: false,
@@ -99,8 +102,6 @@ const TrekTrailMap: React.FC = () => {
   const { slug } = useParams();
 
   const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "");
-
-  // const kmlUrl = "/kmlFiles/demo-abc-I.kml";
 
   const kmlUrl = useMemo(() => {
     const kmlFile = trekDetailResponse?.data?.kmlFile;
@@ -189,11 +190,10 @@ const TrekTrailMap: React.FC = () => {
       }
 
       try {
-        // Use native fetch to avoid axios interceptors (Auth headers) that might interfere with static files
         const response = await fetch(kmlUrl);
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status hehe: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status}`);
         }
 
         const text = await response.text();
@@ -224,7 +224,6 @@ const TrekTrailMap: React.FC = () => {
             .split(/[\s\n\r]+/)
             .filter((t) => t.trim().length > 0);
 
-          // Check if tokens contain commas (Standard KML)
           if (tokens.some((t) => t.includes(","))) {
             return tokens
               .map((t) => {
@@ -240,8 +239,6 @@ const TrekTrailMap: React.FC = () => {
               })
               .filter((p): p is [number, number] => p !== null);
           } else {
-            // Space separated fallback: lon lat [alt]
-            // Assume 3D (lon lat alt) if total count is divisible by 3, else 2D
             const is3D = tokens.length % 3 === 0;
             const stride = is3D ? 3 : 2;
             const result: [number, number][] = [];
@@ -387,18 +384,16 @@ const TrekTrailMap: React.FC = () => {
         if (newPathsFromKml.length > 0) {
           setPaths(newPathsFromKml);
         } else {
-          setPaths([]); // Ensure paths are cleared if KML is valid but empty/unparseable
+          setPaths([]);
         }
       } catch (error: any) {
         console.error("Error fetching or parsing KML:", error);
-        setPaths([]); // Clear paths on error
+        setPaths([]);
       }
     };
 
     if (kmlUrl) {
       fetchKml();
-    } else {
-      // setPaths([]); // Clear paths if KML URL becomes null
     }
   }, [kmlUrl]);
 
@@ -425,15 +420,10 @@ const TrekTrailMap: React.FC = () => {
   useEffect(() => {
     if (viewerRef.current?.cesiumElement) {
       const viewer = viewerRef.current.cesiumElement;
-
-      // Enable depth testing to ensure the trail renders correctly against the terrain
-      // This fixes visual "shifting" or floating issues
       viewer.scene.globe.depthTestAgainstTerrain = true;
 
-      // Initial Zoom Logic: Wait for KML if expected
       if (!initialZoomRef.current) {
         const hasMarkers = markers.length > 0;
-        // const hasPaths = paths.length > 0; // Handled by separate effect now
         const isKmlExpected = !!kmlUrl;
 
         if (!isKmlExpected && hasMarkers) {
@@ -444,7 +434,6 @@ const TrekTrailMap: React.FC = () => {
 
       const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
 
-      // Left click to open drawer
       handler.setInputAction((click: any) => {
         const pickedObject = viewer.scene.pick(click.position);
         if (defined(pickedObject) && pickedObject.id instanceof Entity) {
@@ -458,7 +447,6 @@ const TrekTrailMap: React.FC = () => {
         }
       }, ScreenSpaceEventType.LEFT_CLICK);
 
-      // Mouse move for tooltip
       handler.setInputAction((movement: any) => {
         const pickedObject = viewer.scene.pick(movement.endPosition);
         if (defined(pickedObject) && pickedObject.id instanceof Entity) {
@@ -508,7 +496,6 @@ const TrekTrailMap: React.FC = () => {
           5000,
         );
       } else if (paths.length > 0 && paths[0].path.length > 0) {
-        // Fallback to first point of the first path if no markers
         const firstPoint = paths[0].path[0];
         targetPosition = Cartesian3.fromDegrees(
           firstPoint[1],
@@ -547,7 +534,7 @@ const TrekTrailMap: React.FC = () => {
         offset: new HeadingPitchRange(
           0,
           CesiumMath.toRadians(-45),
-          sphere.radius * 2.2, // Tighter zoom factor
+          sphere.radius * 2.2,
         ),
       });
     } else {
@@ -555,8 +542,8 @@ const TrekTrailMap: React.FC = () => {
     }
   };
 
-  return (
-    <MiddleContentWrapper>
+  const mapContent = (
+    <React.Fragment>
       {/* Navigation Controls */}
       <div
         style={{
@@ -662,7 +649,6 @@ const TrekTrailMap: React.FC = () => {
                   )}
                 >
                   <LabelGraphics
-                    // text={`Total Trail: ${trail.distance} | Est. Time: ${trail.time}`}
                     font="bold 12px sans-serif"
                     fillColor={Color.WHITE}
                     outlineColor={Color.BLACK}
@@ -746,7 +732,7 @@ const TrekTrailMap: React.FC = () => {
 
               {/* Draw straight line to next marker(s) with distance/time ONLY when hovered */}
               {hoveredMarkerIndex === index && (
-                <>
+                <React.Fragment>
                   {marker.hasMultipleNextDestination &&
                   marker.routeTimes &&
                   marker.routeTimes.length > 0
@@ -793,7 +779,7 @@ const TrekTrailMap: React.FC = () => {
                         </React.Fragment>
                       ))
                     : index < markers.length - 1 && (
-                        <>
+                        <React.Fragment>
                           <Entity>
                             <PolylineGraphics
                               positions={[
@@ -840,15 +826,14 @@ const TrekTrailMap: React.FC = () => {
                               />
                             </Entity>
                           )}
-                        </>
+                        </React.Fragment>
                       )}
-                </>
+                </React.Fragment>
               )}
             </React.Fragment>
           ))}
         </Viewer>
 
-        {/* Ant Design Tooltip */}
         <Tooltip
           title={
             <div style={{ textAlign: "center" }}>
@@ -876,7 +861,6 @@ const TrekTrailMap: React.FC = () => {
           />
         </Tooltip>
 
-        {/* Map Title Overlay */}
         <div
           style={{
             position: "absolute",
@@ -903,10 +887,9 @@ const TrekTrailMap: React.FC = () => {
         <TrailLocationDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
-          destinationSlug={slectedDestinationSlug}
+          destinationSlug={selectedDestinationSlug}
         />
 
-        {/* Zoom Controls */}
         <div
           style={{
             position: "absolute",
@@ -970,10 +953,24 @@ const TrekTrailMap: React.FC = () => {
           </Space>
         </div>
       </div>
-      <div className="my-4">
-        <TrekIntineraryPlans />
-      </div>
-    </MiddleContentWrapper>
+      {!hideItinerary && (
+        <div className="my-4">
+          <ItineraryTimeline
+            destinations={trekDetailResponse?.data?.destinations || []}
+            onViewHotels={(slug) => {
+              setSelectedDestinationSlug(slug);
+              setDrawerOpen(true);
+            }}
+          />
+        </div>
+      )}
+    </React.Fragment>
+  );
+
+  return hideWrapper ? (
+    mapContent
+  ) : (
+    <MiddleContentWrapper>{mapContent}</MiddleContentWrapper>
   );
 };
 

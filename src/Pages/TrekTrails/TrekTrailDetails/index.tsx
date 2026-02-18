@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import {
   Button,
   Tag,
@@ -28,6 +28,8 @@ import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
 import ElevationChart from "@/components/Charts/ElevationChart";
 import TrekWeather from "./TrekWeather";
 import { SEO } from "@/components/SEO";
+import TrailLocationDrawer from "../TrailLocationDrawer";
+import TrekIntineraryPlans from "../TrekIntineraryPlans";
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -79,6 +81,8 @@ const PrevArrow = (props: any) => {
 };
 
 const TrekTrailDetail: React.FC = () => {
+  const [drawerOpen, setDrawerOpen] = useState(false);
+
   const navigate = useNavigate();
   const { slug } = useParams();
   const { data: trekDetailResponse, isLoading } = useGetTrekBlogDetail(
@@ -420,170 +424,80 @@ const TrekTrailDetail: React.FC = () => {
         }}
       >
         {/* Stats Cards */}
-        <div className="stats-grid" style={{ margin: "12px 0px 18px 0px" }}>
-          <div>
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-              }}
-            >
-              <div
+        <div className="stats-grid" style={{ margin: "20px 0px 40px 0px" }}>
+          {[
+            {
+              icon: <FaHiking />,
+              label: "DISTANCE",
+              value: `${trekDetail?.distanceKm} km`,
+            },
+            {
+              icon: <FaMountain />,
+              label: "MAX ELEVATION",
+              value: `${trekDetail?.maxAltitudeMeter} m`,
+            },
+            {
+              icon: <FaClock />,
+              label: "DURATION",
+              value: `${trekDetail?.averageDurationDays} Days`,
+            },
+            {
+              icon: <FaRoute />,
+              label: "DIFFICULTY",
+              value: trekDetail?.difficulty,
+            },
+            {
+              icon: <FaCalendarAlt />,
+              label: "BEST SEASON",
+              value: trekDetail?.recommendedSeasons?.join(", "),
+            },
+          ].map((stat, i) => (
+            <div key={i}>
+              <Card
+                bordered={false}
+                className="stat-card"
                 style={{
-                  color: "#2ecc71",
-                  fontSize: "24px",
-                  marginBottom: "8px",
+                  borderRadius: "16px",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+                  height: "100%",
+                  transition: "all 0.3s ease",
                 }}
               >
-                <FaHiking />
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  fontWeight: "bold",
-                  letterSpacing: "1px",
-                }}
-              >
-                DISTANCE
-              </div>
-              <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail?.distanceKm} km
-              </div>
-            </Card>
-          </div>
-          <div>
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-              }}
-            >
-              <div
-                style={{
-                  color: "#2ecc71",
-                  fontSize: "24px",
-                  marginBottom: "8px",
-                }}
-              >
-                <FaMountain />
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  fontWeight: "bold",
-                  letterSpacing: "1px",
-                }}
-              >
-                MAX ELEVATION
-              </div>
-              <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail?.maxAltitudeMeter} m
-              </div>
-            </Card>
-          </div>
-          <div>
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-              }}
-            >
-              <div
-                style={{
-                  color: "#2ecc71",
-                  fontSize: "24px",
-                  marginBottom: "8px",
-                }}
-              >
-                <FaClock />
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  fontWeight: "bold",
-                  letterSpacing: "1px",
-                }}
-              >
-                DURATION
-              </div>
-              <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail?.averageDurationDays} Days
-              </div>
-            </Card>
-          </div>
-          <div>
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-              }}
-            >
-              <div
-                style={{
-                  color: "#2ecc71",
-                  fontSize: "24px",
-                  marginBottom: "8px",
-                }}
-              >
-                <FaRoute />
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  fontWeight: "bold",
-                  letterSpacing: "1px",
-                }}
-              >
-                DIFFICULTY
-              </div>
-              <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail?.difficulty}
-              </div>
-            </Card>
-          </div>
-          <div>
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: "12px",
-                boxShadow: "0 4px 12px rgba(0,0,0,0.05)",
-              }}
-            >
-              <div
-                style={{
-                  color: "#2ecc71",
-                  fontSize: "24px",
-                  marginBottom: "8px",
-                }}
-              >
-                <FaCalendarAlt />
-              </div>
-              <div
-                style={{
-                  fontSize: "12px",
-                  color: "#888",
-                  fontWeight: "bold",
-                  letterSpacing: "1px",
-                }}
-              >
-                BEST SEASON
-              </div>
-              <div style={{ fontSize: "20px", fontWeight: "bold" }}>
-                {trekDetail?.recommendedSeasons?.join(", ")}
-              </div>
-            </Card>
-          </div>
+                <div
+                  style={{
+                    color: "#2ecc71",
+                    fontSize: "24px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  {stat.icon}
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "#A0AEC0",
+                    fontWeight: "700",
+                    letterSpacing: "1.2px",
+                    marginBottom: "4px",
+                  }}
+                >
+                  {stat.label}
+                </div>
+                <div
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: "700",
+                    color: "#2D3748",
+                  }}
+                >
+                  {stat.value}
+                </div>
+              </Card>
+            </div>
+          ))}
         </div>
 
-        <Row gutter={[24, 24]}>
+        <Row gutter={[24, 24]} style={{ marginBottom: "40px" }}>
           {/* Main Content Column */}
           <Col xs={24} lg={16}>
             {/* About Section */}
@@ -729,30 +643,6 @@ const TrekTrailDetail: React.FC = () => {
 
               <ElevationChart data={trekDetail?.destinations || []} />
             </Card>
-
-            {/* FAQs Section */}
-            {trekDetail?.faqs && trekDetail?.faqs?.length > 0 && (
-              <Card
-                bordered={false}
-                style={{
-                  borderRadius: "12px",
-                  marginBottom: "24px",
-                  boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-                }}
-              >
-                <Title level={3}>Frequently Asked Questions</Title>
-                <Collapse ghost expandIconPosition="end">
-                  {trekDetail?.faqs?.map((faq: any, index: number) => (
-                    <Panel
-                      header={<Text strong>{faq?.question}</Text>}
-                      key={index}
-                    >
-                      <Paragraph>{faq?.answer}</Paragraph>
-                    </Panel>
-                  ))}
-                </Collapse>
-              </Card>
-            )}
           </Col>
 
           {/* Sidebar Column */}
@@ -859,14 +749,85 @@ const TrekTrailDetail: React.FC = () => {
             </Card> */}
           </Col>
         </Row>
-      </MiddleContentWrapper>
 
+        {/* Full Width Itinerary & FAQs Section */}
+        <div style={{ marginTop: "40px" }}>
+          <TrekIntineraryPlans />
+
+          {trekDetail?.faqs && trekDetail?.faqs?.length > 0 && (
+            <Card
+              bordered={false}
+              style={{
+                borderRadius: "12px",
+                marginBottom: "24px",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                marginTop: "40px",
+              }}
+            >
+              <Title level={3} style={{ marginBottom: "24px" }}>
+                Frequently Asked Questions
+              </Title>
+              <Collapse ghost accordion expandIconPosition="end">
+                {trekDetail?.faqs?.map((faq: any, index: number) => (
+                  <Panel
+                    header={
+                      <Text
+                        strong
+                        style={{ fontSize: "16px", color: "#1a1a1a" }}
+                      >
+                        {faq?.question}
+                      </Text>
+                    }
+                    key={index}
+                    style={{
+                      marginBottom: "8px",
+                      background: "transparent",
+                      borderRadius: "12px",
+                      border: "none",
+                      transition: "all 0.3s ease",
+                    }}
+                  >
+                    <div style={{ padding: "0 20px 20px 20px" }}>
+                      <Paragraph
+                        style={{
+                          color: "#596780",
+                          fontSize: "15px",
+                          lineHeight: "1.7",
+                          margin: 0,
+                        }}
+                      >
+                        {faq?.answer}
+                      </Paragraph>
+                    </div>
+                  </Panel>
+                ))}
+              </Collapse>
+            </Card>
+          )}
+        </div>
+
+        <TrailLocationDrawer
+          open={drawerOpen}
+          onClose={() => setDrawerOpen(false)}
+        />
+      </MiddleContentWrapper>
       <style>{`
+        .blog-html-content {
+          color: #4a5568;
+          font-size: 16px;
+          line-height: 1.8;
+        }
+        .blog-html-content h1, .blog-html-content h2, .blog-html-content h3 {
+          color: #2d3748;
+          font-weight: 700;
+          margin-bottom: 16px;
+        }
         .blog-html-content img {
           max-width: 100%;
           height: auto;
-          border-radius: 8px;
-          margin: 16px 0;
+          border-radius: 12px;
+          margin: 24px 0;
+          box-shadow: 0 4px 12px rgba(0,0,0,0.08);
         }
         .blog-html-content figure {
           margin: 0;
@@ -955,6 +916,20 @@ const TrekTrailDetail: React.FC = () => {
             opacity: 1;
             transform: translateY(0);
           }
+        }
+        .ant-collapse-item {
+          transition: all 0.3s ease !important;
+        }
+        .ant-collapse-item-active {
+          background: #fff !important;
+          box-shadow: 0 8px 20px rgba(0,0,0,0.06) !important;
+        }
+        .ant-collapse-header {
+          padding: 18px 20px !important;
+        }
+        .stat-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 12px 30px rgba(0,0,0,0.08) !important;
         }
       `}</style>
     </div>
