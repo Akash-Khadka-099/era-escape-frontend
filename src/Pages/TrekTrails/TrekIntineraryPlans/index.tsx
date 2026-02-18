@@ -26,7 +26,9 @@ import {
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
 
-const TrekIntineraryPlans: React.FC = () => {
+const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
+  hideSEO = false,
+}) => {
   const { slug } = useParams<{ slug: string }>();
   const { data: itineraryPlans, isLoading } = useFetchTrekBlogItineraryPlans({
     trekBlogSlug: slug || "",
@@ -112,18 +114,25 @@ const TrekIntineraryPlans: React.FC = () => {
 
   return (
     <>
-      <SEO
-        title={seoTitle}
-        description={seoDescription}
-        keywords={keywords}
-        schema={productSchemas}
-        openGraphType="product"
-      />
-      <div
-        className="itinerary-plans-container"
-        style={{ marginTop: "40px", paddingBottom: "40px" }}
+      {!hideSEO && (
+        <SEO
+          title={seoTitle}
+          description={seoDescription}
+          keywords={keywords}
+          schema={productSchemas}
+          openGraphType="product"
+        />
+      )}
+      <Card
+        bordered={false}
+        style={{
+          borderRadius: "12px",
+          marginBottom: "24px",
+          boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+          padding: "24px",
+        }}
       >
-        <div style={{ marginBottom: "32px", textAlign: "center" }}>
+        <div style={{ textAlign: "left", marginBottom: "32px" }}>
           <Title level={2} style={{ marginBottom: "12px", fontWeight: 700 }}>
             <EnvironmentOutlined
               style={{ color: "#1890ff", marginRight: "12px" }}
@@ -134,8 +143,7 @@ const TrekIntineraryPlans: React.FC = () => {
             type="secondary"
             style={{
               fontSize: "16px",
-              maxWidth: "600px",
-              display: "inline-block",
+              display: "block",
             }}
           >
             Choose the perfect plan that fits your pace, budget, and adventure
@@ -295,7 +303,8 @@ const TrekIntineraryPlans: React.FC = () => {
                 borderRadius: "24px",
                 border: "1px solid #f0f0f0",
                 overflow: "hidden",
-                boxShadow: "0 4px 15px rgba(0,0,0,0.03)",
+                boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
+                transition: "all 0.3s ease",
               }}
             >
               <div style={{ padding: "10px 32px 32px 32px" }}>
@@ -396,7 +405,6 @@ const TrekIntineraryPlans: React.FC = () => {
           {`
           .ant-collapse-header {
             padding: 24px 32px !important;
-            background: linear-gradient(90deg, #f0f7ff 0%, #ffffff 100%) !important;
             align-items: center !important;
           }
           .ant-collapse-content-box {
@@ -460,7 +468,7 @@ const TrekIntineraryPlans: React.FC = () => {
           }
         `}
         </style>
-      </div>
+      </Card>
     </>
   );
 };
