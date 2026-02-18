@@ -18,7 +18,7 @@ import {
   SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Button, Drawer, Dropdown, Flex, Layout, Menu } from "antd";
+import { Avatar, Button, Drawer, Dropdown, Layout, Menu, Space } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
@@ -157,8 +157,9 @@ const Navbar: React.FC = () => {
 
   const baseMenuItems = filterNavItems(menuItems, user?.role);
   const desktopMenuItems = buildDesktopMenuItems(baseMenuItems);
-  const activeKey =
-    baseMenuItems.find((item) => item.key === location.pathname)?.key;
+  const activeKey = baseMenuItems.find(
+    (item) => item.key === location.pathname,
+  )?.key;
   const activeKeyString = typeof activeKey === "string" ? activeKey : "/";
   const drawerPanelClass =
     drawerView === "destinations"
@@ -168,80 +169,67 @@ const Navbar: React.FC = () => {
   return (
     <>
       <Header
-        className="margin-container"
+        className="navbar-header"
         style={{
-          backgroundColor: "transparent",
-          // padding: "0",
+          backgroundColor: "#fff",
           padding: "12px 0px",
-          marginBottom: 12,
           width: "100%",
           zIndex: 999,
-          background: "#fff",
           position: "sticky",
           top: 0,
+          borderBottom: "1px solid #f0f0f0",
         }}
       >
-        <Flex
-          justify="space-between"
-          gap={16}
-          style={{ padding: "0 2rem", background: "transparent" }}
-        >
-          <div
-            className="brand-name "
-            style={{
-              fontSize: "24px",
-              fontWeight: 800,
-              color: "#2D5A5A",
-              cursor: "pointer",
-              fontFamily: "'Outfit', sans-serif",
-              display: "flex",
-              gap: "8px",
-            }}
-            onClick={() => navigate("/")}
-          >
+        <div className="navbar-container margin-container">
+          {/* Mobile Hamburger - Left */}
+          <div className="hamburger-icon" onClick={showDrawer}>
+            <MenuOutlined />
+          </div>
+
+          {/* Logo - Center on Mobile, Left on Desktop */}
+          <div className="brand-name" onClick={() => navigate("/")}>
             <img
               src="/favicon_era_escape.svg"
               alt="Era Escape logo"
-              style={{ width: "64px", height: "64px" }}
+              className="navbar-logo"
             />
-            <p
-              style={{
-                whiteSpace: "nowrap",
-              }}
-            >
-              Era Escape
-            </p>
+            <span className="brand-text">Era Escape</span>
           </div>
-          <div style={{ flexGrow: 1 }}>
+
+          {/* Desktop Menu - Center */}
+          <div className="desktop-menu-wrapper">
             <Menu
               className="lg-menu-items"
               mode="horizontal"
-              style={{
-                lineHeight: "64px",
-                background: "#fff",
-                borderBottom: "none",
-                fontFamily: "Inter",
-                fontSize: 16,
-              }}
               items={desktopMenuItems}
               selectedKeys={[activeKeyString]}
               onClick={(e) => {
                 navigate(e.key);
               }}
+              style={{ borderBottom: "none" }}
             />
           </div>
-          <Flex gap={16}>
+
+          {/* User/Auth Section - Right */}
+          <div className="auth-section">
             {isAuthenticated ? (
-              <Flex align="center">
-                <Dropdown.Button
-                  trigger={["click"]}
-                  menu={{ items: dropdownMenu }}
-                  placement="bottomRight"
-                  icon={<UserOutlined />}
-                >
-                  {user?.name || ""}
-                </Dropdown.Button>
-              </Flex>
+              <Dropdown
+                menu={{ items: dropdownMenu }}
+                trigger={["click"]}
+                placement="bottomRight"
+              >
+                <div className="user-profile-trigger">
+                  <div className="user-info">
+                    <span className="user-name">{user?.name}</span>
+                  </div>
+                  <Avatar
+                    size="large"
+                    icon={<UserOutlined />}
+                    className="user-avatar"
+                    style={{ backgroundColor: "#2d5a5a" }}
+                  />
+                </div>
+              </Dropdown>
             ) : (
               <div className="navbar-signin-wrapper">
                 <Button
@@ -258,11 +246,8 @@ const Navbar: React.FC = () => {
                 </Button>
               </div>
             )}
-            <div className="hamburger-icon" onClick={showDrawer}>
-              <MenuOutlined />
-            </div>
-          </Flex>
-        </Flex>
+          </div>
+        </div>
       </Header>
       <LoginRegister
         isLoginModalOpen={isLoginModalOpen}
@@ -310,43 +295,43 @@ const Navbar: React.FC = () => {
                   )
                   .map((item) => {
                     const label = item.label;
-                  const isDestinations = item.key === "/destinations";
+                    const isDestinations = item.key === "/destinations";
 
-                  return (
-                    <button
-                      className="drawer-row"
-                      key={item.key ?? label}
-                      type="button"
-                      onClick={() => {
-                        if (isDestinations) {
-                          setDrawerView("destinations");
-                        } else if (typeof item.key === "string") {
-                          navigate(item.key);
-                          onClose();
-                        }
-                      }}
-                    >
-                      <span className="drawer-row-text">
-                        {label.toUpperCase()}
-                      </span>
-                      {isDestinations ? (
-                        <span
-                          className="drawer-row-icon drawer-row-icon--action"
-                          onClick={(event) => {
-                            event.stopPropagation();
+                    return (
+                      <button
+                        className="drawer-row"
+                        key={item.key ?? label}
+                        type="button"
+                        onClick={() => {
+                          if (isDestinations) {
                             setDrawerView("destinations");
-                          }}
-                        >
-                          <RightOutlined />
+                          } else if (typeof item.key === "string") {
+                            navigate(item.key);
+                            onClose();
+                          }
+                        }}
+                      >
+                        <span className="drawer-row-text">
+                          {label.toUpperCase()}
                         </span>
-                      ) : (
-                        <span className="drawer-row-icon">
-                          <RightOutlined />
-                        </span>
-                      )}
-                    </button>
-                  );
-                })}
+                        {isDestinations ? (
+                          <span
+                            className="drawer-row-icon drawer-row-icon--action"
+                            onClick={(event) => {
+                              event.stopPropagation();
+                              setDrawerView("destinations");
+                            }}
+                          >
+                            <RightOutlined />
+                          </span>
+                        ) : (
+                          <span className="drawer-row-icon">
+                            <RightOutlined />
+                          </span>
+                        )}
+                      </button>
+                    );
+                  })}
               </div>
               {/* {!isAuthenticated && (
                 <div className="drawer-footer">

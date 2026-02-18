@@ -1,5 +1,6 @@
 import React from "react";
 import { useParams } from "react-router-dom";
+import { SEO } from "@/components/SEO";
 import { useFetchTrekBlogItineraryPlans } from "@/services/trekServices/trekServices";
 import {
   Card,
@@ -65,274 +66,334 @@ const TrekIntineraryPlans: React.FC = () => {
     );
   }
 
+  // --- SEO Logic for Itineraries ---
+  const trekName = itineraryPlans[0]?.trekBlogId?.title || "Trek";
+  const regionName =
+    itineraryPlans[0]?.trekBlogId?.trekRegion?.[0]?.name || "Nepal";
+
+  const seoTitle = `${trekName} Trek Itinerary & Cost | ${itineraryPlans.length} Options | Era Escape`;
+  const seoDescription = `Compare best ${trekName} trek itineraries. ${itineraryPlans
+    .map((p: any) => `${p.estimatedDays} Days (${p.difficultyLevel})`)
+    .join(", ")}. Prices from Rs. ${Math.min(
+    ...itineraryPlans.map((p: any) => p.estimatedMinCost || 0),
+  )} to Rs. ${Math.max(
+    ...itineraryPlans.map((p: any) => p.estimatedMaxCost || 0),
+  )}.`;
+
+  const keywords = [
+    `${trekName} Itinerary`,
+    `${trekName} Trek Cost`,
+    `${trekName} Trek Map`,
+    `Trekking in ${regionName}`,
+    "Nepal Trekking Packages",
+    ...itineraryPlans.map(
+      (p: any) => `${p.estimatedDays} Days ${trekName} Trek`,
+    ),
+  ];
+
+  // Product Schemas for each Itinerary Option
+  const productSchemas = itineraryPlans.map((plan: any) => ({
+    "@context": "https://schema.org",
+    "@type": "Product",
+    name: `${trekName} Trek - ${plan.estimatedDays} Days Option`,
+    description: `A ${plan.difficultyLevel} difficulty trek in ${regionName}. Estimate cost: ${plan.estimatedMinCost} - ${plan.estimatedMaxCost}.`,
+    offers: {
+      "@type": "Offer",
+      price: plan.estimatedMinCost,
+      priceCurrency: "NPR", // Assuming NPR based on 'Rs'
+      availability: "https://schema.org/InStock",
+      url: window.location.href,
+    },
+    brand: {
+      "@type": "Brand",
+      name: "Era Escape",
+    },
+  }));
+
   return (
-    <div
-      className="itinerary-plans-container"
-      style={{ marginTop: "40px", paddingBottom: "40px" }}
-    >
-      <div style={{ marginBottom: "32px", textAlign: "center" }}>
-        <Title level={2} style={{ marginBottom: "12px", fontWeight: 700 }}>
-          <EnvironmentOutlined
-            style={{ color: "#1890ff", marginRight: "12px" }}
-          />
-          Tailored Trekking Itineraries
-        </Title>
-        <Text
-          type="secondary"
-          style={{
-            fontSize: "16px",
-            maxWidth: "600px",
-            display: "inline-block",
-          }}
-        >
-          Choose the perfect plan that fits your pace, budget, and adventure
-          style. Each plan is carefully crafted for an optimal experience.
-        </Text>
-      </div>
-
-      <Collapse
-        accordion
-        ghost
-        expandIcon={({ isActive }) => (
-          <DownOutlined
-            rotate={isActive ? 180 : 0}
-            style={{ fontSize: "18px", color: "#1890ff" }}
-          />
-        )}
-        expandIconPosition="end"
-        style={{ background: "transparent" }}
+    <>
+      <SEO
+        title={seoTitle}
+        description={seoDescription}
+        keywords={keywords}
+        schema={productSchemas}
+        openGraphType="product"
+      />
+      <div
+        className="itinerary-plans-container"
+        style={{ marginTop: "40px", paddingBottom: "40px" }}
       >
-        {itineraryPlans.map((plan: any, index: number) => (
-          <Panel
-            key={plan._id || index}
-            header={
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  flexWrap: "wrap",
-                  gap: "20px",
-                  width: "100%",
-                  paddingRight: "20px",
-                }}
-              >
-                <div style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}>
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "14px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "44px",
-                        height: "44px",
-                        borderRadius: "12px",
-                        background: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#1890ff",
-                        boxShadow: "0 4px 10px rgba(24, 144, 255, 0.15)",
-                      }}
-                    >
-                      <ClockCircleOutlined style={{ fontSize: "20px" }} />
-                    </div>
-                    <div>
-                      <Text
-                        type="secondary"
-                        style={{
-                          fontSize: "12px",
-                          display: "block",
-                          fontWeight: 500,
-                        }}
-                      >
-                        DURATION
-                      </Text>
-                      <Text
-                        strong
-                        style={{ fontSize: "18px", color: "#262626" }}
-                      >
-                        {plan.estimatedDays} Days
-                      </Text>
-                    </div>
-                  </div>
-
-                  <div
-                    style={{
-                      display: "flex",
-                      alignItems: "center",
-                      gap: "14px",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "44px",
-                        height: "44px",
-                        borderRadius: "12px",
-                        background: "#fff",
-                        display: "flex",
-                        alignItems: "center",
-                        justifyContent: "center",
-                        color: "#52c41a",
-                        boxShadow: "0 4px 10px rgba(82, 196, 26, 0.15)",
-                      }}
-                    >
-                      <DollarOutlined style={{ fontSize: "20px" }} />
-                    </div>
-                    <div>
-                      <Text
-                        type="secondary"
-                        style={{
-                          fontSize: "12px",
-                          display: "block",
-                          fontWeight: 500,
-                        }}
-                      >
-                        EST. BUDGET
-                      </Text>
-                      <Text
-                        strong
-                        style={{ fontSize: "18px", color: "#262626" }}
-                      >
-                        Rs. {plan.estimatedMinCost?.toLocaleString()} -{" "}
-                        {plan.estimatedMaxCost?.toLocaleString()}
-                      </Text>
-                    </div>
-                  </div>
-                </div>
-
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: "12px" }}
-                >
-                  <Tag
-                    color={
-                      plan.difficultyLevel === "Hard"
-                        ? "volcano"
-                        : plan.difficultyLevel === "Medium"
-                          ? "orange"
-                          : "green"
-                    }
-                    style={{
-                      padding: "4px 16px",
-                      borderRadius: "10px",
-                      fontSize: "13px",
-                      fontWeight: 700,
-                      margin: 0,
-                      border: "none",
-                      textTransform: "uppercase",
-                    }}
-                  >
-                    {plan.difficultyLevel}
-                  </Tag>
-                </div>
-              </div>
-            }
+        <div style={{ marginBottom: "32px", textAlign: "center" }}>
+          <Title level={2} style={{ marginBottom: "12px", fontWeight: 700 }}>
+            <EnvironmentOutlined
+              style={{ color: "#1890ff", marginRight: "12px" }}
+            />
+            Tailored Trekking Itineraries
+          </Title>
+          <Text
+            type="secondary"
             style={{
-              marginBottom: "24px",
-              background: "#fff",
-              borderRadius: "24px",
-              border: "1px solid #f0f0f0",
-              overflow: "hidden",
-              boxShadow: "0 4px 15px rgba(0,0,0,0.03)",
+              fontSize: "16px",
+              maxWidth: "600px",
+              display: "inline-block",
             }}
           >
-            <div style={{ padding: "10px 32px 32px 32px" }}>
-              <Divider style={{ margin: "0 0 32px 0" }} />
-              <Row gutter={[48, 32]}>
-                <Col xs={24} lg={14}>
-                  <div style={{ marginBottom: "16px" }}>
-                    <Title
-                      level={4}
-                      style={{
-                        marginBottom: "24px",
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "12px",
-                        color: "#1a1a1a",
-                      }}
-                    >
-                      <ThunderboltOutlined style={{ color: "#faad14" }} />
-                      Itinerary Highlights & Route
-                    </Title>
-                    <div
-                      className="itinerary-description custom-scrollbar"
-                      style={{
-                        fontSize: "16px",
-                        lineHeight: "1.9",
-                        color: "#4a4a4a",
-                        maxHeight: "400px",
-                        overflowY: "auto",
-                        paddingRight: "15px",
-                      }}
-                      dangerouslySetInnerHTML={{ __html: plan.htmlDescription }}
-                    />
-                  </div>
-                </Col>
+            Choose the perfect plan that fits your pace, budget, and adventure
+            style. Each plan is carefully crafted for an optimal experience.
+          </Text>
+        </div>
 
-                <Col xs={24} lg={10}>
+        <Collapse
+          accordion
+          ghost
+          expandIcon={({ isActive }) => (
+            <DownOutlined
+              rotate={isActive ? 180 : 0}
+              style={{ fontSize: "18px", color: "#1890ff" }}
+            />
+          )}
+          expandIconPosition="end"
+          style={{ background: "transparent" }}
+        >
+          {itineraryPlans.map((plan: any, index: number) => (
+            <Panel
+              key={plan._id || index}
+              header={
+                <div
+                  style={{
+                    display: "flex",
+                    justifyContent: "space-between",
+                    alignItems: "center",
+                    flexWrap: "wrap",
+                    gap: "20px",
+                    width: "100%",
+                    paddingRight: "20px",
+                  }}
+                >
                   <div
-                    style={{
-                      background: "#f8fafc",
-                      padding: "32px",
-                      borderRadius: "24px",
-                      height: "100%",
-                      border: "1px solid #edf2f7",
-                    }}
+                    style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}
                   >
-                    <Title
-                      level={5}
+                    <div
                       style={{
-                        marginBottom: "24px",
-                        color: "#1a1a1a",
                         display: "flex",
                         alignItems: "center",
-                        gap: "10px",
+                        gap: "14px",
                       }}
                     >
-                      <InfoCircleOutlined style={{ color: "#1890ff" }} />
-                      Pro Tips & Notes
-                    </Title>
-                    <ul style={{ padding: 0, margin: 0, listStyle: "none" }}>
-                      {plan.notes?.map((note: string, i: number) => (
-                        <li
-                          key={i}
+                      <div
+                        style={{
+                          width: "44px",
+                          height: "44px",
+                          borderRadius: "12px",
+                          background: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#1890ff",
+                          boxShadow: "0 4px 10px rgba(24, 144, 255, 0.15)",
+                        }}
+                      >
+                        <ClockCircleOutlined style={{ fontSize: "20px" }} />
+                      </div>
+                      <div>
+                        <Text
+                          type="secondary"
                           style={{
-                            display: "flex",
-                            gap: "14px",
-                            marginBottom: "20px",
-                            alignItems: "flex-start",
+                            fontSize: "12px",
+                            display: "block",
+                            fontWeight: 500,
                           }}
                         >
-                          <div style={{ marginTop: "4px" }}>
-                            <CheckCircleOutlined
-                              style={{ color: "#52c41a", fontSize: "18px" }}
-                            />
-                          </div>
-                          <Text
+                          DURATION
+                        </Text>
+                        <Text
+                          strong
+                          style={{ fontSize: "18px", color: "#262626" }}
+                        >
+                          {plan.estimatedDays} Days
+                        </Text>
+                      </div>
+                    </div>
+
+                    <div
+                      style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: "14px",
+                      }}
+                    >
+                      <div
+                        style={{
+                          width: "44px",
+                          height: "44px",
+                          borderRadius: "12px",
+                          background: "#fff",
+                          display: "flex",
+                          alignItems: "center",
+                          justifyContent: "center",
+                          color: "#52c41a",
+                          boxShadow: "0 4px 10px rgba(82, 196, 26, 0.15)",
+                        }}
+                      >
+                        <DollarOutlined style={{ fontSize: "20px" }} />
+                      </div>
+                      <div>
+                        <Text
+                          type="secondary"
+                          style={{
+                            fontSize: "12px",
+                            display: "block",
+                            fontWeight: 500,
+                          }}
+                        >
+                          EST. BUDGET
+                        </Text>
+                        <Text
+                          strong
+                          style={{ fontSize: "18px", color: "#262626" }}
+                        >
+                          Rs. {plan.estimatedMinCost?.toLocaleString()} -{" "}
+                          {plan.estimatedMaxCost?.toLocaleString()}
+                        </Text>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "12px",
+                    }}
+                  >
+                    <Tag
+                      color={
+                        plan.difficultyLevel === "Hard"
+                          ? "volcano"
+                          : plan.difficultyLevel === "Medium"
+                            ? "orange"
+                            : "green"
+                      }
+                      style={{
+                        padding: "4px 16px",
+                        borderRadius: "10px",
+                        fontSize: "13px",
+                        fontWeight: 700,
+                        margin: 0,
+                        border: "none",
+                        textTransform: "uppercase",
+                      }}
+                    >
+                      {plan.difficultyLevel}
+                    </Tag>
+                  </div>
+                </div>
+              }
+              style={{
+                marginBottom: "24px",
+                background: "#fff",
+                borderRadius: "24px",
+                border: "1px solid #f0f0f0",
+                overflow: "hidden",
+                boxShadow: "0 4px 15px rgba(0,0,0,0.03)",
+              }}
+            >
+              <div style={{ padding: "10px 32px 32px 32px" }}>
+                <Divider style={{ margin: "0 0 32px 0" }} />
+                <Row gutter={[48, 32]}>
+                  <Col xs={24} lg={14}>
+                    <div style={{ marginBottom: "16px" }}>
+                      <Title
+                        level={4}
+                        style={{
+                          marginBottom: "24px",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "12px",
+                          color: "#1a1a1a",
+                        }}
+                      >
+                        <ThunderboltOutlined style={{ color: "#faad14" }} />
+                        Itinerary Highlights & Route
+                      </Title>
+                      <div
+                        className="itinerary-description custom-scrollbar"
+                        style={{
+                          fontSize: "16px",
+                          lineHeight: "1.9",
+                          color: "#4a4a4a",
+                          maxHeight: "400px",
+                          overflowY: "auto",
+                          paddingRight: "15px",
+                        }}
+                        dangerouslySetInnerHTML={{
+                          __html: plan.htmlDescription,
+                        }}
+                      />
+                    </div>
+                  </Col>
+
+                  <Col xs={24} lg={10}>
+                    <div
+                      style={{
+                        background: "#f8fafc",
+                        padding: "32px",
+                        borderRadius: "24px",
+                        height: "100%",
+                        border: "1px solid #edf2f7",
+                      }}
+                    >
+                      <Title
+                        level={5}
+                        style={{
+                          marginBottom: "24px",
+                          color: "#1a1a1a",
+                          display: "flex",
+                          alignItems: "center",
+                          gap: "10px",
+                        }}
+                      >
+                        <InfoCircleOutlined style={{ color: "#1890ff" }} />
+                        Pro Tips & Notes
+                      </Title>
+                      <ul style={{ padding: 0, margin: 0, listStyle: "none" }}>
+                        {plan.notes?.map((note: string, i: number) => (
+                          <li
+                            key={i}
                             style={{
-                              fontSize: "15px",
-                              color: "#595959",
-                              lineHeight: "1.6",
+                              display: "flex",
+                              gap: "14px",
+                              marginBottom: "20px",
+                              alignItems: "flex-start",
                             }}
                           >
-                            {note}
-                          </Text>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                </Col>
-              </Row>
-            </div>
-          </Panel>
-        ))}
-      </Collapse>
+                            <div style={{ marginTop: "4px" }}>
+                              <CheckCircleOutlined
+                                style={{ color: "#52c41a", fontSize: "18px" }}
+                              />
+                            </div>
+                            <Text
+                              style={{
+                                fontSize: "15px",
+                                color: "#595959",
+                                lineHeight: "1.6",
+                              }}
+                            >
+                              {note}
+                            </Text>
+                          </li>
+                        ))}
+                      </ul>
+                    </div>
+                  </Col>
+                </Row>
+              </div>
+            </Panel>
+          ))}
+        </Collapse>
 
-      <style>
-        {`
+        <style>
+          {`
           .ant-collapse-header {
             padding: 24px 32px !important;
             background: linear-gradient(90deg, #f0f7ff 0%, #ffffff 100%) !important;
@@ -398,8 +459,9 @@ const TrekIntineraryPlans: React.FC = () => {
             background: #bfbfbf;
           }
         `}
-      </style>
-    </div>
+        </style>
+      </div>
+    </>
   );
 };
 
