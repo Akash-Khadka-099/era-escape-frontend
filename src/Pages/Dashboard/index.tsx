@@ -4,55 +4,18 @@ import "./Dashboard.css";
 import {
   ArrowRightOutlined,
   PlayCircleOutlined,
-  EnvironmentOutlined,
-  ClockCircleOutlined,
   CompassOutlined,
 } from "@ant-design/icons";
-import { Button, Tag } from "antd";
+import { Button } from "antd";
 
 // Local Assets
 import HeroImage from "@/assets/images/hero.png";
-import Trek1Image from "@/assets/images/trek1.png";
+
 import StoryImage from "@/assets/images/story.png";
 import { useFetchTrendingBlogsCategories } from "@/services/userHomepageServices/homepageServices";
 import CategoryCard from "@/Pages/Dashboard/components/CategoryCard";
 
 const Dashboard: React.FC = () => {
-  const trendingTreks = [
-    {
-      id: 1,
-      title: "The Great Himalayan Trail",
-      desc: "Exploring the world's highest traverse across the roof of the world, from...",
-      image: Trek1Image,
-      tag: "Hard",
-      duration: "15 MIN READ",
-      location: "NEPAL",
-      stat: "1,200km Total",
-    },
-    {
-      id: 2,
-      title: "Patagonian Peaks",
-      desc: "Wind-swept landscapes and granite spires: a journey through Torres del Paine.",
-      image:
-        "https://images.unsplash.com/photo-1531804055935-76f44d7c3621?q=80&w=1000&auto=format&fit=crop",
-      tag: "Moderate",
-      duration: "12 MIN READ",
-      location: "CHILE",
-      stat: "150m Gain",
-    },
-    {
-      id: 3,
-      title: "Alpine Wildflowers",
-      desc: "A gentle descent through the Lauterbrunnen Valley surrounded by 72...",
-      image:
-        "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1000&auto=format&fit=crop",
-      tag: "Easy",
-      duration: "8 MIN READ",
-      location: "SWITZERLAND",
-      stat: "12km Route",
-    },
-  ];
-
   const { data } = useFetchTrendingBlogsCategories({});
 
   console.log("data category", data);
@@ -100,54 +63,6 @@ const Dashboard: React.FC = () => {
               <CategoryCard key={category.id} category={category} />
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* Trending Section */}
-      <section className="trending-section">
-        <div className="section-header">
-          <div>
-            <Tag
-              color="orange"
-              style={{ marginBottom: "8px", fontWeight: 600 }}
-            >
-              TOP PICKS
-            </Tag>
-            <h2>Currently Trending</h2>
-          </div>
-          <a href="/trek-trails" className="view-all">
-            View All Treks <ArrowRightOutlined />
-          </a>
-        </div>
-
-        <div className="trek-grid">
-          {trendingTreks.map((trek) => (
-            <div key={trek.id} className="trek-card">
-              <div className="trek-image-wrapper">
-                <img src={trek.image} alt={trek.title} className="trek-image" />
-                <span className="trek-tag">{trek.tag}</span>
-              </div>
-              <div className="trek-info">
-                <div className="trek-meta">
-                  <span>
-                    <ClockCircleOutlined /> {trek.duration}
-                  </span>
-                  <span>•</span>
-                  <span>
-                    <EnvironmentOutlined /> {trek.location}
-                  </span>
-                </div>
-                <h3 className="trek-card-title">{trek.title}</h3>
-                <p className="trek-card-desc">{trek.desc}</p>
-                <div className="trek-card-footer">
-                  <span className="trek-stat">{trek.stat}</span>
-                  <a href="#" className="read-story">
-                    READ STORY
-                  </a>
-                </div>
-              </div>
-            </div>
-          ))}
         </div>
       </section>
 

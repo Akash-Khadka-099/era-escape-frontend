@@ -138,15 +138,15 @@ const CustomFooter: React.FC = () => {
           <Flex vertical gap={16}>
             <Flex align="center" gap={12}>
               <MailOutlined style={{ color: "#666" }} />
-              <Text style={{ color: "#666" }}>hello@eraescape.com</Text>
+              <Text style={{ color: "#666" }}>akashhimalaya099@gmail.com</Text>
             </Flex>
             <Flex align="center" gap={12}>
               <EnvironmentOutlined style={{ color: "#666" }} />
-              <Text style={{ color: "#666" }}>Basecamp One, CO</Text>
+              <Text style={{ color: "#666" }}>Kathmandu, Nepal</Text>
             </Flex>
             <Flex align="center" gap={12}>
               <PhoneOutlined style={{ color: "#666" }} />
-              <Text style={{ color: "#666" }}>+1 (555) 612-3456</Text>
+              <Text style={{ color: "#666" }}>+977 9800795525</Text>
             </Flex>
           </Flex>
         </Col>
