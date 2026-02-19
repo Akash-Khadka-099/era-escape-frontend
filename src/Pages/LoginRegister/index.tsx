@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import ForgetPassword from "@/Pages/LoginRegister/ForgetPassword";
 import LoginForm from "@/Pages/LoginRegister/LoginForm";
 import RegisterForm from "@/Pages/LoginRegister/RegisterForm";
 import GoogleAuth from "@/Pages/LoginRegister/GoogleAuth";
+import useAuthStore from "@/store/authStore";
 import { Button, Flex, Image, Modal } from "antd";
 
 interface LoginRegisterProps {
@@ -16,6 +17,14 @@ const LoginRegister: React.FC<LoginRegisterProps> = ({
 }) => {
   const [isLoginPage, setIsLoginPage] = useState(true);
   const [isForgetPassword, setIsForgetPassword] = useState(false);
+  const { isAuthenticated } = useAuthStore();
+
+  useEffect(() => {
+    if (isLoginModalOpen && isAuthenticated) {
+      handleCloseLoginModal();
+    }
+  }, [isLoginModalOpen, isAuthenticated, handleCloseLoginModal]);
+
   return (
     <>
       {" "}
