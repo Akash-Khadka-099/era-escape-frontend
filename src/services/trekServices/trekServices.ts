@@ -34,19 +34,29 @@ const useGetTrekBlogDetail = (slug: string) => {
 };
 
 
-const fetchDestinationHotels = ({ trekBlogSlug, destinationSlug }:
-  { trekBlogSlug: string, destinationSlug: string }) => (): Promise<AxiosResponse> => {
-    return axiosInstance.get(apiEndpoints.trekBlogs.fetchDestinationHotels.replace("{trekBlogSlug}",
-      trekBlogSlug).replace("{destinationSlug}", destinationSlug));
-  };
+const fetchDestinationHotels = ({
+  trekBlogSlug,
+  destinationSlug,
+}: {
+  trekBlogSlug: string;
+  destinationSlug: string;
+}): Promise<AxiosResponse> => {
+  return axiosInstance.get(
+    apiEndpoints.trekBlogs.fetchDestinationHotels
+      .replace("{trekBlogSlug}", trekBlogSlug)
+      .replace("{destinationSlug}", destinationSlug),
+  );
+};
 
 const useFetchDestinationHotels = ({ trekBlogSlug, destinationSlug }:
   { trekBlogSlug: string, destinationSlug: string }) => {
   return useQuery({
     queryKey: [apiEndpoints.trekBlogs.fetchDestinationHotels, trekBlogSlug, destinationSlug],
-    queryFn: fetchDestinationHotels({ trekBlogSlug, destinationSlug }),
+    queryFn: () => fetchDestinationHotels({ trekBlogSlug, destinationSlug }),
     select: data => data?.data?.data,
     enabled: !!trekBlogSlug && !!destinationSlug,
+    retry: false,
+    staleTime: 60 * 1000,
   });
 };
 
@@ -69,6 +79,7 @@ const useFetchTrekBlogItineraryPlans = ({ trekBlogSlug }:
 export {
   useSearchTrekBlogLists,
   useGetTrekBlogDetail,
+  fetchDestinationHotels,
   useFetchDestinationHotels,
   useFetchTrekBlogItineraryPlans
 };

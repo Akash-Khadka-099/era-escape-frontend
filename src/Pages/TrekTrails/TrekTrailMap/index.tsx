@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
 import {
   Viewer,
   Entity,
@@ -24,7 +24,7 @@ import {
   BoundingSphere,
   HeadingPitchRange,
 } from "cesium";
-import { Tooltip, Button, Space, Alert } from "antd";
+import { Tooltip, Button, Space, Alert, message } from "antd";
 import {
   PlusOutlined,
   MinusOutlined,
@@ -37,9 +37,14 @@ import {
 import "cesium/Build/Cesium/Widgets/widgets.css";
 import TrailLocationDrawer from "../TrailLocationDrawer";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
-import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
+import {
+  fetchDestinationHotels,
+  useGetTrekBlogDetail,
+} from "@/services/trekServices/trekServices";
+import { apiEndpoints } from "@/services/apiEndpoints";
 import { useParams } from "react-router-dom";
 import ItineraryTimeline from "../components/ItineraryTimeline";
+import { useQueryClient } from "@tanstack/react-query";
 
 // Premium Marker Icon
 const markerIcon =
@@ -100,6 +105,7 @@ const TrekTrailMap: React.FC<{
   const [terrainProvider, setTerrainProvider] = useState<any>(null);
   const [isMinimized, setIsMinimized] = useState(false);
   const { slug } = useParams();
+  const queryClient = useQueryClient();
 
   const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "");
 
@@ -125,6 +131,41 @@ const TrekTrailMap: React.FC<{
   }, [trekDetailResponse]);
 
   const viewerRef = useRef<any>(null);
+
+  const handleOpenHotelsDrawer = useCallback(
+    async (destinationSlug?: string | null) => {
+      const safeDestinationSlug = destinationSlug?.trim();
+      if (!slug || !safeDestinationSlug) {
+        return;
+      }
+
+      try {
+        await queryClient.fetchQuery({
+          queryKey: [
+            apiEndpoints.trekBlogs.fetchDestinationHotels,
+            slug,
+            safeDestinationSlug,
+          ],
+          queryFn: () =>
+            fetchDestinationHotels({
+              trekBlogSlug: slug,
+              destinationSlug: safeDestinationSlug,
+            }),
+          retry: false,
+          staleTime: 60 * 1000,
+        });
+
+        setSelectedDestinationSlug(safeDestinationSlug);
+        setDrawerOpen(true);
+      } catch (error: any) {
+        // For 401, interceptor handles auth flow; keep drawer closed.
+        if (error?.response?.status !== 401) {
+          message.error("Unable to load destination hotels right now.");
+        }
+      }
+    },
+    [queryClient, slug],
+  );
 
   useEffect(() => {
     const destinations = trekDetailResponse?.data?.destinations;
@@ -439,10 +480,9 @@ const TrekTrailMap: React.FC<{
         if (defined(pickedObject) && pickedObject.id instanceof Entity) {
           const entity = pickedObject.id;
           if (entity.properties && entity.properties.hasProperty("isMarker")) {
-            setSelectedDestinationSlug(
+            void handleOpenHotelsDrawer(
               entity.properties.destinationSlug?.getValue() || "",
             );
-            setDrawerOpen(true);
           }
         }
       }, ScreenSpaceEventType.LEFT_CLICK);
@@ -482,7 +522,7 @@ const TrekTrailMap: React.FC<{
         handler.destroy();
       };
     }
-  }, [markers, paths, kmlUrl]);
+  }, [markers, paths, kmlUrl, handleOpenHotelsDrawer]);
 
   const handleFocusToStart = () => {
     if (viewerRef.current?.cesiumElement) {
@@ -671,12 +711,6 @@ const TrekTrailMap: React.FC<{
           {markers.map((marker, index) => (
             <React.Fragment key={`marker-fragment-${index}`}>
               <Entity
-                onClick={() => {
-                  setSelectedDestinationSlug(
-                    marker?.destinationSlug || "Unknown Location",
-                  );
-                  setDrawerOpen(true);
-                }}
                 onMouseEnter={() => {
                   setHoveredMarkerIndex(index);
                   if (viewerRef.current?.cesiumElement) {
@@ -958,8 +992,7 @@ const TrekTrailMap: React.FC<{
           <ItineraryTimeline
             destinations={trekDetailResponse?.data?.destinations || []}
             onViewHotels={(slug) => {
-              setSelectedDestinationSlug(slug);
-              setDrawerOpen(true);
+              void handleOpenHotelsDrawer(slug);
             }}
           />
         </div>

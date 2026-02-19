@@ -1,14 +1,15 @@
+import { Suspense, lazy, useEffect } from "react";
 import { Route, Routes } from "react-router-dom";
 import AppProvider from "@/Provider/AppProvider";
 import axios from "axios";
-import { useEffect } from "react";
 import useAuthStore from "@/store/authStore";
 import { useGoogleOneTapLogin } from "@react-oauth/google";
 import { useGoogleAuth } from "@/hooks/useGoogleAuth";
-
 import { userRoutes } from "@/Routes/userRoutes";
 import UserLayout from "@/layout/UserLayout";
-import ResetPasswordForm from "@/Pages/LoginRegister/ResetPassword";
+import SuspensePageLoader from "@/components/Loaders/SuspensePageLoader";
+
+const ResetPasswordForm = lazy(() => import("@/Pages/LoginRegister/ResetPassword"));
 
 const GoogleOneTapHandler = () => {
   const { isAuthenticated } = useAuthStore();
@@ -47,16 +48,18 @@ const App = () => {
     <>
       <AppProvider>
         <GoogleOneTapHandler />
-        <Routes>
-          {userRoutes.map((item, index) => (
-            <Route
-              key={index}
-              path={item?.path}
-              element={<UserLayout>{item?.element}</UserLayout>}
-            />
-          ))}
-          <Route path="/reset-password" element={<ResetPasswordForm />} />
-        </Routes>
+        <Suspense fallback={<SuspensePageLoader minHeight="70vh" />}>
+          <Routes>
+            {userRoutes.map((item, index) => (
+              <Route
+                key={index}
+                path={item?.path}
+                element={<UserLayout>{item?.element}</UserLayout>}
+              />
+            ))}
+            <Route path="/reset-password" element={<ResetPasswordForm />} />
+          </Routes>
+        </Suspense>
       </AppProvider>
     </>
   );

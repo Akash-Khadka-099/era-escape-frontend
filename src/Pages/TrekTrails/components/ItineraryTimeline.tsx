@@ -6,6 +6,7 @@ import {
   CheckCircleOutlined,
 } from "@ant-design/icons";
 import { FaBed } from "react-icons/fa";
+import parse from "html-react-parser";
 
 interface RouteTime {
   timeToTravel: number;
@@ -33,7 +34,22 @@ interface ItineraryTimelineProps {
   onViewHotels: (slug: string) => void;
 }
 
-const { Title, Text, Paragraph } = Typography;
+const { Title } = Typography;
+const statusTagStyle: React.CSSProperties = {
+  borderRadius: "30px",
+  background: "#fff",
+  border: "1px solid #e8e8e8",
+  color: "#595959",
+  padding: "4px 12px",
+  display: "inline-flex",
+  alignItems: "center",
+  gap: "6px",
+  margin: 0,
+  maxWidth: "100%",
+  height: "auto",
+  lineHeight: 1.3,
+  whiteSpace: "normal",
+};
 
 const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
   destinations,
@@ -105,78 +121,16 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
                 style={{
                   display: "flex",
                   justifyContent: "space-between",
-                  alignItems: "flex-start",
+                  alignItems: "center",
                   flexWrap: "wrap",
-                  gap: "1rem",
+                  gap: "0.75rem",
+                  marginBottom: "0.75rem",
                 }}
               >
                 <div>
-                  <Title
-                    level={4}
-                    style={{ margin: 0, marginBottom: "0.5rem" }}
-                  >
+                  <Title level={4} style={{ margin: 0 }}>
                     {dest.name}
                   </Title>
-                  <Space size="middle" style={{ marginBottom: "1rem" }}>
-                    {dest.elevation && (
-                      <Tag
-                        style={{
-                          borderRadius: "30px",
-                          background: "#fff",
-                          border: "1px solid #e8e8e8",
-                          color: "#595959",
-                          padding: "4px 12px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          margin: 0,
-                        }}
-                      >
-                        <EnvironmentOutlined style={{ color: "#1890ff" }} />
-                        <span style={{ fontWeight: 600 }}>
-                          {dest.elevation}m
-                        </span>
-                      </Tag>
-                    )}
-                    {index === 0 && (
-                      <Tag
-                        style={{
-                          borderRadius: "30px",
-                          background: "#fff",
-                          border: "1px solid #e8e8e8",
-                          color: "#595959",
-                          padding: "4px 12px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          margin: 0,
-                        }}
-                      >
-                        <ClockCircleOutlined style={{ color: "#fa8c16" }} />
-                        <span style={{ fontWeight: 600 }}>Starting Point</span>
-                      </Tag>
-                    )}
-                    {dest.travelTimeToNext && (
-                      <Tag
-                        style={{
-                          borderRadius: "30px",
-                          background: "#fff",
-                          border: "1px solid #e8e8e8",
-                          color: "#595959",
-                          padding: "4px 12px",
-                          display: "flex",
-                          alignItems: "center",
-                          gap: "6px",
-                          margin: 0,
-                        }}
-                      >
-                        <ClockCircleOutlined style={{ color: "#1890ff" }} />
-                        <span style={{ fontWeight: 600 }}>
-                          ~{dest.travelTimeToNext} hrs to{" next destination"}
-                        </span>
-                      </Tag>
-                    )}
-                  </Space>
                 </div>
                 <div>
                   {dest.slug && (
@@ -197,18 +151,44 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
                 </div>
               </div>
 
+              <Space size={[8, 8]} wrap style={{ marginBottom: "1rem", width: "100%" }}>
+                {dest.elevation && (
+                  <Tag style={statusTagStyle}>
+                    <EnvironmentOutlined style={{ color: "#1890ff" }} />
+                    <span style={{ fontWeight: 600 }}>{dest.elevation}m</span>
+                  </Tag>
+                )}
+                {index === 0 && (
+                  <Tag style={statusTagStyle}>
+                    <ClockCircleOutlined style={{ color: "#fa8c16" }} />
+                    <span style={{ fontWeight: 600 }}>Starting Point</span>
+                  </Tag>
+                )}
+                {dest.travelTimeToNext && (
+                  <Tag style={statusTagStyle}>
+                    <ClockCircleOutlined style={{ color: "#1890ff" }} />
+                    <span style={{ fontWeight: 600, overflowWrap: "anywhere" }}>
+                      ~{dest.travelTimeToNext} hrs to next destination
+                    </span>
+                  </Tag>
+                )}
+              </Space>
+
               {dest.description && (
-                <Paragraph
-                  type="secondary"
+                <div
+                  className="timeline-description-html"
                   style={{
                     marginBottom: "1.5rem",
                     marginTop: "0.5rem",
                     fontSize: "14px",
                     lineHeight: "1.6",
+                    color: "#595959",
+                    wordBreak: "break-word",
+                    overflowWrap: "anywhere",
                   }}
                 >
-                  {dest.description}
-                </Paragraph>
+                  {parse(dest.description)}
+                </div>
               )}
 
               {dest.facilities && dest.facilities.length > 0 && (
@@ -238,6 +218,20 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
           </div>
         ))}
       </div>
+      <style>{`
+        .timeline-description-html figure {
+          margin: 0.5rem 0;
+        }
+        .timeline-description-html img {
+          max-width: 100%;
+          height: auto;
+          border-radius: 12px;
+          display: block;
+        }
+        .timeline-description-html p {
+          margin: 0 0 0.75rem;
+        }
+      `}</style>
     </div>
   );
 };

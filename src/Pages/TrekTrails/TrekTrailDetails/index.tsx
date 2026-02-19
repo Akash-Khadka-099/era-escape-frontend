@@ -30,6 +30,7 @@ import TrekWeather from "./TrekWeather";
 import { SEO } from "@/components/SEO";
 import TrailLocationDrawer from "../TrailLocationDrawer";
 import TrekIntineraryPlans from "../TrekIntineraryPlans";
+import SuspensePageLoader from "@/components/Loaders/SuspensePageLoader";
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -92,7 +93,7 @@ const TrekTrailDetail: React.FC = () => {
   const trekDetail = trekDetailResponse?.data;
 
   if (isLoading) {
-    return <div>Loading...</div>;
+    return <SuspensePageLoader />;
   }
 
   if (!trekDetail) {

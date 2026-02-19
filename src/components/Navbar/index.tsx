@@ -10,6 +10,7 @@ import {
 } from "@/components/Navbar/navbarItems";
 import LoginRegister from "@/Pages/LoginRegister";
 import useAuthStore from "@/store/authStore";
+import useAuthModalStore from "@/store/authModalStore";
 import {
   CloseOutlined,
   LeftOutlined,
@@ -18,7 +19,7 @@ import {
   SearchOutlined,
   UserOutlined,
 } from "@ant-design/icons";
-import { Avatar, Button, Drawer, Dropdown, Layout, Menu, Space } from "antd";
+import { Avatar, Button, Drawer, Dropdown, Layout, Menu } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
@@ -71,7 +72,6 @@ const DestinationsMegaMenu: React.FC<{ label: string }> = ({ label }) => {
 
 const Navbar: React.FC = () => {
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
-  const [isLoginModalOpen, setISLoginModalOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [drawerView, setDrawerView] = useState<"main" | "destinations">("main");
 
@@ -79,9 +79,11 @@ const Navbar: React.FC = () => {
   const location = useLocation();
 
   const { user, isAuthenticated } = useAuthStore();
+  const { isAuthModalOpen, openAuthModal, closeAuthModal } =
+    useAuthModalStore();
 
   const handleCloseLoginModal = () => {
-    setISLoginModalOpen(false);
+    closeAuthModal();
   };
 
   const showDrawer = () => {
@@ -235,7 +237,7 @@ const Navbar: React.FC = () => {
                 <Button
                   className="navbar-signin-button"
                   icon={<UserOutlined />}
-                  onClick={() => setISLoginModalOpen(true)}
+                  onClick={openAuthModal}
                   size="large"
                   style={{
                     background: "#2D5A5A",
@@ -250,7 +252,7 @@ const Navbar: React.FC = () => {
         </div>
       </Header>
       <LoginRegister
-        isLoginModalOpen={isLoginModalOpen}
+        isLoginModalOpen={isAuthModalOpen}
         handleCloseLoginModal={handleCloseLoginModal}
       />
       <LogoutConfirmModal isOpen={isLogoutOpen} setIsOpen={setIsLogoutOpen} />
@@ -339,7 +341,7 @@ const Navbar: React.FC = () => {
                     className="navbar-signin-button"
                     icon={<UserOutlined />}
                     onClick={() => {
-                      setISLoginModalOpen(true);
+                      openAuthModal();
                       onClose();
                     }}
                     size="large"

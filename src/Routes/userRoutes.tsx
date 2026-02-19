@@ -1,15 +1,22 @@
-import Dashboard from "@/Pages/Dashboard";
-import OrganizationDashboard from "@/Pages/OrganizationPages/OrganizationDashboard";
-import OrganizationPackages from "@/Pages/OrganizationPages/OrganizationPackages";
-import AddOrganizationPackage from "@/Pages/OrganizationPages/OrganizationPackages/AddOrganizationPackage";
-import PackageBooking from "@/Pages/PackageBooking";
-import Packages from "@/Pages/Packages";
-import PackageDetail from "@/Pages/Packages/PackageDetail";
-import TrekTrails from "@/Pages/TrekTrails";
-import TrekTrailMap from "@/Pages/TrekTrails/TrekTrailMap";
-import TrekTrailDetail from "@/Pages/TrekTrails/TrekTrailDetails";
 import { routeLists } from "@/Routes/routeLists";
-import { ReactNode } from "react";
+import { lazy, ReactNode } from "react";
+
+const Dashboard = lazy(() => import("@/Pages/Dashboard"));
+const OrganizationDashboard = lazy(
+  () => import("@/Pages/OrganizationPages/OrganizationDashboard"),
+);
+const OrganizationPackages = lazy(
+  () => import("@/Pages/OrganizationPages/OrganizationPackages"),
+);
+const AddOrganizationPackage = lazy(
+  () => import("@/Pages/OrganizationPages/OrganizationPackages/AddOrganizationPackage"),
+);
+const PackageBooking = lazy(() => import("@/Pages/PackageBooking"));
+const Packages = lazy(() => import("@/Pages/Packages"));
+const PackageDetail = lazy(() => import("@/Pages/Packages/PackageDetail"));
+const TrekTrails = lazy(() => import("@/Pages/TrekTrails"));
+const TrekTrailMap = lazy(() => import("@/Pages/TrekTrails/TrekTrailMap"));
+const TrekTrailDetail = lazy(() => import("@/Pages/TrekTrails/TrekTrailDetails"));
 
 export interface RouteItem {
   path: string;
