@@ -26,7 +26,7 @@ const showAuthRequiredMessage = () => {
   lastAuthPromptShownAt = now;
   message.warning({
     key: AUTH_REQUIRED_MESSAGE_KEY,
-    content: "Please register or login to access this feature.",
+    content: "Please register or login to access this service.",
     duration: 3,
   });
 };

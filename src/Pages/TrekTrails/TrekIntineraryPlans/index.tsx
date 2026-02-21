@@ -129,11 +129,14 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
           borderRadius: "12px",
           marginBottom: "24px",
           boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-          padding: "24px",
         }}
       >
         <div style={{ textAlign: "left", marginBottom: "32px" }}>
-          <Title level={2} style={{ marginBottom: "12px", fontWeight: 700 }}>
+          <Title
+            level={2}
+            className="itinerary-main-title"
+            style={{ marginBottom: "12px", fontWeight: 700 }}
+          >
             <EnvironmentOutlined
               style={{ color: "#1890ff", marginRight: "12px" }}
             />
@@ -141,6 +144,7 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
           </Title>
           <Text
             type="secondary"
+            className="itinerary-sub-text"
             style={{
               fontSize: "16px",
               display: "block",
@@ -168,18 +172,19 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
               key={plan._id || index}
               header={
                 <div
+                  className="itinerary-panel-header"
                   style={{
                     display: "flex",
                     justifyContent: "space-between",
                     alignItems: "center",
                     flexWrap: "wrap",
-                    gap: "20px",
                     width: "100%",
-                    paddingRight: "20px",
+                    paddingRight: "10px",
                   }}
                 >
                   <div
-                    style={{ display: "flex", gap: "32px", flexWrap: "wrap" }}
+                    className="itinerary-stats-group"
+                    style={{ display: "flex", flexWrap: "wrap" }}
                   >
                     <div
                       style={{
@@ -307,7 +312,7 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
                 transition: "all 0.3s ease",
               }}
             >
-              <div style={{ padding: "10px 32px 32px 32px" }}>
+              <div className="itinerary-panel-content">
                 <Divider style={{ margin: "0 0 32px 0" }} />
                 <Row gutter={[48, 32]}>
                   <Col xs={24} lg={14}>
@@ -403,6 +408,67 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
 
         <style>
           {`
+          .itinerary-plans-container {
+            padding: 40px !important;
+          }
+          .itinerary-panel-content {
+            padding: 10px 32px 32px 32px;
+          }
+          .itinerary-stats-group {
+            gap: 32px;
+          }
+          .itinerary-panel-header {
+            gap: 20px;
+          }
+
+          @media (max-width: 768px) {
+            .itinerary-plans-container {
+              padding: 0 12px !important;
+            }
+           
+            .itinerary-main-title {
+              font-size: 20px !important;
+            }
+            .itinerary-sub-text {
+              font-size: 14px !important;
+            }
+            .ant-collapse-header {
+              padding: 16px 12px !important;
+            }
+            .itinerary-panel-header {
+              padding-right: 0 !important;
+              gap: 16px !important;
+            }
+            .itinerary-stats-group {
+              gap: 16px !important;
+              width: 100%;
+            }
+            .itinerary-panel-content {
+              padding: 10px 16px 20px 16px !important;
+            }
+            .itinerary-description {
+              font-size: 14px !important;
+              padding-right: 0 !important;
+            }
+            .itinerary-description h3 {
+              font-size: 18px !important;
+            }
+          }
+
+          @media (max-width: 480px) {
+            .itinerary-stats-group {
+              flex-direction: column !important;
+              gap: 12px !important;
+            }
+            .itinerary-stats-group > div {
+              width: 100%;
+            }
+            .itinerary-panel-header {
+              flex-direction: column !important;
+              align-items: flex-start !important;
+            }
+          }
+
           .ant-collapse-header {
             padding: 24px 32px !important;
             align-items: center !important;

@@ -28,7 +28,7 @@ export const useGoogleAuth = (handleCloseLoginModal?: () => void) => {
                 email: decoded.email,
                 name: decoded.name,
                 username: decoded.email.split("@")[0],
-                role: "admin", // As requested
+                role: "user",
                 google: {
                     sub: decoded.sub,
                     picture: decoded.picture,
