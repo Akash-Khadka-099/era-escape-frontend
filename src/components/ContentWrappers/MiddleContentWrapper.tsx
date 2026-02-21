@@ -19,7 +19,7 @@ const MiddleContentWrapper: React.FC<MiddleContentWrapperProps> = ({
     <div
       className={`mx-auto p-3 py-5 ${extraClassNames || ""}`}
       style={{
-        width: xl ? "max(85%, 1400px)" : "",
+        width: xl ? "max(85%, 1400px)" : "100%",
         overflow: "hidden",
         ...extraStyles,
       }}
