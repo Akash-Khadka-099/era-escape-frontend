@@ -1,4 +1,10 @@
-import React, { useState, useEffect, useRef, useMemo, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useRef,
+  useMemo,
+  useCallback,
+} from "react";
 import {
   Viewer,
   Entity,
@@ -166,6 +172,15 @@ const TrekTrailMap: React.FC<{
     },
     [queryClient, slug],
   );
+
+  const getPickedMarkerEntity = useCallback((pickedObject: any) => {
+    // Cesium pick may place the entity on either `id` or `primitive.id`.
+    const pickedEntity = pickedObject?.id || pickedObject?.primitive?.id;
+    if (!pickedEntity?.properties?.hasProperty?.("isMarker")) {
+      return null;
+    }
+    return pickedEntity;
+  }, []);
 
   useEffect(() => {
     const destinations = trekDetailResponse?.data?.destinations;
@@ -450,71 +465,110 @@ const TrekTrailMap: React.FC<{
     initTerrain();
   }, []);
 
+  const handleFitToTrail = useCallback(() => {
+    const viewer = viewerRef.current?.cesiumElement;
+    if (!viewer) return;
+
+    const points: Cartesian3[] = [];
+    markers.forEach((m) =>
+      points.push(Cartesian3.fromDegrees(m.position[1], m.position[0])),
+    );
+    paths.forEach((p) =>
+      p.path.forEach((coord) =>
+        points.push(Cartesian3.fromDegrees(coord[1], coord[0])),
+      ),
+    );
+
+    if (points.length > 0) {
+      const sphere = BoundingSphere.fromPoints(points);
+      viewer.camera.flyToBoundingSphere(sphere, {
+        duration: 3, // Premium cinematic duration
+        offset: new HeadingPitchRange(
+          0,
+          CesiumMath.toRadians(-45),
+          sphere.radius * 2.5,
+        ),
+      });
+    } else {
+      viewer.flyTo(viewer.entities, { duration: 3 });
+    }
+  }, [markers, paths]);
+
   const initialZoomRef = useRef(false);
 
   useEffect(() => {
-    if (paths.length > 0 && viewerRef.current?.cesiumElement) {
-      handleFitToTrail();
+    if (viewerRef.current?.cesiumElement) {
+      const hasMarkers = markers.length > 0;
+      const hasPaths = paths.length > 0;
+      const isKmlExpected = !!kmlUrl;
+
+      // If data is ready, and we haven't zoomed yet
+      if (!initialZoomRef.current) {
+        // If KML is expected, wait for paths. If not, wait for markers.
+        if (isKmlExpected ? hasPaths : hasMarkers) {
+          // Small delay for better UX (let the map settle first)
+          const timeout = setTimeout(() => {
+            handleFitToTrail();
+            initialZoomRef.current = true;
+          }, 800);
+          return () => clearTimeout(timeout);
+        }
+      }
     }
-  }, [paths]);
+  }, [markers, paths, kmlUrl, handleFitToTrail]);
 
   useEffect(() => {
     if (viewerRef.current?.cesiumElement) {
       const viewer = viewerRef.current.cesiumElement;
       viewer.scene.globe.depthTestAgainstTerrain = true;
 
-      if (!initialZoomRef.current) {
-        const hasMarkers = markers.length > 0;
-        const isKmlExpected = !!kmlUrl;
-
-        if (!isKmlExpected && hasMarkers) {
-          handleFitToTrail();
-          initialZoomRef.current = true;
-        }
-      }
-
       const handler = new ScreenSpaceEventHandler(viewer.scene.canvas);
 
       handler.setInputAction((click: any) => {
         const pickedObject = viewer.scene.pick(click.position);
-        if (defined(pickedObject) && pickedObject.id instanceof Entity) {
-          const entity = pickedObject.id;
-          if (entity.properties && entity.properties.hasProperty("isMarker")) {
-            void handleOpenHotelsDrawer(
-              entity.properties.destinationSlug?.getValue() || "",
-            );
-          }
+        if (!defined(pickedObject)) return;
+
+        const entity = getPickedMarkerEntity(pickedObject);
+        if (entity) {
+          void handleOpenHotelsDrawer(
+            entity.properties?.destinationSlug?.getValue?.(JulianDate.now()) ||
+              "",
+          );
         }
       }, ScreenSpaceEventType.LEFT_CLICK);
 
       handler.setInputAction((movement: any) => {
         const pickedObject = viewer.scene.pick(movement.endPosition);
-        if (defined(pickedObject) && pickedObject.id instanceof Entity) {
-          const entity = pickedObject.id;
-          if (entity.properties && entity.properties.hasProperty("isMarker")) {
-            const cartesian = entity.position?.getValue(JulianDate.now());
-            let displayPos: [number, number] = [0, 0];
-
-            if (cartesian) {
-              const cartographic = Cartographic.fromCartesian(cartesian);
-              displayPos = [
-                CesiumMath.toDegrees(cartographic.latitude),
-                CesiumMath.toDegrees(cartographic.longitude),
-              ];
-            }
-
-            setTooltip({
-              show: true,
-              x: movement.endPosition.x,
-              y: movement.endPosition.y - 20,
-              content: {
-                name: entity.name || "",
-                pos: displayPos,
-              },
-            });
-            return;
-          }
+        if (!defined(pickedObject)) {
+          setTooltip((prev) => ({ ...prev, show: false }));
+          return;
         }
+
+        const entity = getPickedMarkerEntity(pickedObject);
+        if (entity) {
+          const cartesian = entity.position?.getValue?.(JulianDate.now());
+          let displayPos: [number, number] = [0, 0];
+
+          if (cartesian) {
+            const cartographic = Cartographic.fromCartesian(cartesian);
+            displayPos = [
+              CesiumMath.toDegrees(cartographic.latitude),
+              CesiumMath.toDegrees(cartographic.longitude),
+            ];
+          }
+
+          setTooltip({
+            show: true,
+            x: movement.endPosition.x,
+            y: movement.endPosition.y - 20,
+            content: {
+              name: entity.name || "",
+              pos: displayPos,
+            },
+          });
+          return;
+        }
+
         setTooltip((prev) => ({ ...prev, show: false }));
       }, ScreenSpaceEventType.MOUSE_MOVE);
 
@@ -522,7 +576,7 @@ const TrekTrailMap: React.FC<{
         handler.destroy();
       };
     }
-  }, [markers, paths, kmlUrl, handleOpenHotelsDrawer]);
+  }, [markers, paths, kmlUrl, handleOpenHotelsDrawer, getPickedMarkerEntity]);
 
   const handleFocusToStart = () => {
     if (viewerRef.current?.cesiumElement) {
@@ -550,35 +604,6 @@ const TrekTrailMap: React.FC<{
           duration: 2,
         });
       }
-    }
-  };
-
-  const handleFitToTrail = () => {
-    const viewer = viewerRef.current?.cesiumElement;
-    if (!viewer) return;
-
-    const points: Cartesian3[] = [];
-    markers.forEach((m) =>
-      points.push(Cartesian3.fromDegrees(m.position[1], m.position[0])),
-    );
-    paths.forEach((p) =>
-      p.path.forEach((coord) =>
-        points.push(Cartesian3.fromDegrees(coord[1], coord[0])),
-      ),
-    );
-
-    if (points.length > 0) {
-      const sphere = BoundingSphere.fromPoints(points);
-      viewer.camera.flyToBoundingSphere(sphere, {
-        duration: 2,
-        offset: new HeadingPitchRange(
-          0,
-          CesiumMath.toRadians(-45),
-          sphere.radius * 2.2,
-        ),
-      });
-    } else {
-      viewer.flyTo(viewer.entities, { duration: 2 });
     }
   };
 
