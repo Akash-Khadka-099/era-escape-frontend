@@ -35,7 +35,7 @@ const TrekCard: React.FC<TrekCardProps> = ({
   return (
     <div className="trek-card" onClick={handleViewDetails}>
       <div className="trek-image-wrapper">
-        <img src={imageUrl} alt={title} className="trek-image" />
+        <img src={imageUrl} alt={title} className="trek-image" loading="lazy" />
       </div>
       <div className="trek-info">
         <div className="trek-meta">

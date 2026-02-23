@@ -9,7 +9,9 @@ import { userRoutes } from "@/Routes/userRoutes";
 import UserLayout from "@/layout/UserLayout";
 import SuspensePageLoader from "@/components/Loaders/SuspensePageLoader";
 
-const ResetPasswordForm = lazy(() => import("@/Pages/LoginRegister/ResetPassword"));
+const ResetPasswordForm = lazy(
+  () => import("@/Pages/LoginRegister/ResetPassword"),
+);
 
 const GoogleOneTapHandler = () => {
   const { isAuthenticated } = useAuthStore();
@@ -48,18 +50,29 @@ const App = () => {
     <>
       <AppProvider>
         <GoogleOneTapHandler />
-        <Suspense fallback={<SuspensePageLoader minHeight="70vh" />}>
-          <Routes>
-            {userRoutes.map((item, index) => (
-              <Route
-                key={index}
-                path={item?.path}
-                element={<UserLayout>{item?.element}</UserLayout>}
-              />
-            ))}
-            <Route path="/reset-password" element={<ResetPasswordForm />} />
-          </Routes>
-        </Suspense>
+        <Routes>
+          {userRoutes.map((item, index) => (
+            <Route
+              key={index}
+              path={item?.path}
+              element={
+                <UserLayout>
+                  <Suspense fallback={<SuspensePageLoader minHeight="70vh" />}>
+                    {item?.element}
+                  </Suspense>
+                </UserLayout>
+              }
+            />
+          ))}
+          <Route
+            path="/reset-password"
+            element={
+              <Suspense fallback={<SuspensePageLoader minHeight="70vh" />}>
+                <ResetPasswordForm />
+              </Suspense>
+            }
+          />
+        </Routes>
       </AppProvider>
     </>
   );

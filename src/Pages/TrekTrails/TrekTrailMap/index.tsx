@@ -29,7 +29,12 @@ import {
   ArcType,
   BoundingSphere,
   HeadingPitchRange,
+  Ion,
 } from "cesium";
+
+// Initialize Cesium Ion token only when this component is loaded
+Ion.defaultAccessToken = import.meta.env.VITE_CESIUM_ION_TOKEN;
+
 import { Tooltip, Button, Space, Alert, message } from "antd";
 import {
   PlusOutlined,

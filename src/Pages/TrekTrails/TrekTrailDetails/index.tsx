@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Button,
   Tag,
@@ -91,6 +91,14 @@ const TrekTrailDetail: React.FC = () => {
   );
 
   const trekDetail = trekDetailResponse?.data;
+
+  // Preload Map Component in background
+  useEffect(() => {
+    // This starts downloading the large Cesium assets while the user is
+    // reading the trek details, ensuring navigation is instant later.
+    const preloadMap = () => import("@/Pages/TrekTrails/TrekTrailMap");
+    preloadMap();
+  }, []);
 
   if (isLoading) {
     return <SuspensePageLoader />;
@@ -265,20 +273,32 @@ const TrekTrailDetail: React.FC = () => {
         style={{
           height: "70vh",
           minHeight: "600px",
-          backgroundImage: `url("${
-            trekDetail?.featuredImage?.path
-              ? `${baseUrl}/${trekDetail?.featuredImage?.path}`
-              : "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
-          }")`,
-          backgroundSize: "cover",
-          backgroundPosition: "center",
+          position: "relative",
           display: "flex",
           alignItems: "flex-end",
           padding: "60px 0",
           width: "100%",
           margin: 0,
+          overflow: "hidden",
         }}
       >
+        <img
+          src={
+            trekDetail?.featuredImage?.path
+              ? `${baseUrl}/${trekDetail?.featuredImage?.path}`
+              : "https://images.unsplash.com/photo-1544735716-392fe2489ffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
+          }
+          alt={`${trekDetail?.title} - Era Escape`}
+          style={{
+            position: "absolute",
+            top: 0,
+            left: 0,
+            width: "100%",
+            height: "100%",
+            objectFit: "cover",
+            zIndex: 0,
+          }}
+        />
         <div
           style={{
             position: "absolute",
@@ -288,13 +308,14 @@ const TrekTrailDetail: React.FC = () => {
             bottom: 0,
             background:
               "linear-gradient(to bottom, rgba(0,0,0,0.2), rgba(0,0,0,0.8))",
+            zIndex: 1,
           }}
         />
 
         <div
           style={{
             position: "relative",
-            zIndex: 1,
+            zIndex: 2,
             width: "100%",
             maxWidth: "1500px",
             margin: "0 auto",
@@ -569,6 +590,7 @@ const TrekTrailDetail: React.FC = () => {
                             <img
                               src={`${baseUrl}/${img?.path}`}
                               alt={`${content?.title} ${imgIdx}`}
+                              loading="lazy"
                               style={{
                                 width: "100%",
                                 height: "400px",
