@@ -214,7 +214,7 @@ const TrekTrailMap: React.FC<{
         return [lat, lng];
       };
 
-      const newMarkers: MarkerData[] = destinations.map((dest: any) => {
+      const newMarkers: MarkerData[] = destinations?.map((dest: any) => {
         const [lat, lng] = parseLatLong(dest?.latLong);
 
         const routeTimeSource =
@@ -259,10 +259,10 @@ const TrekTrailMap: React.FC<{
         const response = await fetch(kmlUrl);
 
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response?.status}`);
         }
 
-        const text = await response.text();
+        const text = await response?.text();
 
         const parser = new DOMParser();
         const kml = parser.parseFromString(text, "text/xml");
