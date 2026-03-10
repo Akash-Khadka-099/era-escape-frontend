@@ -10,7 +10,7 @@ import parse from "html-react-parser";
 
 interface RouteTime {
   timeToTravel: number;
-  toPosition: [number, number];
+  toPosition?: [number, number];
   toTrailDestination: any;
 }
 
@@ -21,8 +21,9 @@ interface Destination {
   images: string[];
   locationKey?: string;
   slug: string | null;
-  travelTimeToNext?: number;
+  travelTimeToNext?: number | string | null;
   hasMultipleNextDestination?: boolean;
+  multipleDestinationRouteTime?: RouteTime[];
   routeTimes?: RouteTime[];
   elevation?: number;
   latLong?: string;
@@ -57,6 +58,17 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
 }) => {
   if (!destinations || destinations.length === 0) return null;
 
+  const getMultipleRouteTimes = (dest: Destination): RouteTime[] => {
+    if (!dest.hasMultipleNextDestination) return [];
+    if (
+      Array.isArray(dest.multipleDestinationRouteTime) &&
+      dest.multipleDestinationRouteTime.length > 0
+    ) {
+      return dest.multipleDestinationRouteTime;
+    }
+    return Array.isArray(dest.routeTimes) ? dest.routeTimes : [];
+  };
+
   return (
     <div className="itinerary-timeline-container">
       <div style={{ marginBottom: "2rem" }}>
@@ -79,7 +91,9 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
           }}
         />
 
-        {destinations.map((dest, index) => (
+        {destinations.map((dest, index) => {
+          const multiRouteTimes = getMultipleRouteTimes(dest);
+          return (
           <div
             key={index}
             className="timeline-item"
@@ -164,14 +178,35 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
                     <span style={{ fontWeight: 600 }}>Starting Point</span>
                   </Tag>
                 )}
-                {dest.travelTimeToNext && (
-                  <Tag style={statusTagStyle}>
-                    <ClockCircleOutlined style={{ color: "#1890ff" }} />
-                    <span style={{ fontWeight: 600, overflowWrap: "anywhere" }}>
-                      ~{dest.travelTimeToNext} hrs to next destination
-                    </span>
-                  </Tag>
-                )}
+                {multiRouteTimes.length > 0
+                  ? multiRouteTimes.map((rt, rtIndex) => (
+                      <Tag
+                        key={`${dest.slug || index}-${rtIndex}`}
+                        style={statusTagStyle}
+                      >
+                        <ClockCircleOutlined style={{ color: "#1890ff" }} />
+                        <span
+                          style={{ fontWeight: 600, overflowWrap: "anywhere" }}
+                        >
+                          ~{rt?.timeToTravel} hrs to{" "}
+                          {rt?.toTrailDestination?.name || "next destination"}
+                        </span>
+                      </Tag>
+                    ))
+                  : dest.travelTimeToNext !== null &&
+                      dest.travelTimeToNext !== undefined && (
+                        <Tag style={statusTagStyle}>
+                          <ClockCircleOutlined style={{ color: "#1890ff" }} />
+                          <span
+                            style={{
+                              fontWeight: 600,
+                              overflowWrap: "anywhere",
+                            }}
+                          >
+                            ~{dest.travelTimeToNext} hrs to next destination
+                          </span>
+                        </Tag>
+                      )}
               </Space>
 
               {dest.description && (
@@ -216,7 +251,8 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
               )}
             </Card>
           </div>
-        ))}
+          );
+        })}
       </div>
       <style>{`
         .timeline-description-html figure {

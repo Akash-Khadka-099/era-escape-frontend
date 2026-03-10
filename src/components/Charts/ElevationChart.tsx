@@ -13,12 +13,41 @@ interface ElevationChartProps {
   data: {
     name: string;
     altitude: number;
-    travelTimeToNext?: number | null;
+    travelTimeToNext?: number | string | null;
+    hasMultipleNextDestination?: boolean;
+    multipleDestinationRouteTime?: {
+      timeToTravel?: number | string | null;
+      toTrailDestination?: {
+        name?: string | null;
+      } | null;
+    }[];
+    routeTimes?: {
+      timeToTravel?: number | string | null;
+      toTrailDestination?: {
+        name?: string | null;
+      } | null;
+    }[];
   }[];
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
   if (active && payload && payload.length) {
+    const point = payload[0]?.payload || {};
+    const multipleRouteTimes =
+      point?.hasMultipleNextDestination
+        ? Array.isArray(point?.multipleDestinationRouteTime) &&
+          point.multipleDestinationRouteTime.length > 0
+          ? point.multipleDestinationRouteTime
+          : Array.isArray(point?.routeTimes)
+            ? point.routeTimes
+            : []
+        : [];
+    const shouldShowSingleTravelTime =
+      multipleRouteTimes.length === 0 &&
+      point?.travelTimeToNext !== null &&
+      point?.travelTimeToNext !== undefined &&
+      point?.travelTimeToNext !== "";
+
     return (
       <div
         style={{
@@ -33,11 +62,21 @@ const CustomTooltip = ({ active, payload, label }: any) => {
         <p style={{ margin: 0, color: "#2ecc71" }}>
           Altitude: {payload[0].value}m
         </p>
-        {payload[0].payload.travelTimeToNext && (
-          <p style={{ margin: 0, color: "#3498db" }}>
-            Travel Time to Next: {payload[0].payload.travelTimeToNext} hrs
-          </p>
-        )}
+        {multipleRouteTimes.length > 0
+          ? multipleRouteTimes.map((rt: any, index: number) => (
+              <p
+                key={`${rt?._id || index}`}
+                style={{ margin: 0, color: "#3498db" }}
+              >
+                Travel Time to {rt?.toTrailDestination?.name || "next"}:{" "}
+                {rt?.timeToTravel} hrs
+              </p>
+            ))
+          : shouldShowSingleTravelTime && (
+              <p style={{ margin: 0, color: "#3498db" }}>
+                Travel Time to Next: {point.travelTimeToNext} hrs
+              </p>
+            )}
       </div>
     );
   }

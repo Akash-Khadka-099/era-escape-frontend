@@ -53,6 +53,12 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
 
   const destination = data?.destination;
   const hotels = data?.hotels || [];
+  const multipleRouteTimes =
+    destination?.multipleDestinationRouteTime?.length > 0
+      ? destination.multipleDestinationRouteTime
+      : destination?.routeTimes || [];
+  const shouldShowMultipleRouteTimes =
+    destination?.hasMultipleNextDestination && multipleRouteTimes.length > 0;
 
   const getHotelTypeLabel = (value: string) => {
     return hotelTypeOptions.find((opt) => opt.value === value)?.label || value;
@@ -163,15 +169,44 @@ const TrailLocationDrawer: React.FC<TrailLocationDrawerProps> = ({
               <Space>
                 <RiseOutlined /> {destination?.altitude}m Altitude
               </Space>
-              <Divider
-                type="vertical"
-                style={{ borderColor: "rgba(0,0,0,0.1)" }}
-              />
-              <Space>
-                <ClockCircleOutlined /> {destination?.travelTimeToNext} hrs to
-                next
-              </Space>
             </Space>
+            {shouldShowMultipleRouteTimes ? (
+              <div
+                style={{
+                  marginTop: "10px",
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                  opacity: 0.85,
+                }}
+              >
+                {multipleRouteTimes?.map((rt: any, idx: number) => (
+                  <Space key={`${rt?._id || idx}`} style={{ color: themeColor }}>
+                    <ClockCircleOutlined />
+                    <span>
+                      {rt?.timeToTravel} hrs to{" "}
+                      {rt?.toTrailDestination?.name || "next destination"}
+                    </span>
+                  </Space>
+                ))}
+              </div>
+            ) : (
+              (destination?.travelTimeToNext !== null &&
+                destination?.travelTimeToNext !== undefined) && (
+                <Space
+                  style={{
+                    marginTop: "10px",
+                    opacity: 0.85,
+                    color: themeColor,
+                  }}
+                >
+                  <Space>
+                    <ClockCircleOutlined /> {destination?.travelTimeToNext} hrs
+                    to next
+                  </Space>
+                </Space>
+              )
+            )}
           </div>
         </div>
 

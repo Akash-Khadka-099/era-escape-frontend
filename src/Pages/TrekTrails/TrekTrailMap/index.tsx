@@ -217,7 +217,12 @@ const TrekTrailMap: React.FC<{
       const newMarkers: MarkerData[] = destinations.map((dest: any) => {
         const [lat, lng] = parseLatLong(dest?.latLong);
 
-        const processedRouteTimes = dest?.routeTimes
+        const routeTimeSource =
+          dest?.multipleDestinationRouteTime?.length > 0
+            ? dest.multipleDestinationRouteTime
+            : dest?.routeTimes;
+
+        const processedRouteTimes = routeTimeSource
           ?.filter((rt: any) => rt?.toTrailDestination?.latLong)
           ?.map((rt: any) => ({
             ...rt,
@@ -825,7 +830,7 @@ const TrekTrailMap: React.FC<{
                             )}
                           >
                             <LabelGraphics
-                              text={`Estimated. Time: ${rt.timeToTravel} hr`}
+                              text={`Estimated Time to ${rt?.toTrailDestination?.name || "next destination"}: ${rt.timeToTravel} hr`}
                               font="bold 12px sans-serif"
                               fillColor={Color.YELLOW}
                               outlineColor={Color.BLACK}
