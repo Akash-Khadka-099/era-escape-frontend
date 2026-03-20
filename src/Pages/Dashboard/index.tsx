@@ -14,12 +14,13 @@ import HeroImage from "@/assets/images/hero.png";
 import StoryImage from "@/assets/images/story.png";
 import { useFetchTrendingBlogsCategories } from "@/services/userHomepageServices/homepageServices";
 import CategoryCard from "@/Pages/Dashboard/components/CategoryCard";
+import { useNavigate } from "react-router-dom";
+import { routeLists } from "@/Routes/routeLists";
 
 const Dashboard: React.FC = () => {
   const { data } = useFetchTrendingBlogsCategories({});
 
-  console.log("data category", data);
-
+  const navigate = useNavigate();
   return (
     <div className="new-dashboard">
       {/* Hero Section */}
@@ -35,7 +36,10 @@ const Dashboard: React.FC = () => {
               stories from the world's most remote peaks.
             </p>
             <div className="hero-buttons">
-              <button className="btn-primary">
+              <button
+                className="btn-primary"
+                onClick={() => navigate(routeLists.trekTrails)}
+              >
                 Explore Adventures <ArrowRightOutlined />
               </button>
               <button className="btn-secondary">
