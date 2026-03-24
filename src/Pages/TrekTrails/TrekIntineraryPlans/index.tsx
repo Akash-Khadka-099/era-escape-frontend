@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { useParams } from "react-router-dom";
 import { SEO } from "@/components/SEO";
 import { useFetchTrekBlogItineraryPlans } from "@/services/trekServices/trekServices";
@@ -12,6 +12,10 @@ import {
   Col,
   Divider,
   Collapse,
+  Button,
+  Tooltip,
+  Modal,
+  Grid,
 } from "antd";
 import {
   ClockCircleOutlined,
@@ -21,15 +25,20 @@ import {
   CheckCircleOutlined,
   EnvironmentOutlined,
   DownOutlined,
+  ExpandOutlined,
 } from "@ant-design/icons";
 
 const { Title, Text } = Typography;
 const { Panel } = Collapse;
+const { useBreakpoint } = Grid;
 
 const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
   hideSEO = false,
 }) => {
+  const [expandedPlan, setExpandedPlan] = useState<any>(null);
   const { slug } = useParams<{ slug: string }>();
+  const screens = useBreakpoint();
+  const isDesktopReaderEnabled = Boolean(screens.md);
   const { data: itineraryPlans, isLoading } = useFetchTrekBlogItineraryPlans({
     trekBlogSlug: slug || "",
   });
@@ -317,19 +326,48 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
                 <Row gutter={[48, 32]}>
                   <Col xs={24} lg={14}>
                     <div style={{ marginBottom: "16px" }}>
-                      <Title
-                        level={4}
+                      <div
                         style={{
                           marginBottom: "24px",
                           display: "flex",
                           alignItems: "center",
+                          justifyContent: "space-between",
                           gap: "12px",
-                          color: "#1a1a1a",
+                          flexWrap: "wrap",
                         }}
                       >
-                        <ThunderboltOutlined style={{ color: "#faad14" }} />
-                        Itinerary Highlights & Route
-                      </Title>
+                        <Title
+                          level={4}
+                          style={{
+                            margin: 0,
+                            display: "flex",
+                            alignItems: "center",
+                            gap: "12px",
+                            color: "#1a1a1a",
+                          }}
+                        >
+                          <ThunderboltOutlined style={{ color: "#faad14" }} />
+                          Itinerary Highlights & Route
+                        </Title>
+                        {isDesktopReaderEnabled && (
+                          <Tooltip title="Open focused reading view">
+                            <Button
+                              type="text"
+                              shape="circle"
+                              size="large"
+                              icon={<ExpandOutlined />}
+                              aria-label={`Expand itinerary plan ${plan.estimatedDays} days`}
+                              onClick={() => setExpandedPlan(plan)}
+                              style={{
+                                color: "#1890ff",
+                                border: "1px solid #dbeafe",
+                                background: "#eff6ff",
+                                flexShrink: 0,
+                              }}
+                            />
+                          </Tooltip>
+                        )}
+                      </div>
                       <div
                         className="itinerary-description custom-scrollbar"
                         style={{
@@ -448,6 +486,7 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
             }
             .itinerary-description {
               font-size: 14px !important;
+              max-height: 520px !important;
               padding-right: 0 !important;
             }
             .itinerary-description h3 {
@@ -535,6 +574,57 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
         `}
         </style>
       </Card>
+      <Modal
+        open={Boolean(expandedPlan) && isDesktopReaderEnabled}
+        onCancel={() => setExpandedPlan(null)}
+        footer={null}
+        width="100vw"
+        closable
+        destroyOnClose
+        title={
+          expandedPlan ? (
+            <div>
+              <Title level={3} style={{ margin: 0 }}>
+                {expandedPlan.estimatedDays} Days Itinerary Plan
+              </Title>
+              <Text type="secondary">
+                {expandedPlan.difficultyLevel} route overview
+              </Text>
+            </div>
+          ) : null
+        }
+        styles={{
+          content: {
+            padding: 0,
+            minHeight: "100vh",
+            borderRadius: 0,
+          },
+          header: {
+            marginBottom: 0,
+            padding: "24px 32px 16px",
+            borderBottom: "1px solid #f0f0f0",
+          },
+          body: {
+            padding: "32px",
+          },
+        }}
+      >
+        {expandedPlan && (
+          <div
+            className="itinerary-description custom-scrollbar"
+            style={{
+              fontSize: "18px",
+              lineHeight: "2",
+              color: "#1a1a1a",
+              maxWidth: "1100px",
+              margin: "0 auto",
+            }}
+            dangerouslySetInnerHTML={{
+              __html: expandedPlan.htmlDescription,
+            }}
+          />
+        )}
+      </Modal>
     </>
   );
 };

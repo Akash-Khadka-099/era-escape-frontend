@@ -10,6 +10,7 @@ import {
   Carousel,
   Collapse,
   Space,
+  Flex,
 } from "antd";
 import {
   FaHiking,
@@ -109,6 +110,19 @@ const TrekTrailDetail: React.FC = () => {
   }
 
   const baseUrl = import.meta.env.VITE_API_URL || "http://localhost:5555";
+  const destinationCount = trekDetail?.destinations?.length || 0;
+
+  const handleOpenTrailMap = () => {
+    if (!slug) return;
+    navigate(`/trek-trails/map/${slug}`);
+  };
+
+  const handleMapCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
+    if (event.key === "Enter" || event.key === " ") {
+      event.preventDefault();
+      handleOpenTrailMap();
+    }
+  };
 
   // --- Advanced SEO Logic ---
   const regionName = Array.isArray(trekDetail?.trekRegion)
@@ -673,53 +687,113 @@ const TrekTrailDetail: React.FC = () => {
             {/* Map Preview Card */}
             <Card
               bordered={false}
+              hoverable
+              className="map-preview-card"
               style={{
                 padding: 0,
-                borderRadius: "12px",
+                borderRadius: "20px",
                 overflow: "hidden",
                 marginBottom: "24px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
+                boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
               }}
               bodyStyle={{ padding: 0 }}
             >
               <div
-                style={{
-                  position: "relative",
-                  height: "200px",
-                  backgroundColor: "#e0e0e0",
-                }}
+                className="map-preview-surface"
+                role="button"
+                tabIndex={0}
+                aria-label={`Open interactive trail map for ${trekDetail?.title}`}
+                onClick={handleOpenTrailMap}
+                onKeyDown={handleMapCardKeyDown}
               >
-                {/* Map preview image */}
                 <img
-                  src="https://images.unsplash.com/photo-1524661135-423995f22d0b?ixlib=rb-4.0.3&auto=format&fit=crop&w=800&q=80"
+                  src="/images/mapTrailImage.png"
                   alt="Map Preview"
-                  style={{
-                    width: "100%",
-                    height: "100%",
-                    objectFit: "cover",
-                    filter: "blur(1px)",
-                  }}
+                  className="map-preview-image"
                 />
-                <div
-                  style={{
-                    position: "absolute",
-                    top: "50%",
-                    left: "50%",
-                    transform: "translate(-50%, -50%)",
-                    zIndex: 2,
-                  }}
-                >
-                  <Button
-                    type="default"
-                    icon={<FaMapMarkedAlt />}
+                <div className="map-preview-overlay" />
+                <div className="map-preview-content">
+                  <div
                     style={{
-                      fontWeight: "bold",
-                      boxShadow: "0 4px 12px rgba(0,0,0,0.2)",
+                      display: "flex",
+                      flexWrap: "wrap",
+                      gap: "10px",
                     }}
-                    onClick={() => navigate(`/trek-trails/map/${slug}`)}
                   >
-                    View Interactive Map
-                  </Button>
+                    <Tag
+                      style={{
+                        margin: 0,
+                        border: "none",
+                        borderRadius: "999px",
+                        padding: "6px 12px",
+                        background: "rgba(255, 255, 255, 0.18)",
+                        color: "#fff",
+                        fontWeight: 700,
+                        backdropFilter: "blur(10px)",
+                      }}
+                    >
+                      Interactive Route
+                    </Tag>
+                    {destinationCount > 0 && (
+                      <Tag
+                        style={{
+                          margin: 0,
+                          border: "none",
+                          borderRadius: "999px",
+                          padding: "6px 12px",
+                          background: "rgba(34, 197, 94, 0.18)",
+                          color: "#f0fdf4",
+                          fontWeight: 700,
+                          backdropFilter: "blur(10px)",
+                        }}
+                      >
+                        {destinationCount} Trail Stops
+                      </Tag>
+                    )}
+                  </div>
+
+                  <div>
+                    <Title
+                      level={4}
+                      style={{
+                        color: "#fff",
+                        margin: "0 0 10px 0",
+                        fontSize: "28px",
+                        lineHeight: 1.2,
+                      }}
+                    >
+                      View Interactive Map & Trail Sections
+                    </Title>
+                    <Paragraph
+                      style={{
+                        color: "rgba(255,255,255,0.85)",
+                        margin: 0,
+                        fontSize: "15px",
+                        lineHeight: 1.7,
+                        maxWidth: "420px",
+                      }}
+                    >
+                      Follow the route, inspect key trail stops, and jump into
+                      the full map experience for this trek.
+                    </Paragraph>
+                  </div>
+
+                  <Flex justify="center">
+                    <div className="">
+                      <Button
+                        type="primary"
+                        size="large"
+                        icon={<FaMapMarkedAlt />}
+                        className="map-preview-button"
+                        onClick={(event) => {
+                          event.stopPropagation();
+                          handleOpenTrailMap();
+                        }}
+                      >
+                        Explore Trail Map
+                      </Button>
+                    </div>
+                  </Flex>
                 </div>
               </div>
             </Card>
@@ -953,6 +1027,126 @@ const TrekTrailDetail: React.FC = () => {
         .stat-card:hover {
           transform: translateY(-5px);
           box-shadow: 0 12px 30px rgba(0,0,0,0.08) !important;
+        }
+        .map-preview-card {
+          border: none;
+        }
+        .map-preview-card .ant-card-body {
+          padding: 0 !important;
+        }
+        .map-preview-surface {
+          position: relative;
+          min-height: 280px;
+          display: flex;
+          align-items: stretch;
+          cursor: pointer;
+          outline: none;
+          background: linear-gradient(135deg, #052e2b 0%, #0f766e 100%);
+        }
+        .map-preview-image {
+          position: absolute;
+          inset: 0;
+          width: 100%;
+          height: 100%;
+          object-fit: cover;
+          filter: blur(0.5px) saturate(0.95);
+          transform: scale(1);
+          transition: transform 0.45s ease, filter 0.45s ease;
+        }
+        .map-preview-overlay {
+          position: absolute;
+          inset: 0;
+          background:
+            linear-gradient(180deg, rgba(5, 46, 43, 0.2) 0%, rgba(5, 46, 43, 0.88) 100%);
+          transition: background 0.3s ease;
+        }
+        .map-preview-content {
+          position: relative;
+          z-index: 1;
+          min-height: 280px;
+          width: 100%;
+          padding: 24px;
+          display: flex;
+          flex-direction: column;
+          justify-content: space-between;
+          gap: 20px;
+        }
+        .map-preview-actions {
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          gap: 16px;
+          flex-wrap: wrap;
+        }
+        .map-preview-button {
+          height: 48px;
+          padding-inline: 18px;
+          border: none;
+          border-radius: 999px;
+          font-weight: 700;
+          background: linear-gradient(135deg, #14b8a6 0%, #22c55e 100%) !important;
+          box-shadow: 0 10px 24px rgba(20, 184, 166, 0.28);
+          transition: transform 0.25s ease, box-shadow 0.25s ease;
+        }
+        .map-preview-hint {
+          display: inline-flex;
+          align-items: center;
+          gap: 10px;
+          padding: 10px 12px 10px 16px;
+          border-radius: 999px;
+          background: rgba(255, 255, 255, 0.12);
+          backdrop-filter: blur(12px);
+          transition: transform 0.25s ease, background 0.25s ease;
+        }
+        .map-preview-arrow {
+          width: 32px;
+          height: 32px;
+          border-radius: 50%;
+          display: inline-flex;
+          align-items: center;
+          justify-content: center;
+          background: rgba(255, 255, 255, 0.18);
+          color: #fff;
+        }
+        .map-preview-surface:hover .map-preview-image,
+        .map-preview-surface:focus-visible .map-preview-image {
+          transform: scale(1.06);
+          filter: blur(0) saturate(1.05);
+        }
+        .map-preview-surface:hover .map-preview-overlay,
+        .map-preview-surface:focus-visible .map-preview-overlay {
+          background:
+            linear-gradient(180deg, rgba(5, 46, 43, 0.12) 0%, rgba(5, 46, 43, 0.94) 100%);
+        }
+        .map-preview-surface:hover .map-preview-button,
+        .map-preview-surface:focus-visible .map-preview-button {
+          transform: translateY(-2px);
+          box-shadow: 0 14px 30px rgba(20, 184, 166, 0.34);
+        }
+        .map-preview-surface:hover .map-preview-hint,
+        .map-preview-surface:focus-visible .map-preview-hint {
+          transform: translateX(4px);
+          background: rgba(255, 255, 255, 0.18);
+        }
+        .map-preview-surface:focus-visible {
+          box-shadow: inset 0 0 0 3px rgba(94, 234, 212, 0.8);
+        }
+        @media (max-width: 575px) {
+          .map-preview-surface,
+          .map-preview-content {
+            min-height: 240px;
+          }
+          .map-preview-content h4 {
+            font-size: 24px !important;
+          }
+          .map-preview-actions {
+            align-items: stretch;
+          }
+          .map-preview-button,
+          .map-preview-hint {
+            width: 100%;
+            justify-content: center;
+          }
         }
       `}</style>
     </div>
