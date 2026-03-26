@@ -11,6 +11,7 @@ import {
   Collapse,
   Space,
   Flex,
+  message,
 } from "antd";
 import {
   FaHiking,
@@ -25,13 +26,20 @@ import {
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
-import { useGetTrekBlogDetail } from "@/services/trekServices/trekServices";
+import {
+  useCreateSavedTrekBlog,
+  useDeleteSavedTrekBlog,
+  useFetchSavedTrekBlogs,
+  useGetTrekBlogDetail,
+} from "@/services/trekServices/trekServices";
 import ElevationChart from "@/components/Charts/ElevationChart";
 import TrekWeather from "./TrekWeather";
 import { SEO } from "@/components/SEO";
 import TrailLocationDrawer from "../TrailLocationDrawer";
 import TrekIntineraryPlans from "../TrekIntineraryPlans";
 import SuspensePageLoader from "@/components/Loaders/SuspensePageLoader";
+import useAuthStore from "@/store/authStore";
+import useAuthModalStore from "@/store/authModalStore";
 
 const { Title, Text, Paragraph } = Typography;
 const { Panel } = Collapse;
@@ -87,11 +95,33 @@ const TrekTrailDetail: React.FC = () => {
 
   const navigate = useNavigate();
   const { slug } = useParams();
+  const { isAuthenticated } = useAuthStore();
+  const { openAuthModal } = useAuthModalStore();
+
   const { data: trekDetailResponse, isLoading } = useGetTrekBlogDetail(
     slug || "",
   );
+  const { mutateAsync: createSavedTrekBlog, isPending: isCreatingSavedTrekBlog } =
+    useCreateSavedTrekBlog();
+  const { mutateAsync: deleteSavedTrekBlog, isPending: isDeletingSavedTrekBlog } =
+    useDeleteSavedTrekBlog();
 
   const trekDetail = trekDetailResponse?.data;
+  const { data: savedTrekBlogsResponse, isLoading: isSavedTrekBlogsLoading } =
+    useFetchSavedTrekBlogs(
+      { page: 1, pageSize: 100 },
+      Boolean(isAuthenticated && trekDetail?._id),
+    );
+
+  const savedTrekBlogEntry = savedTrekBlogsResponse?.data?.find((item: any) => {
+    const savedTrekBlogId = item?.trekBlogId?._id || item?.trekBlogId;
+    return savedTrekBlogId === trekDetail?._id;
+  });
+
+  const savedTrekBlogEntryId = savedTrekBlogEntry?._id || savedTrekBlogEntry?.id;
+  const isSaved = Boolean(savedTrekBlogEntryId);
+  const isSaveActionLoading =
+    isCreatingSavedTrekBlog || isDeletingSavedTrekBlog || isSavedTrekBlogsLoading;
 
   // Preload Map Component in background
   useEffect(() => {
@@ -121,6 +151,69 @@ const TrekTrailDetail: React.FC = () => {
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
       handleOpenTrailMap();
+    }
+  };
+
+  const copyTextToClipboard = async (value: string) => {
+    if (navigator?.clipboard?.writeText) {
+      await navigator.clipboard.writeText(value);
+      return;
+    }
+
+    const textArea = document.createElement("textarea");
+    textArea.value = value;
+    textArea.setAttribute("readonly", "");
+    textArea.style.position = "fixed";
+    textArea.style.opacity = "0";
+    textArea.style.pointerEvents = "none";
+
+    document.body.appendChild(textArea);
+    textArea.focus();
+    textArea.select();
+
+    const copied = document.execCommand("copy");
+    document.body.removeChild(textArea);
+
+    if (!copied) {
+      throw new Error("Unable to copy link");
+    }
+  };
+
+  const handleToggleSave = async () => {
+    if (!trekDetail?._id) {
+      message.error("Unable to identify this trek blog");
+      return;
+    }
+
+    if (!isAuthenticated) {
+      openAuthModal();
+      message.warning("Please login to save trek blogs.");
+      return;
+    }
+
+    try {
+      if (isSaved && savedTrekBlogEntryId) {
+        const response = await deleteSavedTrekBlog(savedTrekBlogEntryId);
+        message.success(response?.data?.message || "Trek blog removed from saved list");
+        return;
+      }
+
+      const response = await createSavedTrekBlog({ trekBlogId: trekDetail._id });
+      message.success(response?.data?.message || "Trek blog saved successfully");
+    } catch (error: any) {
+      const errorMessage =
+        error?.response?.data?.message ||
+        "Unable to update saved trek blog status";
+      message.error(errorMessage);
+    }
+  };
+
+  const handleShareTrekBlog = async () => {
+    try {
+      await copyTextToClipboard(window.location.href);
+      message.success("Link copied to clipboard");
+    } catch {
+      message.error("Unable to copy link right now");
     }
   };
 
@@ -439,11 +532,57 @@ const TrekTrailDetail: React.FC = () => {
                 )}
               </div>
             </div>
-            <div style={{ display: "flex", gap: "12px" }}>
-              <Button icon={<FaBookmark />} style={{ borderRadius: "8px" }}>
-                Save
+            <div
+              style={{
+                display: "flex",
+                gap: "8px",
+                flexWrap: "wrap",
+              }}
+            >
+              <Button
+                icon={
+                  <FaBookmark color={isSaved ? "#fde68a" : "#f8fafc"} style={{ fontSize: "14px" }} />
+                }
+                style={{
+                  height: "42px",
+                  borderRadius: "12px",
+                  border: isSaved
+                    ? "1px solid rgba(253, 230, 138, 0.45)"
+                    : "1px solid rgba(255, 255, 255, 0.22)",
+                  background: isSaved
+                    ? "linear-gradient(140deg, rgba(68, 92, 66, 0.82), rgba(48, 76, 52, 0.74))"
+                    : "linear-gradient(140deg, rgba(64, 85, 66, 0.78), rgba(44, 63, 49, 0.72))",
+                  boxShadow: "0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(8px)",
+                  color: "#f8fafc",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  padding: "0 12px",
+                  minWidth: "160px",
+                }}
+                onClick={handleToggleSave}
+                loading={isSaveActionLoading}
+              >
+                {isSaved ? "Saved Expedition" : "Save Expedition"}
               </Button>
-              <Button icon={<FaShare />} style={{ borderRadius: "8px" }}>
+              <Button
+                icon={<FaShare style={{ fontSize: "14px", color: "#f8fafc" }} />}
+                onClick={handleShareTrekBlog}
+                style={{
+                  height: "42px",
+                  borderRadius: "12px",
+                  border: "1px solid rgba(255, 255, 255, 0.22)",
+                  background:
+                    "linear-gradient(140deg, rgba(64, 85, 66, 0.78), rgba(44, 63, 49, 0.72))",
+                  boxShadow: "0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  backdropFilter: "blur(8px)",
+                  color: "#f8fafc",
+                  fontWeight: 700,
+                  fontSize: "14px",
+                  padding: "0 12px",
+                  minWidth: "100px",
+                }}
+              >
                 Share
               </Button>
             </div>

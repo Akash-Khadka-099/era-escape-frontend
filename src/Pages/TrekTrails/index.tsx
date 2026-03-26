@@ -6,9 +6,8 @@ import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrap
 import { useSearchTrekBlogLists } from "@/services/trekServices/trekServices";
 import { useSearchParams } from "react-router-dom";
 import CustomPagination from "@/components/CustomPagination";
-import Lottie from "react-lottie";
-import NoDataFound from "@/assets/JsonAnimation/noDataFound.json";
 import { SEO } from "@/components/SEO";
+import NoDataLottie from "@/components/Feedback/NoDataLottie";
 
 const { Title, Text } = Typography;
 const { Option } = Select;
@@ -77,15 +76,6 @@ const ExploreTrails: React.FC = () => {
   const handleSearchSubmit = (value: string) => {
     setSearchParams({ search: value });
     setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on search
-  };
-
-  const defaultOptions = {
-    loop: true,
-    autoplay: true,
-    animationData: NoDataFound,
-    rendererSettings: {
-      preserveAspectRatio: "xMidYMid slice",
-    },
   };
 
   return (
@@ -225,18 +215,7 @@ const ExploreTrails: React.FC = () => {
 
             {/* Trails Grid */}
             {!isPending && !listedTrails?.data?.length ? (
-              <Flex
-                vertical
-                align="center"
-                className="mt-4"
-                justify="center"
-                style={{ width: "100%", minHeight: "300px" }}
-              >
-                <Lottie options={defaultOptions} height={300} width={300} />
-                <Title level={5} type="secondary">
-                  No trails found matching your criteria.
-                </Title>
-              </Flex>
+              <NoDataLottie title="No trails found matching your criteria." />
             ) : (
               <>
                 <Row gutter={[24, 24]}>

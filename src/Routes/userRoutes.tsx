@@ -17,6 +17,7 @@ const PackageDetail = lazy(() => import("@/Pages/Packages/PackageDetail"));
 const TrekTrails = lazy(() => import("@/Pages/TrekTrails"));
 const TrekTrailMap = lazy(() => import("@/Pages/TrekTrails/TrekTrailMap"));
 const TrekTrailDetail = lazy(() => import("@/Pages/TrekTrails/TrekTrailDetails"));
+const SavedTrekBlogs = lazy(() => import("@/Pages/SavedTrekBlogs"));
 
 export interface RouteItem {
   path: string;
@@ -67,5 +68,9 @@ export const userRoutes: RouteItem[] = [
   {
     path: "/trek-trails/detail/:slug",
     element: <TrekTrailDetail />,
+  },
+  {
+    path: routeLists.savedTrekBlogs,
+    element: <SavedTrekBlogs />,
   },
 ];

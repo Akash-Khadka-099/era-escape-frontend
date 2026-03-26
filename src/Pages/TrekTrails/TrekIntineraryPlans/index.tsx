@@ -36,6 +36,7 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
   hideSEO = false,
 }) => {
   const [expandedPlan, setExpandedPlan] = useState<any>(null);
+  const [activePlanKey, setActivePlanKey] = useState<string | null>(null);
   const { slug } = useParams<{ slug: string }>();
   const screens = useBreakpoint();
   const isDesktopReaderEnabled = Boolean(screens.md);
@@ -167,6 +168,14 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
         <Collapse
           accordion
           ghost
+          activeKey={activePlanKey || undefined}
+          onChange={(key) => {
+            if (Array.isArray(key)) {
+              setActivePlanKey(key[0] ? String(key[0]) : null);
+              return;
+            }
+            setActivePlanKey(key ? String(key) : null);
+          }}
           expandIcon={({ isActive }) => (
             <DownOutlined
               rotate={isActive ? 180 : 0}
@@ -176,108 +185,61 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
           expandIconPosition="end"
           style={{ background: "transparent" }}
         >
-          {itineraryPlans.map((plan: any, index: number) => (
-            <Panel
-              key={plan._id || index}
-              header={
+          {itineraryPlans.map((plan: any, index: number) => {
+            const panelKey = String(plan._id || index);
+            const isPanelActive = activePlanKey === panelKey;
+            const headerContent = (
+              <div
+                className="itinerary-panel-header"
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  width: "100%",
+                  paddingRight: "10px",
+                }}
+              >
                 <div
-                  className="itinerary-panel-header"
-                  style={{
-                    display: "flex",
-                    justifyContent: "space-between",
-                    alignItems: "center",
-                    flexWrap: "wrap",
-                    width: "100%",
-                    paddingRight: "10px",
-                  }}
+                  className="itinerary-stats-group"
+                  style={{ display: "flex", flexWrap: "wrap" }}
                 >
                   <div
-                    className="itinerary-stats-group"
-                    style={{ display: "flex", flexWrap: "wrap" }}
+                    style={{
+                      display: "flex",
+                      alignItems: "center",
+                      gap: "14px",
+                    }}
                   >
                     <div
                       style={{
+                        width: "44px",
+                        height: "44px",
+                        borderRadius: "12px",
+                        background: "#fff",
                         display: "flex",
                         alignItems: "center",
-                        gap: "14px",
+                        justifyContent: "center",
+                        color: "#1890ff",
+                        boxShadow: "0 4px 10px rgba(24, 144, 255, 0.15)",
                       }}
                     >
-                      <div
-                        style={{
-                          width: "44px",
-                          height: "44px",
-                          borderRadius: "12px",
-                          background: "#fff",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#1890ff",
-                          boxShadow: "0 4px 10px rgba(24, 144, 255, 0.15)",
-                        }}
-                      >
-                        <ClockCircleOutlined style={{ fontSize: "20px" }} />
-                      </div>
-                      <div>
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: "12px",
-                            display: "block",
-                            fontWeight: 500,
-                          }}
-                        >
-                          DURATION
-                        </Text>
-                        <Text
-                          strong
-                          style={{ fontSize: "18px", color: "#262626" }}
-                        >
-                          {plan.estimatedDays} Days
-                        </Text>
-                      </div>
+                      <ClockCircleOutlined style={{ fontSize: "20px" }} />
                     </div>
-
-                    <div
-                      style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: "14px",
-                      }}
-                    >
-                      <div
+                    <div>
+                      <Text
+                        type="secondary"
                         style={{
-                          width: "44px",
-                          height: "44px",
-                          borderRadius: "12px",
-                          background: "#fff",
-                          display: "flex",
-                          alignItems: "center",
-                          justifyContent: "center",
-                          color: "#52c41a",
-                          boxShadow: "0 4px 10px rgba(82, 196, 26, 0.15)",
+                          fontSize: "12px",
+                          display: "block",
+                          fontWeight: 500,
                         }}
                       >
-                        <DollarOutlined style={{ fontSize: "20px" }} />
-                      </div>
-                      <div>
-                        <Text
-                          type="secondary"
-                          style={{
-                            fontSize: "12px",
-                            display: "block",
-                            fontWeight: 500,
-                          }}
-                        >
-                          EST. BUDGET
-                        </Text>
-                        <Text
-                          strong
-                          style={{ fontSize: "18px", color: "#262626" }}
-                        >
-                          Rs. {plan.estimatedMinCost?.toLocaleString()} -{" "}
-                          {plan.estimatedMaxCost?.toLocaleString()}
-                        </Text>
-                      </div>
+                        DURATION
+                      </Text>
+                      <Text strong style={{ fontSize: "18px", color: "#262626" }}>
+                        {plan.estimatedDays} Days
+                      </Text>
                     </div>
                   </div>
 
@@ -285,43 +247,101 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
                     style={{
                       display: "flex",
                       alignItems: "center",
-                      gap: "12px",
+                      gap: "14px",
                     }}
                   >
-                    <Tag
-                      color={
-                        plan.difficultyLevel === "Hard"
-                          ? "volcano"
-                          : plan.difficultyLevel === "Medium"
-                            ? "orange"
-                            : "green"
-                      }
+                    <div
                       style={{
-                        padding: "4px 16px",
-                        borderRadius: "10px",
-                        fontSize: "13px",
-                        fontWeight: 700,
-                        margin: 0,
-                        border: "none",
-                        textTransform: "uppercase",
+                        width: "44px",
+                        height: "44px",
+                        borderRadius: "12px",
+                        background: "#fff",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        color: "#52c41a",
+                        boxShadow: "0 4px 10px rgba(82, 196, 26, 0.15)",
                       }}
                     >
-                      {plan.difficultyLevel}
-                    </Tag>
+                      <DollarOutlined style={{ fontSize: "20px" }} />
+                    </div>
+                    <div>
+                      <Text
+                        type="secondary"
+                        style={{
+                          fontSize: "12px",
+                          display: "block",
+                          fontWeight: 500,
+                        }}
+                      >
+                        EST. BUDGET
+                      </Text>
+                      <Text strong style={{ fontSize: "18px", color: "#262626" }}>
+                        Rs. {plan.estimatedMinCost?.toLocaleString()} -{" "}
+                        {plan.estimatedMaxCost?.toLocaleString()}
+                      </Text>
+                    </div>
                   </div>
                 </div>
-              }
-              style={{
-                marginBottom: "24px",
-                background: "#fff",
-                borderRadius: "24px",
-                border: "1px solid #f0f0f0",
-                overflow: "hidden",
-                boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
-                transition: "all 0.3s ease",
-              }}
-            >
-              <div className="itinerary-panel-content">
+
+                <div
+                  style={{
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "12px",
+                  }}
+                >
+                  <Tag
+                    color={
+                      plan.difficultyLevel === "Hard"
+                        ? "volcano"
+                        : plan.difficultyLevel === "Medium"
+                          ? "orange"
+                          : "green"
+                    }
+                    style={{
+                      padding: "4px 16px",
+                      borderRadius: "10px",
+                      fontSize: "13px",
+                      fontWeight: 700,
+                      margin: 0,
+                      border: "none",
+                      textTransform: "uppercase",
+                    }}
+                  >
+                    {plan.difficultyLevel}
+                  </Tag>
+                </div>
+              </div>
+            );
+
+            return (
+              <Panel
+                key={panelKey}
+                header={
+                  isPanelActive ? (
+                    headerContent
+                  ) : (
+                    <Tooltip
+                      title="Click to view this itinerary plan"
+                      placement="top"
+                      mouseEnterDelay={0.2}
+                    >
+                      {headerContent}
+                    </Tooltip>
+                  )
+                }
+                style={{
+                  marginBottom: "24px",
+                  background: "#fff",
+                  borderRadius: "24px",
+                  border: "1px solid #f0f0f0",
+                  overflow: "hidden",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.04)",
+                  transition: "all 0.3s ease",
+                }}
+              >
+                <div className="itinerary-panel-content">
                 <Divider style={{ margin: "0 0 32px 0" }} />
                 <Row gutter={[48, 32]}>
                   <Col xs={24} lg={14}>
@@ -439,9 +459,10 @@ const TrekIntineraryPlans: React.FC<{ hideSEO?: boolean }> = ({
                     </div>
                   </Col>
                 </Row>
-              </div>
-            </Panel>
-          ))}
+                </div>
+              </Panel>
+            );
+          })}
         </Collapse>
 
         <style>

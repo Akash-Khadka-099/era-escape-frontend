@@ -44,6 +44,11 @@ export const menuItems: NavMenuItem[] = [
     label: "Explore Trails",
     role: "*",
   },
+  {
+    key: routeLists.savedTrekBlogs,
+    label: "Saved Blogs",
+    role: ["user", "admin", "superAdmin"],
+  },
 ];
 
 export const nepalTrekRegions = [

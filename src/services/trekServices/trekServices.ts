@@ -1,10 +1,19 @@
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { apiEndpoints } from "../apiEndpoints";
 import axiosInstance from "../axiosInstance";
 import { AxiosResponse } from "axios";
 
 interface SearchPackageQuery {
   [key: string]: any;
+}
+
+interface SavedTrekBlogPayload {
+  trekBlogId: string;
+}
+
+interface SavedTrekBlogQuery {
+  page?: number;
+  pageSize?: number;
 }
 
 const searchTrekBlogLists = (query: SearchPackageQuery): Promise<AxiosResponse> => {
@@ -76,10 +85,71 @@ const useFetchTrekBlogItineraryPlans = ({ trekBlogSlug }:
   });
 };
 
+const createSavedTrekBlog = (
+  payload: SavedTrekBlogPayload,
+): Promise<AxiosResponse> => {
+  return axiosInstance.post(apiEndpoints.savedTrekBlogs.fetchPost, payload);
+};
+
+const useCreateSavedTrekBlog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: createSavedTrekBlog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [apiEndpoints.savedTrekBlogs.fetchPost],
+      });
+    },
+  });
+};
+
+const fetchSavedTrekBlogs = (
+  query: SavedTrekBlogQuery,
+): Promise<AxiosResponse> => {
+  return axiosInstance.get(apiEndpoints.savedTrekBlogs.fetchPost, {
+    params: query,
+  });
+};
+
+const useFetchSavedTrekBlogs = (
+  query: SavedTrekBlogQuery,
+  enabled: boolean = true,
+) => {
+  return useQuery({
+    queryKey: [apiEndpoints.savedTrekBlogs.fetchPost, query],
+    queryFn: () => fetchSavedTrekBlogs(query),
+    select: (data) => data?.data,
+    enabled,
+  });
+};
+
+const deleteSavedTrekBlog = (id: string): Promise<AxiosResponse> => {
+  return axiosInstance.delete(
+    apiEndpoints.savedTrekBlogs.byId.replace("{id}", id),
+  );
+};
+
+const useDeleteSavedTrekBlog = () => {
+  const queryClient = useQueryClient();
+
+  return useMutation({
+    mutationFn: deleteSavedTrekBlog,
+    onSuccess: () => {
+      queryClient.invalidateQueries({
+        queryKey: [apiEndpoints.savedTrekBlogs.fetchPost],
+      });
+    },
+  });
+};
+
 export {
   useSearchTrekBlogLists,
   useGetTrekBlogDetail,
   fetchDestinationHotels,
   useFetchDestinationHotels,
-  useFetchTrekBlogItineraryPlans
+  useFetchTrekBlogItineraryPlans,
+  useCreateSavedTrekBlog,
+  useFetchSavedTrekBlogs,
+  useDeleteSavedTrekBlog,
 };
