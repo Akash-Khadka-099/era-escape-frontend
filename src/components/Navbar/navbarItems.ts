@@ -17,6 +17,16 @@ export const menuItems: NavMenuItem[] = [
   //   label: "Destinations",
   //   role: "*",
   // },
+  {
+    key: routeLists.trekTrails,
+    label: "Explore Trails",
+    role: "*",
+  },
+  {
+    key: "trending-blogs",
+    label: "Trending Blogs",
+    role: "*",
+  },
   // {
   //   key: routeLists.package,
   //   label: "Packages",
@@ -24,6 +34,7 @@ export const menuItems: NavMenuItem[] = [
   // },
 
   // {
+  //   key: "organization",
   //   label: "Organization",
   //   role: ["admin"],
   //   children: [
@@ -39,11 +50,7 @@ export const menuItems: NavMenuItem[] = [
   //     },
   //   ],
   // },
-  {
-    key: routeLists.trekTrails,
-    label: "Explore Trails",
-    role: "*",
-  },
+
   {
     key: routeLists.savedTrekBlogs,
     label: "Saved Blogs",

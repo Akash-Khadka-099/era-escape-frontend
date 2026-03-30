@@ -16,6 +16,7 @@ import { useFetchTrendingBlogsCategories } from "@/services/userHomepageServices
 import CategoryCard from "@/Pages/Dashboard/components/CategoryCard";
 import { useNavigate } from "react-router-dom";
 import { routeLists } from "@/Routes/routeLists";
+import TrendingBlogsSection from "@/Pages/Dashboard/TrendingBlogsSection";
 
 const Dashboard: React.FC = () => {
   const { data } = useFetchTrendingBlogsCategories({});
@@ -70,6 +71,8 @@ const Dashboard: React.FC = () => {
         </div>
       </section>
 
+      <TrendingBlogsSection />
+
       {/* Featured Story Section */}
       <section className="featured-story">
         <div className="story-content">
@@ -101,39 +104,6 @@ const Dashboard: React.FC = () => {
           <img src={StoryImage} alt="High Atlas" />
         </div>
       </section>
-
-      {/* Newsletter Section */}
-      <section className="newsletter-section">
-        <div className="newsletter-icon">
-          <CompassOutlined />
-        </div>
-        <h2 className="newsletter-title cabin-sketch-bold">
-          The Trailhead Dispatch
-        </h2>
-        <p className="newsletter-subtitle">
-          Join 20,000+ adventurers. Weekly trek reports, gear testing, and
-          hidden gems delivered to your inbox.
-        </p>
-        <div className="newsletter-form">
-          <input type="email" placeholder="Your email address" />
-          <button>Subscribe</button>
-        </div>
-        <p style={{ marginTop: "20px", fontSize: "12px", opacity: 0.6 }}>
-          No spam. Only high-altitude inspiration. Unsubscribe anytime.
-        </p>
-      </section>
-
-      {/* Branding Footer Note */}
-      <div
-        style={{
-          textAlign: "center",
-          padding: "40px",
-          color: "#999",
-          fontSize: "14px",
-        }}
-      >
-        © 2026 Era Escape. All paths lead home.
-      </div>
     </div>
   );
 };

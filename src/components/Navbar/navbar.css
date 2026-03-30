@@ -380,6 +380,160 @@
   gap: 6px;
 }
 
+.trending-blogs-menu {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+}
+
+.trending-blogs-menu-label {
+  display: inline-flex;
+  align-items: center;
+}
+
+.trending-blogs-mega {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: min(920px, 88vw);
+  background: linear-gradient(180deg, #ffffff 0%, #f8fafc 100%);
+  border-radius: 18px;
+  box-shadow: 0 24px 60px rgba(8, 31, 55, 0.16);
+  padding: 20px 22px 18px;
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+  transition:
+    opacity 0.2s ease,
+    visibility 0.2s ease;
+  z-index: 1000;
+}
+
+.trending-blogs-menu:hover .trending-blogs-mega,
+.trending-blogs-menu--open .trending-blogs-mega {
+  opacity: 1;
+  visibility: visible;
+  pointer-events: auto;
+}
+
+.trending-blogs-mega-header {
+  text-align: center;
+  margin-bottom: 16px;
+}
+
+.trending-blogs-mega-title {
+  font-size: 14px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: #1f2a37;
+  margin: 0;
+}
+
+.trending-blogs-mega-subtitle {
+  font-size: 12px;
+  color: #526071;
+}
+
+.trending-blogs-mega-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+}
+
+.trending-blogs-mega-card {
+  width: 100%;
+  border: 1px solid #dbe4ee;
+  background: #ffffff;
+  border-radius: 14px;
+  padding: 9px;
+  display: flex;
+  gap: 12px;
+  text-align: left;
+  align-items: center;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+}
+
+.trending-blogs-mega-card:hover {
+  transform: translateY(-2px);
+  border-color: #9ecad1;
+  box-shadow: 0 10px 24px rgba(45, 90, 90, 0.14);
+}
+
+.trending-blogs-mega-card-image {
+  width: 132px;
+  height: 86px;
+  object-fit: cover;
+  object-position: center;
+  border-radius: 10px;
+  flex-shrink: 0;
+}
+
+.trending-blogs-mega-card-content {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+}
+
+.trending-blogs-mega-card-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  align-self: flex-start;
+  font-size: 11px;
+  font-weight: 600;
+  color: #a64b00;
+  background: #fff3e8;
+  border-radius: 999px;
+  padding: 2px 8px;
+  margin-bottom: 6px;
+}
+
+.trending-blogs-mega-card-title {
+  margin: 0;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
+  line-height: 1.3;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.trending-blogs-mega-card-meta {
+  margin-top: 6px;
+  font-size: 12px;
+  color: #5c6b7d;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.trending-blogs-loading,
+.trending-blogs-empty {
+  grid-column: 1 / -1;
+  text-align: center;
+  padding: 20px 0;
+  font-size: 13px;
+  color: #5c6b7d;
+}
+
+.trending-blogs-explore {
+  margin: 14px auto 0;
+  background: transparent;
+  border: none;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  font-weight: 700;
+  color: #1c4f58;
+  cursor: pointer;
+}
+
 .destinations-mega {
   position: absolute;
   top: 100%;
@@ -524,6 +678,10 @@
 
 @media (max-width: 700px) {
   .destinations-mega {
+    display: none;
+  }
+
+  .trending-blogs-mega {
     display: none;
   }
 }

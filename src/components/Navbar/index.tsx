@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import "./navbar.css";
 import LogoutConfirmModal from "@/components/Navbar/LogoutConfirmModal";
 import {
@@ -12,7 +12,14 @@ import LoginRegister from "@/Pages/LoginRegister";
 import useAuthStore from "@/store/authStore";
 import useAuthModalStore from "@/store/authModalStore";
 import {
+  type TrendingTrekBlog,
+  useFetchTrendingTrekBlogsByVisits,
+} from "@/services/userHomepageServices/homepageServices";
+import { routeLists } from "@/Routes/routeLists";
+import {
+  ArrowRightOutlined,
   CloseOutlined,
+  FireOutlined,
   LeftOutlined,
   MenuOutlined,
   RightOutlined,
@@ -23,6 +30,28 @@ import { Avatar, Button, Drawer, Dropdown, Layout, Menu } from "antd";
 import { useLocation, useNavigate } from "react-router-dom";
 
 const { Header } = Layout;
+const BASE_API_URL = import.meta.env.VITE_API_URL;
+
+const resolveImageUrl = (imagePath?: string) => {
+  if (!imagePath) {
+    return "https://images.unsplash.com/photo-1464822759023-fed622ff2c3b?q=80&w=1200&auto=format&fit=crop";
+  }
+
+  if (imagePath.startsWith("http://") || imagePath.startsWith("https://")) {
+    return imagePath;
+  }
+
+  const normalizedPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  return `${BASE_API_URL}${normalizedPath}`;
+};
+
+const buildTrendSlogan = (blog: TrendingTrekBlog) => {
+  if (blog?.trekBlog?.difficulty) {
+    return `${blog.trekBlog.difficulty} trail • Popular read`;
+  }
+
+  return "Popular read this month";
+};
 
 const DestinationsMegaMenu: React.FC<{ label: string }> = ({ label }) => {
   return (
@@ -70,6 +99,115 @@ const DestinationsMegaMenu: React.FC<{ label: string }> = ({ label }) => {
   );
 };
 
+const TrendingBlogsMegaMenu: React.FC<{
+  label: string;
+  blogs: TrendingTrekBlog[];
+  isLoading: boolean;
+  onSelectBlog: (slug: string) => void;
+  onExploreAll: () => void;
+}> = ({ label, blogs, isLoading, onSelectBlog, onExploreAll }) => {
+  const topBlogs = blogs.slice(0, 4);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const closeTimerRef = useRef<number | null>(null);
+
+  const clearCloseTimer = () => {
+    if (closeTimerRef.current !== null) {
+      window.clearTimeout(closeTimerRef.current);
+      closeTimerRef.current = null;
+    }
+  };
+
+  const handleMouseEnter = () => {
+    clearCloseTimer();
+    setIsMenuOpen(true);
+  };
+
+  const handleMouseLeave = () => {
+    clearCloseTimer();
+    closeTimerRef.current = window.setTimeout(() => {
+      setIsMenuOpen(false);
+      closeTimerRef.current = null;
+    }, 180);
+  };
+
+  useEffect(() => {
+    return () => {
+      clearCloseTimer();
+    };
+  }, []);
+
+  return (
+    <div
+      className={`trending-blogs-menu${isMenuOpen ? " trending-blogs-menu--open" : ""}`}
+      onMouseEnter={handleMouseEnter}
+      onMouseLeave={handleMouseLeave}
+    >
+      <span className="trending-blogs-menu-label">{label}</span>
+      <div className="trending-blogs-mega">
+        <div className="trending-blogs-mega-header">
+          <p className="trending-blogs-mega-title">Most Read Right Now</p>
+          <span className="trending-blogs-mega-subtitle">
+            Curated from recent reader activity
+          </span>
+        </div>
+
+        <div className="trending-blogs-mega-grid">
+          {isLoading ? (
+            <div className="trending-blogs-loading">Loading trending blogs...</div>
+          ) : topBlogs.length ? (
+            topBlogs.map((item) => (
+              <button
+                className="trending-blogs-mega-card"
+                key={item.trekBlogId}
+                type="button"
+                onClick={(event) => {
+                  event.preventDefault();
+                  event.stopPropagation();
+                  onSelectBlog(item?.trekBlog?.slug);
+                  setIsMenuOpen(false);
+                }}
+              >
+                <img
+                  src={resolveImageUrl(item?.featuredImage?.path)}
+                  alt={item?.trekBlog?.title}
+                  className="trending-blogs-mega-card-image"
+                />
+                <div className="trending-blogs-mega-card-content">
+                  <div className="trending-blogs-mega-card-chip">
+                    <FireOutlined />
+                    <span>Trending read</span>
+                  </div>
+                  <p className="trending-blogs-mega-card-title">
+                    {item?.trekBlog?.title}
+                  </p>
+                  <span className="trending-blogs-mega-card-meta">
+                    {buildTrendSlogan(item)}
+                  </span>
+                </div>
+              </button>
+            ))
+          ) : (
+            <div className="trending-blogs-empty">No trending blogs available.</div>
+          )}
+        </div>
+
+        <button
+          className="trending-blogs-explore"
+          type="button"
+          onClick={(event) => {
+            event.preventDefault();
+            event.stopPropagation();
+            onExploreAll();
+            setIsMenuOpen(false);
+          }}
+        >
+          Explore all <ArrowRightOutlined />
+        </button>
+      </div>
+    </div>
+  );
+};
+
 const Navbar: React.FC = () => {
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [open, setOpen] = useState(false);
@@ -81,6 +219,9 @@ const Navbar: React.FC = () => {
   const { user, isAuthenticated } = useAuthStore();
   const { isAuthModalOpen, openAuthModal, closeAuthModal } =
     useAuthModalStore();
+  const { data: trendingBlogsPayload, isLoading: isTrendingBlogsLoading } =
+    useFetchTrendingTrekBlogsByVisits({ periodDays: 30, limit: 8 });
+  const trendingBlogs = trendingBlogsPayload?.data || [];
 
   const handleCloseLoginModal = () => {
     closeAuthModal();
@@ -94,6 +235,17 @@ const Navbar: React.FC = () => {
   const onClose = () => {
     setOpen(false);
     setDrawerView("main");
+  };
+
+  const handleExploreAllTrending = () => {
+    navigate(routeLists.trekTrails);
+  };
+
+  const handleOpenTrendingBlog = (slug?: string) => {
+    if (!slug) {
+      return;
+    }
+    navigate(`/trek-trails/detail/${slug}`);
   };
 
   const dropdownMenu = [
@@ -143,6 +295,21 @@ const Navbar: React.FC = () => {
         return {
           ...item,
           label: <DestinationsMegaMenu label="Destinations" />,
+        };
+      }
+
+      if (item.key === "trending-blogs") {
+        return {
+          ...item,
+          label: (
+            <TrendingBlogsMegaMenu
+              label="Trending Blogs"
+              blogs={trendingBlogs}
+              isLoading={isTrendingBlogsLoading}
+              onSelectBlog={handleOpenTrendingBlog}
+              onExploreAll={handleExploreAllTrending}
+            />
+          ),
         };
       }
 
@@ -206,6 +373,10 @@ const Navbar: React.FC = () => {
               items={desktopMenuItems}
               selectedKeys={[activeKeyString]}
               onClick={(e) => {
+                if (e.key === "trending-blogs") {
+                  navigate(routeLists.trekTrails);
+                  return;
+                }
                 navigate(e.key);
               }}
               style={{ borderBottom: "none" }}
@@ -307,6 +478,9 @@ const Navbar: React.FC = () => {
                         onClick={() => {
                           if (isDestinations) {
                             setDrawerView("destinations");
+                          } else if (item.key === "trending-blogs") {
+                            navigate(routeLists.trekTrails);
+                            onClose();
                           } else if (typeof item.key === "string") {
                             navigate(item.key);
                             onClose();
