@@ -40,7 +40,8 @@ interface ApiEndpoints {
     byId: string;
   };
   homepage: {
-    fetchTrendingBlogCategories: string
+    fetchTrendingBlogCategories: string,
+    fetchTrendingBlogsByVisits: string,
   }
 }
 
@@ -89,6 +90,7 @@ export const apiEndpoints: ApiEndpoints = {
     byId: "/api/saved-trek-blogs/{id}",
   },
   homepage: {
-    fetchTrendingBlogCategories: "/api/trek-blogs-trending-categories"
+    fetchTrendingBlogCategories: "/api/trek-blogs-trending-categories",
+    fetchTrendingBlogsByVisits: "/api/trek-blogs-trending-by-visits",
   }
 };
