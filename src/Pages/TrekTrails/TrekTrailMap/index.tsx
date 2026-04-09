@@ -118,7 +118,9 @@ const TrekTrailMap: React.FC<{
   const { slug } = useParams();
   const queryClient = useQueryClient();
 
-  const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "");
+  const { data: trekDetailResponse } = useGetTrekBlogDetail(slug || "", {
+    ignoreLog: true,
+  });
 
   const kmlUrl = useMemo(() => {
     const kmlFile = trekDetailResponse?.data?.kmlFile;

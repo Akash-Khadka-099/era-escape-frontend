@@ -1,5 +1,5 @@
 import React, { useCallback, useEffect, useState } from "react";
-import { Typography, Select, Row, Col, message, Flex, Affix } from "antd";
+import { Typography, Row, Col, message, Flex, Button } from "antd";
 import CustomPackageSearch from "@/components/CustomPackageSearch";
 import TrekCard from "./TrekCard";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
@@ -8,9 +8,28 @@ import { useSearchParams } from "react-router-dom";
 import CustomPagination from "@/components/CustomPagination";
 import { SEO } from "@/components/SEO";
 import NoDataLottie from "@/components/Feedback/NoDataLottie";
+import { FilterNumberInput, FilterSelectField } from "@/components/FilterForms";
 
 const { Title, Text } = Typography;
-const { Option } = Select;
+
+const difficultyOptions = [
+  { label: "All", value: "All" },
+  { label: "Easy", value: "Easy" },
+  { label: "Medium", value: "Medium" },
+  { label: "Hard", value: "Hard" },
+];
+
+type TrailFilters = {
+  difficulty: string;
+  minAltitude: number | null;
+  maxAltitude: number | null;
+};
+
+const defaultFilters: TrailFilters = {
+  difficulty: "All",
+  minAltitude: null,
+  maxAltitude: null,
+};
 
 const ExploreTrails: React.FC = () => {
   const [pagination, setPagination] = useState({
@@ -20,17 +39,25 @@ const ExploreTrails: React.FC = () => {
   const [listedTrails, setListedTrails] = useState<any>({});
   const [searchVal, setSearchVal] = useState("");
 
-  // Filter states
-  const [regionFilter, setRegionFilter] = useState("All");
-  const [difficultyFilter, setDifficultyFilter] = useState("All");
-  const [durationFilter, setDurationFilter] = useState("All");
-  const [elevationFilter, setElevationFilter] = useState("All");
+  const [draftFilters, setDraftFilters] = useState<TrailFilters>(defaultFilters);
+  const [appliedFilters, setAppliedFilters] =
+    useState<TrailFilters>(defaultFilters);
 
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("search");
   const categoryQuery = searchParams.get("category");
 
   const { mutateAsync, isPending } = useSearchTrekBlogLists();
+  const isAltitudeRangeInvalid =
+    draftFilters.minAltitude !== null &&
+    draftFilters.maxAltitude !== null &&
+    draftFilters.minAltitude > draftFilters.maxAltitude;
+  const minAltitudeError = isAltitudeRangeInvalid
+    ? "Min altitude must be less than or equal to max altitude."
+    : undefined;
+  const maxAltitudeError = isAltitudeRangeInvalid
+    ? "Max altitude must be greater than or equal to min altitude."
+    : undefined;
 
   const fetchData = useCallback(async () => {
     try {
@@ -38,13 +65,18 @@ const ExploreTrails: React.FC = () => {
       const query: any = {
         q: activeSearch,
         page: pagination.page,
-        limit: pagination.pageSize,
+        pageSize: pagination.pageSize,
       };
 
-      if (regionFilter !== "All") query.region = regionFilter;
-      if (difficultyFilter !== "All") query.difficulty = difficultyFilter;
-      if (durationFilter !== "All") query.duration = durationFilter;
-      if (elevationFilter !== "All") query.elevation = elevationFilter;
+      if (appliedFilters.difficulty !== "All") {
+        query.difficulty = appliedFilters.difficulty;
+      }
+      if (appliedFilters.minAltitude !== null) {
+        query.minAltitude = appliedFilters.minAltitude;
+      }
+      if (appliedFilters.maxAltitude !== null) {
+        query.maxAltitude = appliedFilters.maxAltitude;
+      }
 
       const response = await mutateAsync(query);
       if (response?.status === 200) {
@@ -58,10 +90,7 @@ const ExploreTrails: React.FC = () => {
     pagination,
     searchQuery,
     categoryQuery,
-    regionFilter,
-    difficultyFilter,
-    durationFilter,
-    elevationFilter,
+    appliedFilters,
     mutateAsync,
   ]);
 
@@ -76,6 +105,15 @@ const ExploreTrails: React.FC = () => {
   const handleSearchSubmit = (value: string) => {
     setSearchParams({ search: value });
     setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on search
+  };
+
+  const handleApplyFilters = () => {
+    if (isAltitudeRangeInvalid) {
+      return;
+    }
+
+    setAppliedFilters({ ...draftFilters });
+    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   return (
@@ -101,7 +139,13 @@ const ExploreTrails: React.FC = () => {
         <Row gutter={24}>
           {/* Sidebar Filters */}
           <Col xs={0} lg={6}>
-            <Affix offsetTop={100}>
+            <div
+              style={{
+                position: "sticky",
+                top: "100px",
+                alignSelf: "flex-start",
+              }}
+            >
               <div
                 style={{
                   padding: "20px",
@@ -120,79 +164,61 @@ const ExploreTrails: React.FC = () => {
                   Filters
                 </Title>
                 <Flex vertical gap={16}>
-                  <div>
-                    <Text strong>Region</Text>
-                    <Select
-                      defaultValue="All"
-                      style={{ width: "100%", marginTop: "8px" }}
-                      className="custom-filter-select"
-                      onChange={(val) => {
-                        setRegionFilter(val);
-                        setPagination((prev) => ({ ...prev, page: 1 }));
-                      }}
-                    >
-                      <Option value="All">All</Option>
-                      <Option value="Annapurna">Annapurna</Option>
-                      <Option value="Everest">Everest</Option>
-                    </Select>
-                  </div>
+                  <FilterSelectField
+                    label="Difficulty"
+                    value={draftFilters.difficulty}
+                    options={difficultyOptions}
+                    debounceMs={0}
+                    onChange={(value) =>
+                      setDraftFilters((prev) => ({
+                        ...prev,
+                        difficulty: value,
+                      }))
+                    }
+                  />
 
-                  <div>
-                    <Text strong>Difficulty</Text>
-                    <Select
-                      defaultValue="All"
-                      style={{ width: "100%", marginTop: "8px" }}
-                      className="custom-filter-select"
-                      onChange={(val) => {
-                        setDifficultyFilter(val);
-                        setPagination((prev) => ({ ...prev, page: 1 }));
-                      }}
-                    >
-                      <Option value="All">All</Option>
-                      <Option value="Easy">Easy</Option>
-                      <Option value="Moderate">Moderate</Option>
-                      <Option value="Hard">Hard</Option>
-                    </Select>
-                  </div>
+                  <FilterNumberInput
+                    label="Min Altitude"
+                    value={draftFilters.minAltitude}
+                    min={0}
+                    debounceMs={0}
+                    errorMessage={minAltitudeError}
+                    placeholder="Minimum altitude"
+                    onChange={(value) =>
+                      setDraftFilters((prev) => ({
+                        ...prev,
+                        minAltitude: value,
+                      }))
+                    }
+                  />
 
-                  <div>
-                    <Text strong>Duration</Text>
-                    <Select
-                      defaultValue="All"
-                      style={{ width: "100%", marginTop: "8px" }}
-                      className="custom-filter-select"
-                      onChange={(val) => {
-                        setDurationFilter(val);
-                        setPagination((prev) => ({ ...prev, page: 1 }));
-                      }}
-                    >
-                      <Option value="All">All</Option>
-                      <Option value="Short">Short</Option>
-                      <Option value="Long">Long</Option>
-                    </Select>
-                  </div>
+                  <FilterNumberInput
+                    label="Max Altitude"
+                    value={draftFilters.maxAltitude}
+                    min={0}
+                    debounceMs={0}
+                    errorMessage={maxAltitudeError}
+                    placeholder="Maximum altitude"
+                    onChange={(value) =>
+                      setDraftFilters((prev) => ({
+                        ...prev,
+                        maxAltitude: value,
+                      }))
+                    }
+                  />
 
-                  <div>
-                    <Text strong>Elevation</Text>
-                    <Select
-                      defaultValue="All"
-                      style={{ width: "100%", marginTop: "8px" }}
-                      className="custom-filter-select"
-                      onChange={(val) => {
-                        setElevationFilter(val);
-                        setPagination((prev) => ({ ...prev, page: 1 }));
-                      }}
-                    >
-                      <Option value="All">All</Option>
-                      <Option value="High">High</Option>
-                      <Option value="Low">Low</Option>
-                    </Select>
-                  </div>
-
-                  {/* Optional: Add a reset button if needed, but not strictly requested */}
+                  <Button
+                    type="primary"
+                    block
+                    loading={isPending}
+                    disabled={isAltitudeRangeInvalid}
+                    onClick={handleApplyFilters}
+                  >
+                    Apply Filters
+                  </Button>
                 </Flex>
               </div>
-            </Affix>
+            </div>
           </Col>
 
           {/* Main Content */}
@@ -220,7 +246,13 @@ const ExploreTrails: React.FC = () => {
               <>
                 <Row gutter={[24, 24]}>
                   {listedTrails?.data?.map((trail: any) => (
-                    <Col xs={24} sm={12} lg={12} xl={8} key={trail?._id || trail?.id}>
+                    <Col
+                      xs={24}
+                      sm={12}
+                      lg={12}
+                      xl={8}
+                      key={trail?._id || trail?.id}
+                    >
                       <TrekCard
                         id={trail?._id || trail?.id}
                         title={trail?.title}
@@ -255,7 +287,7 @@ const ExploreTrails: React.FC = () => {
                     paginationDetail={{
                       page: listedTrails?.pagination?.page || 1,
                       totalData: listedTrails?.pagination?.total || 0,
-                      pageSize: listedTrails?.pagination?.limit || 9,
+                      pageSize: listedTrails?.pagination?.pageSize || 9,
                     }}
                   />
                 </div>
