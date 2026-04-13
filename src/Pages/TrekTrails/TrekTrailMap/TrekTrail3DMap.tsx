@@ -260,6 +260,20 @@ const hillshadeLayer: HillshadeLayerSpecification = {
   },
 };
 
+const THREE_D_TERRAIN: NonNullable<MapProps["terrain"]> = {
+  source: "terrain-dem",
+  exaggeration: 1.3,
+};
+
+const THREE_D_SKY: NonNullable<MapProps["sky"]> = {
+  "fog-color": "#dbeafe",
+  "fog-ground-blend": 0.8,
+  "horizon-fog-blend": 0.08,
+  "sky-color": "#020617",
+  "horizon-color": "#020617",
+  "atmosphere-blend": 0.15,
+};
+
 const toNumber = (value: unknown): number | null => {
   const parsed = Number.parseFloat(String(value));
   return Number.isFinite(parsed) ? parsed : null;
@@ -535,7 +549,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
   const [isMinimized, setIsMinimized] = useState(false);
   const [isFullPage, setIsFullPage] = useState(false);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>("3d");
+  const [isTerrainSourceReady, setIsTerrainSourceReady] = useState(false);
+  const [viewMode, setViewMode] = useState<ViewMode>("2d");
   const { slug } = useParams();
   const queryClient = useQueryClient();
   const mapRef = useRef<MapRef | null>(null);
@@ -630,14 +645,14 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
 
     return DEFAULT_VIEW_STATE;
   }, [displayPaths, markers]);
-
   const terrainConfig: MapProps["terrain"] =
-    viewMode === "3d"
-      ? { source: "terrain-dem", exaggeration: 1.3 }
-      : undefined;
+    viewMode === "3d" ? THREE_D_TERRAIN : undefined;
 
   const projectionConfig: MapProps["projection"] =
-    viewMode === "3d" ? "globe" : "mercator";
+    viewMode === "3d" && isTerrainSourceReady ? "globe" : "mercator";
+
+  const skyConfig: MapProps["sky"] =
+    viewMode === "3d" && isTerrainSourceReady ? THREE_D_SKY : undefined;
 
   const handleOpenHotelsDrawer = useCallback(
     async (destinationSlug?: string | null) => {
@@ -923,73 +938,24 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
       return;
     }
 
-    let animationFrameId: number | null = null;
-    let isCancelled = false;
-
-    const ensureTerrainAttached = (attempt = 0) => {
-      if (isCancelled) {
-        return;
-      }
-
-      if (map.getSource("terrain-dem")) {
-        map.setTerrain({
-          source: "terrain-dem",
-          exaggeration: 1.3,
-        });
-        return;
-      }
-
-      if (attempt >= 90) {
-        return;
-      }
-
-      animationFrameId = window.requestAnimationFrame(() => {
-        ensureTerrainAttached(attempt + 1);
-      });
-    };
-
-    map.setProjection(viewMode === "3d" ? { type: "globe" } : { type: "mercator" });
-
     if (viewMode === "3d") {
       map.dragRotate.enable();
       map.touchZoomRotate.enableRotation();
-      ensureTerrainAttached();
-      map.setSky({
-        "fog-color": "#dbeafe",
-        "fog-ground-blend": 0.8,
-        "horizon-fog-blend": 0.08,
-        "sky-color": "#020617",
-        "horizon-color": "#020617",
-        "atmosphere-blend": 0.15,
-      });
       map.easeTo({
         pitch: Math.max(map.getPitch(), 60),
         bearing: map.getBearing() === 0 ? 24 : map.getBearing(),
         duration: 900,
       });
-      return () => {
-        isCancelled = true;
-        if (animationFrameId !== null) {
-          window.cancelAnimationFrame(animationFrameId);
-        }
-      };
+      return;
     }
 
     map.dragRotate.disable();
     map.touchZoomRotate.disableRotation();
-    map.setTerrain(null);
     map.easeTo({
       pitch: 0,
       bearing: 0,
       duration: 900,
     });
-
-    return () => {
-      isCancelled = true;
-      if (animationFrameId !== null) {
-        window.cancelAnimationFrame(animationFrameId);
-      }
-    };
   }, [isMapLoaded, viewMode]);
 
   const trailGeoJson = useMemo(
@@ -1268,12 +1234,26 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           initialViewState={initialViewState}
           terrain={terrainConfig}
           projection={projectionConfig}
+          sky={skyConfig}
           canvasContextAttributes={{ antialias: true }}
           maxPitch={viewMode === "3d" ? 85 : 0}
           maxZoom={maxMapZoom}
           style={{ width: "100%", height: "100%" }}
           onLoad={() => {
             setIsMapLoaded(true);
+            setIsTerrainSourceReady(
+              Boolean(mapRef.current?.getMap().getSource("terrain-dem")),
+            );
+          }}
+          onSourceData={(event) => {
+            if (
+              event.sourceId === "terrain-dem" &&
+              (event.isSourceLoaded ||
+                event.sourceDataType === "metadata" ||
+                event.sourceDataType === "content")
+            ) {
+              setIsTerrainSourceReady(true);
+            }
           }}
         >
           <Source id="terrain-dem" {...TERRAIN_SOURCE} />
