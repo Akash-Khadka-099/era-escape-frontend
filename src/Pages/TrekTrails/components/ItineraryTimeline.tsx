@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import { Typography, Space, Button, Tag, Card } from "antd";
 import {
   ClockCircleOutlined,
@@ -56,6 +56,10 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
   destinations,
   onViewHotels,
 }) => {
+  const [activeDestinationIndex, setActiveDestinationIndex] = useState<
+    number | null
+  >(null);
+
   if (!destinations || destinations.length === 0) return null;
 
   const getMultipleRouteTimes = (dest: Destination): RouteTime[] => {
@@ -124,6 +128,19 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
             <Card
               bordered={false}
               className="itinerary-card"
+              onMouseEnter={() => setActiveDestinationIndex(index)}
+              onMouseLeave={() =>
+                setActiveDestinationIndex((current) =>
+                  current === index ? null : current,
+                )
+              }
+              onFocus={() => setActiveDestinationIndex(index)}
+              onBlur={() =>
+                setActiveDestinationIndex((current) =>
+                  current === index ? null : current,
+                )
+              }
+              tabIndex={0}
               style={{
                 borderRadius: "16px",
                 boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
@@ -178,7 +195,7 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
                     <span style={{ fontWeight: 600 }}>Starting Point</span>
                   </Tag>
                 )}
-                {multiRouteTimes.length > 0
+                {activeDestinationIndex === index && multiRouteTimes.length > 0
                   ? multiRouteTimes.map((rt, rtIndex) => (
                       <Tag
                         key={`${dest.slug || index}-${rtIndex}`}
@@ -193,7 +210,8 @@ const ItineraryTimeline: React.FC<ItineraryTimelineProps> = ({
                         </span>
                       </Tag>
                     ))
-                  : dest.travelTimeToNext !== null &&
+                  : activeDestinationIndex === index &&
+                      dest.travelTimeToNext !== null &&
                       dest.travelTimeToNext !== undefined && (
                         <Tag style={statusTagStyle}>
                           <ClockCircleOutlined style={{ color: "#1890ff" }} />
