@@ -27,7 +27,7 @@ h4,
 
 /* Hero Section */
 .hero-section {
-  padding: 20px;
+  padding: 20px 20px 28px;
   max-width: 1400px;
   margin: 0 auto;
 }
@@ -269,6 +269,7 @@ h4,
   display: flex;
   align-items: center;
   gap: 12px;
+  min-width: 0;
 }
 
 .trending-blogs-home-explore {
@@ -283,6 +284,8 @@ h4,
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
+  white-space: nowrap;
+  flex-shrink: 0;
   transition: transform 0.2s ease, box-shadow 0.2s ease;
 }
 
@@ -673,16 +676,54 @@ h4,
 }
 
 @media (max-width: 768px) {
-  .hero-container {
-    height: 400px;
-    padding: 0 20px;
+  .hero-section {
+    padding: 16px 14px 24px;
   }
+
+  .hero-container {
+    min-height: 460px;
+    height: auto;
+    padding: 24px;
+    align-items: flex-end;
+  }
+
+  .hero-content {
+    width: 100%;
+    max-width: none;
+    padding: 22px 18px 18px;
+    border-radius: 24px;
+    background: linear-gradient(
+      180deg,
+      rgba(8, 30, 47, 0.2) 0%,
+      rgba(8, 30, 47, 0.56) 100%
+    );
+    border: 1px solid rgba(255, 255, 255, 0.14);
+    backdrop-filter: blur(10px);
+    box-shadow: 0 16px 36px rgba(8, 30, 47, 0.18);
+  }
+
   .hero-title {
     font-size: 36px;
+    margin-bottom: 16px;
   }
+
   .hero-subtitle {
     font-size: 16px;
+    margin-bottom: 24px;
   }
+
+  .hero-buttons {
+    width: 100%;
+    gap: 12px;
+  }
+
+  .btn-primary,
+  .btn-secondary {
+    width: 100%;
+    justify-content: center;
+    padding: 15px 18px;
+  }
+
   .filters-container {
     flex-direction: column;
     align-items: flex-start;
@@ -711,6 +752,11 @@ h4,
   .trending-blogs-home-controls {
     width: 100%;
     justify-content: space-between;
+    flex-wrap: wrap;
+  }
+
+  .trending-blogs-home-controls .ant-segmented {
+    max-width: 100%;
   }
 
   .trending-blogs-home-grid {
@@ -719,6 +765,63 @@ h4,
 }
 
 @media (max-width: 480px) {
+  .hero-section {
+    padding: 12px 12px 20px;
+  }
+
+  .hero-container {
+    min-height: 430px;
+    padding: 18px;
+    border-radius: 26px;
+  }
+
+  .hero-content {
+    padding: 18px 16px 16px;
+    border-radius: 20px;
+  }
+
+  .hero-badge {
+    margin-bottom: 14px;
+  }
+
+  .hero-title {
+    font-size: 32px;
+    margin-bottom: 14px;
+  }
+
+  .hero-subtitle {
+    margin-bottom: 20px;
+    line-height: 1.5;
+  }
+
+  .trending-blogs-home-header h2 {
+    font-size: 25px;
+  }
+
+  .trending-blogs-home-controls {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .trending-blogs-home-controls .ant-segmented {
+    width: 100%;
+  }
+
+  .trending-blogs-home-controls .ant-segmented-group {
+    width: 100%;
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .trending-blogs-home-controls .ant-segmented-item {
+    min-width: 0;
+  }
+
+  .trending-blogs-home-explore {
+    width: 100%;
+    justify-content: center;
+  }
+
   .hero-buttons {
     flex-direction: column;
   }
