@@ -35,6 +35,10 @@ interface ApiEndpoints {
     fetchDestinationHotels: string
     fetchTrekBlogItineraryPlans: string
   };
+  hikeBlogs: {
+    searchHikeBlogs: string;
+    getHikeBlogDetail: string;
+  };
   savedTrekBlogs: {
     fetchPost: string;
     byId: string;
@@ -84,6 +88,10 @@ export const apiEndpoints: ApiEndpoints = {
     getTrekBlogDetail: "/api/users-trek-blogs/{slug}",
     fetchDestinationHotels: "/api/users-trek-blogs/{trekBlogSlug}/destinations/{destinationSlug}/hotels",
     fetchTrekBlogItineraryPlans: "/api/users-trek-blogs/{trekBlogSlug}/itinerary-plans"
+  },
+  hikeBlogs: {
+    searchHikeBlogs: "/api/hike-blogs-listing",
+    getHikeBlogDetail: "/api/users-hike-blogs/{slug}",
   },
   savedTrekBlogs: {
     fetchPost: "/api/saved-trek-blogs",

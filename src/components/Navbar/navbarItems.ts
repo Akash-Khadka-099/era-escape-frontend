@@ -23,6 +23,11 @@ export const menuItems: NavMenuItem[] = [
     role: "*",
   },
   {
+    key: routeLists.exploreHikes,
+    label: "Explore Hikes",
+    role: "*",
+  },
+  {
     key: "trending-blogs",
     label: "Trending Blogs",
     role: "*",

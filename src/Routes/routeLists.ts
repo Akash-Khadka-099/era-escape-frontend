@@ -3,5 +3,6 @@ export const routeLists = {
   package: "/packages",
   packageDetail: "/package-detail",
   trekTrails: "/trek-trails",
+  exploreHikes: "/explore-hikes",
   savedTrekBlogs: "/saved-trek-blogs",
 };
