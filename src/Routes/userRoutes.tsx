@@ -16,12 +16,15 @@ const PackageBooking = lazy(() => import("@/Pages/PackageBooking"));
 const Packages = lazy(() => import("@/Pages/Packages"));
 const PackageDetail = lazy(() => import("@/Pages/Packages/PackageDetail"));
 const TrekTrails = lazy(() => import("@/Pages/TrekTrails"));
+const ExploreHikes = lazy(() => import("@/Pages/ExploreHikes"));
+const HikeTrailMap = lazy(() => import("@/Pages/ExploreHikes/HikeTrailMap"));
 const TrekTrail3DMap = lazy(
   () => import("@/Pages/TrekTrails/TrekTrailMap/TrekTrail3DMap"),
 );
 const TrekTrailDetail = lazy(
   () => import("@/Pages/TrekTrails/TrekTrailDetails"),
 );
+const HikeDetail = lazy(() => import("@/Pages/ExploreHikes/HikeDetails"));
 const SavedTrekBlogs = lazy(() => import("@/Pages/SavedTrekBlogs"));
 
 export interface RouteItem {
@@ -74,6 +77,18 @@ export const userRoutes: RouteItem[] = [
   {
     path: "/trek-trails/detail/:slug",
     element: <TrekTrailDetail />,
+  },
+  {
+    path: routeLists.exploreHikes,
+    element: <ExploreHikes />,
+  },
+  {
+    path: `${routeLists.exploreHikes}/map/:slug`,
+    element: <HikeTrailMap />,
+  },
+  {
+    path: `${routeLists.exploreHikes}/detail/:slug`,
+    element: <HikeDetail />,
   },
   {
     path: routeLists.savedTrekBlogs,

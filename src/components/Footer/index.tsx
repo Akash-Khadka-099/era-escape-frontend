@@ -7,6 +7,7 @@ import {
   GlobalOutlined,
   ShareAltOutlined,
 } from "@ant-design/icons";
+import { routeLists } from "@/Routes/routeLists";
 
 const { Footer } = Layout;
 const { Title, Text, Link } = Typography;
@@ -76,8 +77,11 @@ const CustomFooter: React.FC = () => {
             Explore
           </Title>
           <Flex vertical gap={12}>
-            <Link href="/trek-trails" style={{ color: "#666" }}>
+            <Link href={routeLists.trekTrails} style={{ color: "#666" }}>
               All Treks
+            </Link>
+            <Link href={routeLists.exploreHikes} style={{ color: "#666" }}>
+              Explore Hikes
             </Link>
             <Link href="#!" style={{ color: "#666" }}>
               Mountain Guides

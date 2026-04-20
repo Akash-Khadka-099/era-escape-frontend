@@ -146,12 +146,16 @@ const DEFAULT_VIEW_STATE = {
   latitude: 28.3949,
   longitude: 84.124,
   zoom: 7,
-  bearing: 20,
-  pitch: 62,
+  bearing: 28,
+  pitch: 72,
 };
 
 const MAX_MAP_ZOOM_3D = 15;
 const MAX_MAP_ZOOM_2D = 18;
+const THREE_D_DEFAULT_BEARING = 32;
+const THREE_D_DEFAULT_PITCH = 74;
+const THREE_D_FOCUS_BEARING = 36;
+const THREE_D_FOCUS_PITCH = 78;
 
 const TERRAIN_SOURCE: RasterDEMSourceSpecification = {
   type: "raster-dem",
@@ -249,6 +253,100 @@ const hoverRouteLineLayer: LineLayerSpecification = {
   },
 };
 
+const TREK_MARKER_ICON_ID = "trek-marker-pin";
+
+const createTrekMarkerIcon = (): ImageData | null => {
+  if (typeof document === "undefined") {
+    return null;
+  }
+
+  const canvas = document.createElement("canvas");
+  canvas.width = 72;
+  canvas.height = 84;
+
+  const context = canvas.getContext("2d");
+  if (!context) {
+    return null;
+  }
+
+  context.clearRect(0, 0, canvas.width, canvas.height);
+
+  context.shadowColor = "rgba(15, 23, 42, 0.28)";
+  context.shadowBlur = 10;
+  context.shadowOffsetX = 0;
+  context.shadowOffsetY = 8;
+
+  context.fillStyle = "#ef4444";
+  context.beginPath();
+  context.arc(36, 24, 18, 0, Math.PI * 2);
+  context.fill();
+
+  context.lineWidth = 6;
+  context.strokeStyle = "#ffffff";
+  context.stroke();
+
+  context.beginPath();
+  context.moveTo(36, 62);
+  context.lineTo(21, 36);
+  context.lineTo(51, 36);
+  context.closePath();
+  context.fill();
+
+  context.shadowColor = "transparent";
+
+  return context.getImageData(0, 0, canvas.width, canvas.height);
+};
+
+const trekMarkerIconLayer: SymbolLayerSpecification = {
+  id: "trek-markers-icon",
+  type: "symbol",
+  source: "trek-markers-source",
+  layout: {
+    "icon-image": TREK_MARKER_ICON_ID,
+    "icon-anchor": "bottom",
+    "icon-allow-overlap": true,
+    "icon-ignore-placement": true,
+    "icon-size": [
+      "case",
+      ["boolean", ["get", "isHovered"], false],
+      1.08,
+      1,
+    ],
+  },
+};
+
+const trekMarkerLabelLayer: SymbolLayerSpecification = {
+  id: "trek-markers-label",
+  type: "symbol",
+  source: "trek-markers-source",
+  layout: {
+    "text-field": ["get", "name"],
+    "text-font": ["Open Sans Bold"],
+    "text-size": 12,
+    "text-anchor": "top",
+    "text-offset": [0, 1.35],
+    "text-allow-overlap": true,
+    "text-ignore-placement": true,
+    "text-max-width": 12,
+  },
+  paint: {
+    "text-color": "#ffffff",
+    "text-halo-color": "rgba(15, 23, 42, 0.95)",
+    "text-halo-width": 1.6,
+  },
+};
+
+const trekMarkerHitAreaLayer = {
+  id: "trek-markers-hit-area",
+  type: "circle",
+  source: "trek-markers-source",
+  paint: {
+    "circle-radius": 20,
+    "circle-color": "#000000",
+    "circle-opacity": 0.001,
+  },
+} as const;
+
 const hillshadeLayer: HillshadeLayerSpecification = {
   id: "terrain-hillshade",
   type: "hillshade",
@@ -262,7 +360,7 @@ const hillshadeLayer: HillshadeLayerSpecification = {
 
 const THREE_D_TERRAIN: NonNullable<MapProps["terrain"]> = {
   source: "terrain-dem",
-  exaggeration: 1.3,
+  exaggeration: 1.95,
 };
 
 const THREE_D_SKY: NonNullable<MapProps["sky"]> = {
@@ -277,6 +375,21 @@ const THREE_D_SKY: NonNullable<MapProps["sky"]> = {
 const toNumber = (value: unknown): number | null => {
   const parsed = Number.parseFloat(String(value));
   return Number.isFinite(parsed) ? parsed : null;
+};
+
+const formatTravelTime = (value?: number | string | null) => {
+  if (value === null || value === undefined) {
+    return "";
+  }
+
+  const normalizedValue = String(value).trim();
+  if (!normalizedValue) {
+    return "";
+  }
+
+  return /\bhr(s)?\b/i.test(normalizedValue)
+    ? normalizedValue
+    : `${normalizedValue} hr`;
 };
 
 const parseLatLong = (latLong: unknown): LatLng => {
@@ -549,6 +662,7 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
   const [isMinimized, setIsMinimized] = useState(false);
   const [isFullPage, setIsFullPage] = useState(false);
   const [isMapLoaded, setIsMapLoaded] = useState(false);
+  const [isMarkerIconReady, setIsMarkerIconReady] = useState(false);
   const [isTerrainSourceReady, setIsTerrainSourceReady] = useState(false);
   const [viewMode, setViewMode] = useState<ViewMode>("2d");
   const { slug } = useParams();
@@ -627,8 +741,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
         latitude: firstMarker.position[0],
         longitude: firstMarker.position[1],
         zoom: 11,
-        bearing: 20,
-        pitch: 62,
+        bearing: THREE_D_DEFAULT_BEARING,
+        pitch: THREE_D_DEFAULT_PITCH,
       };
     }
 
@@ -638,8 +752,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
         latitude: firstPathPoint[1],
         longitude: firstPathPoint[0],
         zoom: 10,
-        bearing: 20,
-        pitch: 62,
+        bearing: THREE_D_DEFAULT_BEARING,
+        pitch: THREE_D_DEFAULT_PITCH,
       };
     }
 
@@ -648,11 +762,41 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
   const terrainConfig: MapProps["terrain"] =
     viewMode === "3d" ? THREE_D_TERRAIN : undefined;
 
-  const projectionConfig: MapProps["projection"] =
-    viewMode === "3d" && isTerrainSourceReady ? "globe" : "mercator";
+  const projectionConfig: MapProps["projection"] = "mercator";
 
   const skyConfig: MapProps["sky"] =
     viewMode === "3d" && isTerrainSourceReady ? THREE_D_SKY : undefined;
+
+  const ensureTrekMarkerIcon = useCallback(async () => {
+    const map = mapRef.current?.getMap();
+    if (!map) {
+      return;
+    }
+
+    if (map.hasImage(TREK_MARKER_ICON_ID)) {
+      setIsMarkerIconReady(true);
+      return;
+    }
+
+    const imageData = createTrekMarkerIcon();
+    if (!imageData) {
+      setIsMarkerIconReady(false);
+      return;
+    }
+
+    try {
+      if (!map.hasImage(TREK_MARKER_ICON_ID)) {
+        map.addImage(TREK_MARKER_ICON_ID, imageData, {
+          pixelRatio: 2,
+        });
+      }
+
+      setIsMarkerIconReady(true);
+    } catch (error) {
+      console.error("Unable to register trek marker icon", error);
+      setIsMarkerIconReady(false);
+    }
+  }, []);
 
   const handleOpenHotelsDrawer = useCallback(
     async (destinationSlug?: string | null) => {
@@ -712,8 +856,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
       padding: 80,
       duration: 2200,
       maxZoom: 13,
-      pitch: viewMode === "3d" ? 68 : 0,
-      bearing: viewMode === "3d" ? 24 : 0,
+      pitch: viewMode === "3d" ? THREE_D_DEFAULT_PITCH : 0,
+      bearing: viewMode === "3d" ? THREE_D_DEFAULT_BEARING : 0,
       essential: true,
     });
   }, [displayPaths, markers, viewMode]);
@@ -735,8 +879,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
       map.jumpTo({
         center: [84.124, 28.3949],
         zoom: 1.6,
-        pitch: 0,
-        bearing: 0,
+        pitch: 18,
+        bearing: 10,
       });
     }
 
@@ -745,8 +889,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
         padding: 80,
         duration: viewMode === "3d" ? 4200 : 2600,
         maxZoom: 13,
-        pitch: viewMode === "3d" ? 68 : 0,
-        bearing: viewMode === "3d" ? 24 : 0,
+        pitch: viewMode === "3d" ? THREE_D_DEFAULT_PITCH : 0,
+        bearing: viewMode === "3d" ? THREE_D_DEFAULT_BEARING : 0,
         essential: true,
       });
     }, viewMode === "3d" ? 260 : 0);
@@ -764,8 +908,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
         center: [firstMarker.position[1], firstMarker.position[0]],
         zoom: 13,
         duration: 2000,
-        bearing: viewMode === "3d" ? 28 : 0,
-        pitch: viewMode === "3d" ? 72 : 0,
+        bearing: viewMode === "3d" ? THREE_D_FOCUS_BEARING : 0,
+        pitch: viewMode === "3d" ? THREE_D_FOCUS_PITCH : 0,
       });
       return;
     }
@@ -776,8 +920,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
         center: firstPathPoint,
         zoom: 12,
         duration: 2000,
-        bearing: viewMode === "3d" ? 28 : 0,
-        pitch: viewMode === "3d" ? 72 : 0,
+        bearing: viewMode === "3d" ? THREE_D_FOCUS_BEARING : 0,
+        pitch: viewMode === "3d" ? THREE_D_FOCUS_PITCH : 0,
       });
     }
   }, [displayPaths, markers, viewMode]);
@@ -881,6 +1025,14 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
   }, [hoveredMarkerIndex, markers]);
 
   useEffect(() => {
+    if (!isMapLoaded) {
+      return;
+    }
+
+    void ensureTrekMarkerIcon();
+  }, [ensureTrekMarkerIcon, isMapLoaded]);
+
+  useEffect(() => {
     const map = mapRef.current?.getMap();
     if (!map) {
       return;
@@ -942,8 +1094,9 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
       map.dragRotate.enable();
       map.touchZoomRotate.enableRotation();
       map.easeTo({
-        pitch: Math.max(map.getPitch(), 60),
-        bearing: map.getBearing() === 0 ? 24 : map.getBearing(),
+        pitch: Math.max(map.getPitch(), THREE_D_DEFAULT_PITCH),
+        bearing:
+          map.getBearing() === 0 ? THREE_D_DEFAULT_BEARING : map.getBearing(),
         duration: 900,
       });
       return;
@@ -1106,9 +1259,11 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           type: "Feature",
           id: `route-label-${hoveredMarkerIndex}-${routeIndex}`,
           properties: {
-            label: `~${route.timeToTravel} hr to ${
+            label: `Estimated Time from ${
+              marker.name || "current destination"
+            } to ${
               route.toTrailDestination?.name || "next destination"
-            }`,
+            }: ${formatTravelTime(route.timeToTravel)}`,
           },
           geometry: {
             type: "Point",
@@ -1163,6 +1318,41 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
 
   const hoveredMarker =
     hoveredMarkerIndex !== null ? markers[hoveredMarkerIndex] : null;
+
+  const markerGeoJson = useMemo(
+    (): FeatureCollection<Point> => ({
+      type: "FeatureCollection",
+      features: markers.map((marker, index) => ({
+        type: "Feature",
+        id: `trek-marker-${index}`,
+        properties: {
+          markerIndex: index,
+          name: marker.name,
+          destinationSlug: marker.destinationSlug,
+          isHovered: hoveredMarkerIndex === index,
+        },
+        geometry: {
+          type: "Point",
+          coordinates: [marker.position[1], marker.position[0]],
+        },
+      })),
+    }),
+    [hoveredMarkerIndex, markers],
+  );
+
+  const getMarkerIndexFromFeatures = useCallback((features?: Array<any>) => {
+    const markerFeature = features?.find((feature) => {
+      const layerId = feature?.layer?.id;
+      return (
+        layerId === trekMarkerHitAreaLayer.id ||
+        layerId === trekMarkerIconLayer.id ||
+        layerId === trekMarkerLabelLayer.id
+      );
+    });
+
+    const markerIndex = Number(markerFeature?.properties?.markerIndex);
+    return Number.isInteger(markerIndex) ? markerIndex : null;
+  }, []);
 
   const mapContent = (
     <>
@@ -1232,6 +1422,15 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           mapLib={maplibregl}
           mapStyle={SATELLITE_STYLE}
           initialViewState={initialViewState}
+          interactiveLayerIds={
+            viewMode === "3d"
+              ? [
+                  trekMarkerHitAreaLayer.id,
+                  trekMarkerIconLayer.id,
+                  trekMarkerLabelLayer.id,
+                ]
+              : undefined
+          }
           terrain={terrainConfig}
           projection={projectionConfig}
           sky={skyConfig}
@@ -1239,11 +1438,54 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           maxPitch={viewMode === "3d" ? 85 : 0}
           maxZoom={maxMapZoom}
           style={{ width: "100%", height: "100%" }}
+          onMouseMove={(event) => {
+            if (viewMode !== "3d") {
+              return;
+            }
+
+            const markerIndex = getMarkerIndexFromFeatures(event.features);
+            setHoveredMarkerIndex(markerIndex);
+
+            const canvas = mapRef.current?.getMap().getCanvas();
+            if (canvas) {
+              canvas.style.cursor = markerIndex !== null ? "pointer" : "";
+            }
+          }}
+          onMouseLeave={() => {
+            if (viewMode !== "3d") {
+              return;
+            }
+
+            setHoveredMarkerIndex(null);
+
+            const canvas = mapRef.current?.getMap().getCanvas();
+            if (canvas) {
+              canvas.style.cursor = "";
+            }
+          }}
+          onClick={(event) => {
+            if (viewMode !== "3d") {
+              return;
+            }
+
+            const markerIndex = getMarkerIndexFromFeatures(event.features);
+            if (markerIndex === null) {
+              return;
+            }
+
+            const marker = markers[markerIndex];
+            if (!marker) {
+              return;
+            }
+
+            void handleOpenHotelsDrawer(marker.destinationSlug);
+          }}
           onLoad={() => {
             setIsMapLoaded(true);
             setIsTerrainSourceReady(
               Boolean(mapRef.current?.getMap().getSource("terrain-dem")),
             );
+            void ensureTrekMarkerIcon();
           }}
           onSourceData={(event) => {
             if (
@@ -1296,124 +1538,134 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
             </Source>
           )}
 
-          {markers.map((marker, index) => (
-            <React.Fragment key={`marker-${index}`}>
-              <Marker
-                longitude={marker.position[1]}
-                latitude={marker.position[0]}
-                anchor="bottom"
-                offset={[0, -28]}
-                rotationAlignment="viewport"
-                pitchAlignment="viewport"
-                subpixelPositioning
-                style={{ willChange: "transform" }}
-              >
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    void handleOpenHotelsDrawer(marker.destinationSlug);
-                  }}
-                  onMouseEnter={() => setHoveredMarkerIndex(index)}
-                  onMouseLeave={() =>
-                    setHoveredMarkerIndex((current) => {
-                      if (current !== index) {
-                        return current;
-                      }
-                      return null;
-                    })
-                  }
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      void handleOpenHotelsDrawer(marker.destinationSlug);
-                    }
-                  }}
-                  style={{
-                    padding: "4px 8px",
-                    borderRadius: "999px",
-                    background: "rgba(15, 23, 42, 0.78)",
-                    color: "#ffffff",
-                    fontSize: "12px",
-                    fontWeight: 600,
-                    whiteSpace: "nowrap",
-                    boxShadow: "0 10px 24px rgba(15, 23, 42, 0.28)",
-                    border: "1px solid rgba(255,255,255,0.12)",
-                    cursor: "pointer",
-                    outline: "none",
-                    transform: hoveredMarkerIndex === index ? "scale(1.04)" : "",
-                    transition: "transform 0.18s ease",
-                  }}
+          {viewMode === "3d" ? (
+            markerGeoJson.features.length > 0 && isMarkerIconReady && (
+              <Source id="trek-markers-source" type="geojson" data={markerGeoJson}>
+                <Layer {...trekMarkerIconLayer} />
+                <Layer {...trekMarkerLabelLayer} />
+                <Layer {...trekMarkerHitAreaLayer} />
+              </Source>
+            )
+          ) : (
+            markers.map((marker, index) => (
+              <React.Fragment key={`marker-${index}`}>
+                <Marker
+                  longitude={marker.position[1]}
+                  latitude={marker.position[0]}
+                  anchor="bottom"
+                  offset={[0, -28]}
+                  rotationAlignment="viewport"
+                  pitchAlignment="viewport"
+                  subpixelPositioning
+                  style={{ willChange: "transform" }}
                 >
-                  {marker.name}
-                </div>
-              </Marker>
+                  <div
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      void handleOpenHotelsDrawer(marker.destinationSlug);
+                    }}
+                    onMouseEnter={() => setHoveredMarkerIndex(index)}
+                    onMouseLeave={() =>
+                      setHoveredMarkerIndex((current) => {
+                        if (current !== index) {
+                          return current;
+                        }
+                        return null;
+                      })
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        void handleOpenHotelsDrawer(marker.destinationSlug);
+                      }
+                    }}
+                    style={{
+                      padding: "4px 8px",
+                      borderRadius: "999px",
+                      background: "rgba(15, 23, 42, 0.78)",
+                      color: "#ffffff",
+                      fontSize: "12px",
+                      fontWeight: 600,
+                      whiteSpace: "nowrap",
+                      boxShadow: "0 10px 24px rgba(15, 23, 42, 0.28)",
+                      border: "1px solid rgba(255,255,255,0.12)",
+                      cursor: "pointer",
+                      outline: "none",
+                      transform: hoveredMarkerIndex === index ? "scale(1.04)" : "",
+                      transition: "transform 0.18s ease",
+                    }}
+                  >
+                    {marker.name}
+                  </div>
+                </Marker>
 
-              <Marker
-                longitude={marker.position[1]}
-                latitude={marker.position[0]}
-                anchor="bottom"
-                rotationAlignment="viewport"
-                pitchAlignment="viewport"
-                subpixelPositioning
-                style={{ willChange: "transform" }}
-              >
-                <div
-                  role="button"
-                  tabIndex={0}
-                  onClick={() => {
-                    void handleOpenHotelsDrawer(marker.destinationSlug);
-                  }}
-                  onMouseEnter={() => setHoveredMarkerIndex(index)}
-                  onMouseLeave={() =>
-                    setHoveredMarkerIndex((current) => {
-                      if (current !== index) {
-                        return current;
-                      }
-                      return null;
-                    })
-                  }
-                  onKeyDown={(event) => {
-                    if (event.key === "Enter" || event.key === " ") {
-                      event.preventDefault();
-                      void handleOpenHotelsDrawer(marker.destinationSlug);
-                    }
-                  }}
-                  style={{
-                    display: "flex",
-                    flexDirection: "column",
-                    alignItems: "center",
-                    cursor: "pointer",
-                    outline: "none",
-                    transform: hoveredMarkerIndex === index ? "scale(1.04)" : "",
-                    transition: "transform 0.18s ease",
-                  }}
+                <Marker
+                  longitude={marker.position[1]}
+                  latitude={marker.position[0]}
+                  anchor="bottom"
+                  rotationAlignment="viewport"
+                  pitchAlignment="viewport"
+                  subpixelPositioning
+                  style={{ willChange: "transform" }}
                 >
                   <div
-                    style={{
-                      width: "18px",
-                      height: "18px",
-                      borderRadius: "50%",
-                      background: "#ef4444",
-                      border: "3px solid #fff",
-                      boxShadow: "0 10px 20px rgba(239, 68, 68, 0.35)",
+                    role="button"
+                    tabIndex={0}
+                    onClick={() => {
+                      void handleOpenHotelsDrawer(marker.destinationSlug);
                     }}
-                  />
-                  <div
-                    style={{
-                      width: 0,
-                      height: 0,
-                      marginTop: "-2px",
-                      borderLeft: "7px solid transparent",
-                      borderRight: "7px solid transparent",
-                      borderTop: "14px solid #ef4444",
-                      filter: "drop-shadow(0 8px 12px rgba(15,23,42,0.28))",
+                    onMouseEnter={() => setHoveredMarkerIndex(index)}
+                    onMouseLeave={() =>
+                      setHoveredMarkerIndex((current) => {
+                        if (current !== index) {
+                          return current;
+                        }
+                        return null;
+                      })
+                    }
+                    onKeyDown={(event) => {
+                      if (event.key === "Enter" || event.key === " ") {
+                        event.preventDefault();
+                        void handleOpenHotelsDrawer(marker.destinationSlug);
+                      }
                     }}
-                  />
-                </div>
-              </Marker>
-            </React.Fragment>
-          ))}
+                    style={{
+                      display: "flex",
+                      flexDirection: "column",
+                      alignItems: "center",
+                      cursor: "pointer",
+                      outline: "none",
+                      transform: hoveredMarkerIndex === index ? "scale(1.04)" : "",
+                      transition: "transform 0.18s ease",
+                    }}
+                  >
+                    <div
+                      style={{
+                        width: "18px",
+                        height: "18px",
+                        borderRadius: "50%",
+                        background: "#ef4444",
+                        border: "3px solid #fff",
+                        boxShadow: "0 10px 20px rgba(239, 68, 68, 0.35)",
+                      }}
+                    />
+                    <div
+                      style={{
+                        width: 0,
+                        height: 0,
+                        marginTop: "-2px",
+                        borderLeft: "7px solid transparent",
+                        borderRight: "7px solid transparent",
+                        borderTop: "14px solid #ef4444",
+                        filter: "drop-shadow(0 8px 12px rgba(15,23,42,0.28))",
+                      }}
+                    />
+                  </div>
+                </Marker>
+              </React.Fragment>
+            ))
+          )}
 
           {hoveredMarker && (
             <Popup
