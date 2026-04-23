@@ -28,9 +28,8 @@ const ExploreHikes: React.FC = () => {
     page: 1,
     pageSize: 9,
   });
-  const [listedHikes, setListedHikes] = useState<HikeBlogListingResponse | null>(
-    null,
-  );
+  const [listedHikes, setListedHikes] =
+    useState<HikeBlogListingResponse | null>(null);
   const [searchVal, setSearchVal] = useState("");
   const [draftFilters, setDraftFilters] = useState<HikeFilters>(defaultFilters);
   const [appliedFilters, setAppliedFilters] =
@@ -117,6 +116,7 @@ const ExploreHikes: React.FC = () => {
     setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
+  console.log("listedHikes", listedHikes);
   return (
     <>
       <SEO
@@ -263,12 +263,7 @@ const ExploreHikes: React.FC = () => {
                 <>
                   <Row gutter={[24, 24]}>
                     {listedHikes?.data?.map((hike) => (
-                      <Col
-                        xs={24}
-                        sm={12}
-                        xl={8}
-                        key={hike?._id || hike.slug}
-                      >
+                      <Col xs={24} sm={12} xl={8} key={hike?._id || hike.slug}>
                         <HikeCard
                           title={hike.title}
                           slug={hike.slug}
@@ -279,6 +274,7 @@ const ExploreHikes: React.FC = () => {
                           featuredImagePath={hike.featuredImage?.path}
                           recommendedSeasons={hike.recommendedSeasons}
                           hikeRegionName={hike.hikeRegion?.[0]?.name}
+                          trailType={hike.trailType}
                           isPicnic={hike.isPicnic}
                         />
                       </Col>
