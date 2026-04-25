@@ -31,11 +31,9 @@ const defaultFilters: TrailFilters = {
   maxAltitude: null,
 };
 
+const PAGE_SIZE = 6;
+
 const ExploreTrails: React.FC = () => {
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 9,
-  });
   const [listedTrails, setListedTrails] = useState<any>({});
   const [searchVal, setSearchVal] = useState("");
 
@@ -46,6 +44,7 @@ const ExploreTrails: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("search");
   const categoryQuery = searchParams.get("category");
+  const currentPage = Math.max(1, Number(searchParams.get("page")) || 1);
 
   const { mutateAsync, isPending } = useSearchTrekBlogLists();
   const isAltitudeRangeInvalid =
@@ -64,8 +63,8 @@ const ExploreTrails: React.FC = () => {
       const activeSearch = searchQuery || categoryQuery || "";
       const query: any = {
         q: activeSearch,
-        page: pagination.page,
-        pageSize: pagination.pageSize,
+        page: currentPage,
+        pageSize: PAGE_SIZE,
       };
 
       if (appliedFilters.difficulty !== "All") {
@@ -87,7 +86,7 @@ const ExploreTrails: React.FC = () => {
       message.error("Error fetching trek trails");
     }
   }, [
-    pagination,
+    currentPage,
     searchQuery,
     categoryQuery,
     appliedFilters,
@@ -95,16 +94,24 @@ const ExploreTrails: React.FC = () => {
   ]);
 
   useEffect(() => {
-    const activeSearch = searchQuery || categoryQuery;
-    if (activeSearch) {
-      setSearchVal(activeSearch);
-    }
+    const activeSearch = searchQuery || categoryQuery || "";
+    setSearchVal(activeSearch);
     fetchData();
   }, [fetchData, searchQuery, categoryQuery]);
 
   const handleSearchSubmit = (value: string) => {
-    setSearchParams({ search: value });
-    setPagination((prev) => ({ ...prev, page: 1 })); // Reset to page 1 on search
+    const trimmedValue = value.trim();
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (trimmedValue) {
+      nextParams.set("search", trimmedValue);
+    } else {
+      nextParams.delete("search");
+    }
+
+    nextParams.delete("category");
+    nextParams.delete("page");
+    setSearchParams(nextParams);
   };
 
   const handleApplyFilters = () => {
@@ -113,7 +120,21 @@ const ExploreTrails: React.FC = () => {
     }
 
     setAppliedFilters({ ...draftFilters });
-    setPagination((prev) => ({ ...prev, page: 1 }));
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("page");
+    setSearchParams(nextParams);
+  };
+
+  const handlePageChange = (page: number) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (page > 1) {
+      nextParams.set("page", String(page));
+    } else {
+      nextParams.delete("page");
+    }
+
+    setSearchParams(nextParams);
   };
 
   return (
@@ -278,16 +299,11 @@ const ExploreTrails: React.FC = () => {
                   }}
                 >
                   <CustomPagination
-                    onChange={(value: number) =>
-                      setPagination((oldState) => ({
-                        ...oldState,
-                        page: value,
-                      }))
-                    }
+                    onChange={handlePageChange}
                     paginationDetail={{
                       page: listedTrails?.pagination?.page || 1,
                       totalData: listedTrails?.pagination?.total || 0,
-                      pageSize: listedTrails?.pagination?.pageSize || 9,
+                      pageSize: PAGE_SIZE,
                     }}
                   />
                 </div>

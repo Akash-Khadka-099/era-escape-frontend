@@ -23,11 +23,9 @@ const defaultFilters: HikeFilters = {
   maxAltitude: null,
 };
 
+const PAGE_SIZE = 6;
+
 const ExploreHikes: React.FC = () => {
-  const [pagination, setPagination] = useState({
-    page: 1,
-    pageSize: 9,
-  });
   const [listedHikes, setListedHikes] =
     useState<HikeBlogListingResponse | null>(null);
   const [searchVal, setSearchVal] = useState("");
@@ -38,6 +36,7 @@ const ExploreHikes: React.FC = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const searchQuery = searchParams.get("search");
   const categoryQuery = searchParams.get("category");
+  const currentPage = Math.max(1, Number(searchParams.get("page")) || 1);
 
   const { mutateAsync, isPending } = useSearchHikeBlogLists();
 
@@ -64,8 +63,8 @@ const ExploreHikes: React.FC = () => {
         maxAltitude?: number;
       } = {
         q: activeSearch,
-        page: pagination.page,
-        pageSize: pagination.pageSize,
+        page: currentPage,
+        pageSize: PAGE_SIZE,
       };
 
       if (appliedFilters.minAltitude !== null) {
@@ -84,7 +83,7 @@ const ExploreHikes: React.FC = () => {
       console.error(error);
       message.error("Error fetching hike blogs");
     }
-  }, [appliedFilters, categoryQuery, mutateAsync, pagination, searchQuery]);
+  }, [appliedFilters, categoryQuery, currentPage, mutateAsync, searchQuery]);
 
   useEffect(() => {
     const activeSearch = searchQuery || categoryQuery || "";
@@ -103,8 +102,8 @@ const ExploreHikes: React.FC = () => {
     }
 
     nextParams.delete("category");
+    nextParams.delete("page");
     setSearchParams(nextParams);
-    setPagination((prev) => ({ ...prev, page: 1 }));
   };
 
   const handleApplyFilters = () => {
@@ -113,10 +112,23 @@ const ExploreHikes: React.FC = () => {
     }
 
     setAppliedFilters({ ...draftFilters });
-    setPagination((prev) => ({ ...prev, page: 1 }));
+    const nextParams = new URLSearchParams(searchParams);
+    nextParams.delete("page");
+    setSearchParams(nextParams);
   };
 
-  console.log("listedHikes", listedHikes);
+  const handlePageChange = (page: number) => {
+    const nextParams = new URLSearchParams(searchParams);
+
+    if (page > 1) {
+      nextParams.set("page", String(page));
+    } else {
+      nextParams.delete("page");
+    }
+
+    setSearchParams(nextParams);
+  };
+
   return (
     <>
       <SEO
@@ -289,16 +301,11 @@ const ExploreHikes: React.FC = () => {
                     }}
                   >
                     <CustomPagination
-                      onChange={(value: number) =>
-                        setPagination((oldState) => ({
-                          ...oldState,
-                          page: value,
-                        }))
-                      }
+                      onChange={handlePageChange}
                       paginationDetail={{
                         page: listedHikes?.pagination?.page || 1,
                         totalData: listedHikes?.pagination?.total || 0,
-                        pageSize: listedHikes?.pagination?.pageSize || 9,
+                        pageSize: PAGE_SIZE,
                       }}
                     />
                   </div>
