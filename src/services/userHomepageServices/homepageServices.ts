@@ -68,7 +68,7 @@ export interface GlobalSearchResponse {
 }
 
 export interface GlobalSearchQuery {
-  searchKey: string;
+  q: string;
   page?: number;
   pageSize?: number;
 }
@@ -123,10 +123,10 @@ const useFetchGlobalTravelSearch = (
   options?: { enabled?: boolean }
 ) => {
   return useQuery({
-    queryKey: [apiEndpoints.homepage.globalTravelSearch, query.searchKey, query.page, query.pageSize],
+    queryKey: [apiEndpoints.homepage.globalTravelSearch, query, query.page, query.pageSize],
     queryFn: fetchGlobalTravelSearch(query),
     select: (data) => data?.data as GlobalSearchResponse,
-    enabled: options?.enabled !== false && query.searchKey.trim().length > 0,
+    enabled: options?.enabled !== false && query.q.trim().length >= 2,
     staleTime: 2 * 60 * 1000,
   });
 };

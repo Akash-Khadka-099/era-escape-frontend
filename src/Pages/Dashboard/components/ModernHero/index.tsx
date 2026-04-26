@@ -44,8 +44,8 @@ const ModernHero: React.FC = () => {
 
   // Fetch results from API
   const { data: searchResults, isFetching } = useFetchGlobalTravelSearch(
-    { searchKey: debouncedSearchQuery },
-    { enabled: debouncedSearchQuery.trim().length > 0 }
+    { q: debouncedSearchQuery },
+    { enabled: debouncedSearchQuery.trim().length > 0 },
   );
 
   useEffect(() => {
