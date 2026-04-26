@@ -126,7 +126,7 @@ const useFetchGlobalTravelSearch = (
     queryKey: [apiEndpoints.homepage.globalTravelSearch, query, query.page, query.pageSize],
     queryFn: fetchGlobalTravelSearch(query),
     select: (data) => data?.data as GlobalSearchResponse,
-    enabled: options?.enabled !== false && query.q.trim().length >= 4,
+    enabled: options?.enabled !== false && query.q.trim().length >= 2,
     staleTime: 2 * 60 * 1000,
   });
 };
