@@ -40,6 +40,39 @@ interface TrendingBlogsByVisitsResponse {
   message: string;
 }
 
+export interface GlobalSearchResultItem {
+  title: string;
+  slug: string;
+  featuredImage?: {
+    _id: string;
+    path: string;
+    originalName: string;
+    filename: string;
+  } | null;
+  shortSlogan?: string | null;
+  shortNotes?: string | null;
+  summary?: string | null;
+  contentType: string;
+}
+
+export interface GlobalSearchResponse {
+  success: boolean;
+  data: GlobalSearchResultItem[];
+  pagination: {
+    page: number;
+    pageSize: number;
+    total: number;
+    totalPages: number;
+  };
+  searchKey: string;
+}
+
+export interface GlobalSearchQuery {
+  searchKey: string;
+  page?: number;
+  pageSize?: number;
+}
+
 const fetchTrendingBlogsCategories =
   (query: QueryPayload) => (): Promise<AxiosResponse> => {
     return axiosInstance.get(apiEndpoints.homepage.fetchTrendingBlogCategories, {
@@ -78,8 +111,29 @@ const useFetchTrendingTrekBlogsByVisits = (
   });
 };
 
+const fetchGlobalTravelSearch =
+  (query: GlobalSearchQuery) => (): Promise<AxiosResponse> => {
+    return axiosInstance.get(apiEndpoints.homepage.globalTravelSearch, {
+      params: query,
+    });
+  };
+
+const useFetchGlobalTravelSearch = (
+  query: GlobalSearchQuery,
+  options?: { enabled?: boolean }
+) => {
+  return useQuery({
+    queryKey: [apiEndpoints.homepage.globalTravelSearch, query.searchKey, query.page, query.pageSize],
+    queryFn: fetchGlobalTravelSearch(query),
+    select: (data) => data?.data as GlobalSearchResponse,
+    enabled: options?.enabled !== false && query.searchKey.trim().length > 0,
+    staleTime: 2 * 60 * 1000,
+  });
+};
+
 export {
   useFetchTrendingBlogsCategories,
   useFetchTrendingTrekBlogsByVisits,
+  useFetchGlobalTravelSearch,
   type TrendingTrekBlog,
 };

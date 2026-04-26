@@ -1,55 +1,23 @@
 import React from "react";
 
 import "./Dashboard.css";
-import {
-  ArrowRightOutlined,
-  PlayCircleOutlined,
-  CompassOutlined,
-} from "@ant-design/icons";
 import { Button } from "antd";
-
-// Local Assets
-import HeroImage from "@/assets/images/hero.png";
 
 import StoryImage from "@/assets/images/story.png";
 import { useFetchTrendingBlogsCategories } from "@/services/userHomepageServices/homepageServices";
 import CategoryCard from "@/Pages/Dashboard/components/CategoryCard";
-import { useNavigate } from "react-router-dom";
-import { routeLists } from "@/Routes/routeLists";
 import TrendingBlogsSection from "@/Pages/Dashboard/TrendingBlogsSection";
+import ModernHero from "@/Pages/Dashboard/components/ModernHero";
+import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 
 const Dashboard: React.FC = () => {
   const { data } = useFetchTrendingBlogsCategories({});
 
-  const navigate = useNavigate();
   return (
     <div className="new-dashboard">
-      {/* Hero Section */}
-      <section className="hero-section">
-        <div className="hero-container">
-          <img src={HeroImage} alt="Hero Mountain" className="hero-bg" />
-          <div className="hero-overlay"></div>
-          <div className="hero-content">
-            <span className="hero-badge">✨ New Adventure</span>
-            <h1 className="hero-title">Unfold Your Next Great Adventure</h1>
-            <p className="hero-subtitle">
-              Experience breathtaking mountain landscapes and curated trek
-              stories from the world's most remote peaks.
-            </p>
-            <div className="hero-buttons">
-              <button
-                className="btn-primary"
-                onClick={() => navigate(routeLists.trekTrails)}
-              >
-                Explore Adventures <ArrowRightOutlined />
-              </button>
-              <button className="btn-secondary">
-                <PlayCircleOutlined /> Watch Story
-              </button>
-            </div>
-          </div>
-        </div>
-      </section>
+      <MiddleContentWrapper extraStyles={{ overflow: 'visible', position: 'relative', zIndex: 10 }}>
+        <ModernHero />
+      </MiddleContentWrapper>
 
       {/* Explore Landscapes Section */}
       <section className="explore-landscapes-section">
