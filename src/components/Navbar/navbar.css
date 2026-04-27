@@ -1,6 +1,18 @@
 .navbar-header {
+  position: fixed !important;
+  top: 0;
+  left: 0;
+  z-index: 999;
+  width: 100%;
   height: auto !important;
   line-height: normal !important;
+  padding: 12px 0 !important;
+  background: #fff !important;
+  border-bottom: 1px solid #f0f0f0;
+}
+
+.navbar-offset {
+  height: 88px;
 }
 
 .navbar-container {

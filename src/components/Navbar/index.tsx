@@ -337,18 +337,7 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <Header
-        className="navbar-header"
-        style={{
-          backgroundColor: "#fff",
-          padding: "12px 0px",
-          width: "100%",
-          zIndex: 999,
-          position: "sticky",
-          top: 0,
-          borderBottom: "1px solid #f0f0f0",
-        }}
-      >
+      <Header className="navbar-header">
         <div className="navbar-container margin-container">
           {/* Mobile Hamburger - Left */}
           <div className="hamburger-icon" onClick={showDrawer}>
@@ -422,6 +411,7 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       </Header>
+      <div className="navbar-offset" />
       <LoginRegister
         isLoginModalOpen={isAuthModalOpen}
         handleCloseLoginModal={handleCloseLoginModal}
