@@ -123,11 +123,10 @@ const TrekTrailDetail: React.FC = () => {
   const isSaveActionLoading =
     isCreatingSavedTrekBlog || isDeletingSavedTrekBlog || isSavedTrekBlogsLoading;
 
-  // Preload Map Component in background
+  // Preload the current MapLibre map component in background.
   useEffect(() => {
-    // This starts downloading the large Cesium assets while the user is
-    // reading the trek details, ensuring navigation is instant later.
-    const preloadMap = () => import("@/Pages/TrekTrails/TrekTrailMap");
+    const preloadMap = () =>
+      import("@/Pages/TrekTrails/TrekTrailMap/TrekTrail3DMap");
     preloadMap();
   }, []);
 
