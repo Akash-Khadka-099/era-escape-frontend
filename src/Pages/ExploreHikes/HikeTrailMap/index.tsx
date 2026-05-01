@@ -72,6 +72,7 @@ import type { HikingStop } from "@/types/hike";
 const { Title, Text } = Typography;
 const BASE_API_URL = import.meta.env.VITE_API_URL || "";
 
+
 type LatLng = [number, number];
 type LngLat = [number, number];
 type ViewMode = "3d" | "2d";
@@ -366,12 +367,26 @@ const resolveKmlUrl = (kmlFile: unknown): string | null => {
     return null;
   }
 
-  if (path.startsWith("http://") || path.startsWith("https://")) {
+  try {
+    const urlObj = new URL(path);
+    // If the URL is from the API or local server, rewrite it to a relative path
+    // so the Vite proxy handles it and we avoid CORS errors.
+    if (
+      urlObj.hostname.includes(BASE_API_URL) ||
+      urlObj.hostname.includes("localhost") ||
+      urlObj.hostname.includes("127.0.0.1")
+    ) {
+      return urlObj.pathname + urlObj.search;
+    }
+  } catch (e) {
+    // Ignore invalid URLs
+  }
+
+  if (path.startsWith("http")) {
     return path;
   }
 
-  const normalizedPath = path.startsWith("/") ? path : `/${path}`;
-  return `${BASE_API_URL}${normalizedPath}`;
+  return path.startsWith("/") ? path : `/${path}`;
 };
 
 const toNumber = (value: unknown): number | null => {
