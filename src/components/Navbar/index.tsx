@@ -212,9 +212,25 @@ const Navbar: React.FC = () => {
   const [isLogoutOpen, setIsLogoutOpen] = useState(false);
   const [open, setOpen] = useState(false);
   const [drawerView, setDrawerView] = useState<"main" | "destinations">("main");
+  const [isScrolled, setIsScrolled] = useState(false);
 
   const navigate = useNavigate();
   const location = useLocation();
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    
+    // Check initial scroll
+    handleScroll();
+
+    window.addEventListener("scroll", handleScroll);
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, []);
+
+  const isHomePage = location.pathname === "/";
+  const isTransparentHero = isHomePage && !isScrolled;
 
   const { user, isAuthenticated } = useAuthStore();
   const { isAuthModalOpen, openAuthModal, closeAuthModal } =
@@ -337,7 +353,7 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <Header className="navbar-header">
+      <Header className={`navbar-header ${isHomePage ? "navbar-header--home" : ""} ${isTransparentHero ? "navbar-header--transparent" : ""}`}>
         <div className="navbar-container margin-container">
           {/* Mobile Hamburger - Left */}
           <div className="hamburger-icon" onClick={showDrawer}>
@@ -411,7 +427,6 @@ const Navbar: React.FC = () => {
           </div>
         </div>
       </Header>
-      <div className="navbar-offset" />
       <LoginRegister
         isLoginModalOpen={isAuthModalOpen}
         handleCloseLoginModal={handleCloseLoginModal}

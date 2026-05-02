@@ -15,9 +15,7 @@ const Dashboard: React.FC = () => {
 
   return (
     <div className="new-dashboard">
-      <MiddleContentWrapper extraStyles={{ overflow: 'visible', position: 'relative', zIndex: 10 }}>
-        <ModernHero />
-      </MiddleContentWrapper>
+      <ModernHero />
 
       {/* Explore Landscapes Section */}
       <section className="explore-landscapes-section">
