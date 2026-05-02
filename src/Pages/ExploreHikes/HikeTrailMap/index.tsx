@@ -94,7 +94,7 @@ type PathData = {
   midpoint: LngLat | null;
 };
 
-enum TrekHikeStopType {
+export enum TrekHikeStopType {
   WATER_TAP_POINT = "water_tap_point",
   REST_POINT = "rest_point",
   HIGHEST_POINT = "highest_point",
@@ -113,13 +113,13 @@ enum TrekHikeStopType {
   WASTE_DISPOSAL = "waste_disposal",
 }
 
-type StopMarkerConfig = {
+export type StopMarkerConfig = {
   color: string;
   accent: string;
   icon: IconType;
 };
 
-const formatStopTypeLabel = (value?: string) => {
+export const formatStopTypeLabel = (value?: string) => {
   if (!value) {
     return "Trail Stop";
   }
@@ -130,7 +130,7 @@ const formatStopTypeLabel = (value?: string) => {
     .join(" ");
 };
 
-const STOP_MARKER_CONFIGS: Partial<Record<TrekHikeStopType, StopMarkerConfig>> =
+export const STOP_MARKER_CONFIGS: Partial<Record<TrekHikeStopType, StopMarkerConfig>> =
   {
     [TrekHikeStopType.WATER_TAP_POINT]: {
       color: "#0ea5e9",
@@ -214,7 +214,7 @@ const STOP_MARKER_CONFIGS: Partial<Record<TrekHikeStopType, StopMarkerConfig>> =
     },
   };
 
-const DEFAULT_STOP_MARKER_CONFIG: StopMarkerConfig = {
+export const DEFAULT_STOP_MARKER_CONFIG: StopMarkerConfig = {
   color: "#f97316",
   accent: "#fdba74",
   icon: FaMapPin,

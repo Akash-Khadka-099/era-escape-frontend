@@ -107,7 +107,7 @@ const ModernHero: React.FC = () => {
         <div className="dashboard-modern-hero__content">
           <div className="dashboard-modern-hero__search-container">
             <div className="dashboard-modern-hero__search-header">
-              <h2 className="dashboard-modern-hero__search-heading">
+              <h2 className="dashboard-modern-hero__search-heading ">
                 Find your perfect escape
               </h2>
               <p className="dashboard-modern-hero__search-subheading">

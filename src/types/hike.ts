@@ -101,6 +101,8 @@ export interface HikeBlogDetail extends HikeBlogListItem {
   updatedAt?: string;
   hikingStops?: HikingStop[];
   picnicDescription?: string;
+  isSwimmingAvailable?: boolean;
+  swimmingDescription?: string;
 }
 
 export interface HikeBlogDetailResponse {
