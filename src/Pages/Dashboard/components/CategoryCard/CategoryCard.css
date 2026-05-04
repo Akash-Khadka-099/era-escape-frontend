@@ -134,6 +134,7 @@
   backdrop-filter: blur(5px);
   width: fit-content;
   white-space: nowrap;
+  text-decoration: none;
 }
 
 .explore-btn:hover {

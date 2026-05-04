@@ -85,6 +85,29 @@
   display: none;
 }
 
+/* Remove Ant Design Menu item underline */
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu::after {
+  display: none !important;
+}
+
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item:hover::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu:hover::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item-active::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu-active::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item-open::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu-open::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item-selected::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu-selected::after {
+  display: none !important;
+}
+
+.lg-menu-items .ant-menu-item,
+.lg-menu-items .ant-menu-submenu,
+.lg-menu-items .ant-menu-item-title {
+  text-decoration: none !important;
+}
+
 .auth-section {
   display: flex;
   align-items: center;
@@ -95,7 +118,7 @@
 .navbar-header--transparent .auth-section {
   background: rgba(255, 255, 255, 0.15);
   border: 1px solid rgba(255, 255, 255, 0.2);
-  padding: 8px 16px;
+  padding: 8px 8px;
   border-radius: 100px;
   backdrop-filter: blur(16px);
   -webkit-backdrop-filter: blur(16px);
@@ -120,6 +143,7 @@
 }
 
 .user-name {
+  max-width: 100px;
   font-weight: 600;
   color: #2d5a5a;
   font-size: 14px;
@@ -239,7 +263,7 @@
 .navbar-signin-button.ant-btn {
   border-radius: 999px;
   border: none;
-  padding: 0 22px;
+  /* padding: 0 22px; */
   box-shadow: 0 4px 12px rgba(45, 90, 90, 0.2);
 }
 

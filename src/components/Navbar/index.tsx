@@ -398,7 +398,7 @@ const Navbar: React.FC = () => {
               >
                 <div className="user-profile-trigger">
                   <div className="user-info">
-                    <span className="user-name">{user?.name}</span>
+                    <span className="user-name">{user?.name} </span>
                   </div>
                   <Avatar
                     size="large"
@@ -414,7 +414,7 @@ const Navbar: React.FC = () => {
                   className="navbar-signin-button"
                   icon={<UserOutlined />}
                   onClick={openAuthModal}
-                  size="large"
+                  // size="large"
                   style={{
                     background: "#2D5A5A",
                     color: "#fefefe",
