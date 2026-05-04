@@ -1,7 +1,12 @@
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined, ArrowRightOutlined } from "@ant-design/icons";
-import { FaMountain, FaCalendarAlt, FaSun, FaMapMarkerAlt } from "react-icons/fa";
+import {
+  FaMountain,
+  FaCalendarAlt,
+  FaSun,
+  FaMapMarkerAlt,
+} from "react-icons/fa";
 
 import HeroImage from "@/assets/images/hero.png";
 import StoryImage from "@/assets/images/story.png";
@@ -11,6 +16,7 @@ import "./ModernHero.css";
 
 import { useDebounce } from "@/components/hooks/useDebounce";
 import { useFetchGlobalTravelSearch } from "@/services/userHomepageServices/homepageServices";
+import { message } from "antd";
 
 const heroData = [
   {
@@ -142,7 +148,9 @@ const ModernHero: React.FC = () => {
               ))}
             </h1>
 
-            <div className={`extremo-hero__search-container-new ${isSearchFocused ? "focused" : ""}`}>
+            <div
+              className={`extremo-hero__search-container-new ${isSearchFocused ? "focused" : ""}`}
+            >
               <div className="extremo-search-box">
                 <SearchOutlined className="extremo-search-icon" />
                 <input
@@ -217,7 +225,9 @@ const ModernHero: React.FC = () => {
                 <div className="extremo-hero__card-header-info">
                   <span
                     className="extremo-hero__card-difficulty"
-                    style={{ background: heroData[activeIndex].difficultyColor }}
+                    style={{
+                      background: heroData[activeIndex].difficultyColor,
+                    }}
                   >
                     {heroData[activeIndex].difficulty}
                   </span>
@@ -225,7 +235,9 @@ const ModernHero: React.FC = () => {
                     {heroData[activeIndex].title}
                   </h3>
                   <p className="extremo-hero__card-region">
-                    <FaMapMarkerAlt style={{ marginRight: 4, color: "#2d5a5a" }} />
+                    <FaMapMarkerAlt
+                      style={{ marginRight: 4, color: "#2d5a5a" }}
+                    />
                     {heroData[activeIndex].region}
                   </p>
                 </div>
@@ -235,27 +247,41 @@ const ModernHero: React.FC = () => {
               <div className="extremo-hero__card-stats">
                 <div className="extremo-hero__card-stat">
                   <FaMountain className="extremo-hero__card-stat-icon" />
-                  <span className="extremo-hero__card-stat-value">{heroData[activeIndex].altitude}</span>
-                  <span className="extremo-hero__card-stat-label">Altitude</span>
+                  <span className="extremo-hero__card-stat-value">
+                    {heroData[activeIndex].altitude}
+                  </span>
+                  <span className="extremo-hero__card-stat-label">
+                    Altitude
+                  </span>
                 </div>
                 <div className="extremo-hero__card-stat-divider" />
                 <div className="extremo-hero__card-stat">
                   <FaCalendarAlt className="extremo-hero__card-stat-icon" />
-                  <span className="extremo-hero__card-stat-value">{heroData[activeIndex].duration}</span>
-                  <span className="extremo-hero__card-stat-label">Duration</span>
+                  <span className="extremo-hero__card-stat-value">
+                    {heroData[activeIndex].duration}
+                  </span>
+                  <span className="extremo-hero__card-stat-label">
+                    Duration
+                  </span>
                 </div>
                 <div className="extremo-hero__card-stat-divider" />
                 <div className="extremo-hero__card-stat">
                   <FaSun className="extremo-hero__card-stat-icon" />
-                  <span className="extremo-hero__card-stat-value">{heroData[activeIndex].season}</span>
-                  <span className="extremo-hero__card-stat-label">Best Season</span>
+                  <span className="extremo-hero__card-stat-value">
+                    {heroData[activeIndex].season}
+                  </span>
+                  <span className="extremo-hero__card-stat-label">
+                    Best Season
+                  </span>
                 </div>
               </div>
 
               {/* CTA */}
               <button
                 className="extremo-hero__card-cta"
-                onClick={() => {}}
+                onClick={() => {
+                  message.success("Working on it, stay tuned!");
+                }}
               >
                 Explore Trek <ArrowRightOutlined />
               </button>
