@@ -110,16 +110,6 @@ const ModernHero: React.FC = () => {
     return `${BASE_API_URL}${normalizedPath}`;
   };
 
-  const handleSearchClick = () => {
-    if (results.length > 0) {
-      handleResultClick(results[0]);
-    } else if (searchQuery.toLowerCase().includes("everest")) {
-      navigate("/trek-trails/detail/everest-base-camp");
-    } else {
-      navigate("/explore-hikes");
-    }
-  };
-
   return (
     <section className="extremo-hero-section">
       <div className="extremo-hero-frame">
