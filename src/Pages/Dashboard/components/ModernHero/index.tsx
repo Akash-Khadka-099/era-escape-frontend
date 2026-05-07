@@ -244,7 +244,7 @@ const ModernHero: React.FC = () => {
             </div>
           </div>
 
-          {/* ── Right: info card ──────────────────────────────────────── */}
+          {/* ── Right: info card (desktop only) ────────────────────── */}
           {active && (
             <div className="extremo-hero__info-card-wrapper">
               <div className="extremo-hero__info-card">
@@ -337,6 +337,36 @@ const ModernHero: React.FC = () => {
                 </button>
 
               </div>
+            </div>
+          )}
+
+          {/* ── Mobile mini-pill card (≤ 900px only) ────────────────── */}
+          {active && (
+            <div className="extremo-hero__mobile-pill" onClick={handleExploreCta}>
+              <img
+                className="extremo-hero__mobile-pill-img"
+                src={resolveUrl(active.featuredImage?.path)}
+                alt={active.title}
+              />
+              <div className="extremo-hero__mobile-pill-body">
+                <span
+                  className="extremo-hero__mobile-pill-badge"
+                  style={{ background: difficultyColor(active.difficulty) }}
+                >
+                  {active.difficulty ?? "—"}
+                </span>
+                <h4 className="extremo-hero__mobile-pill-title">{active.title}</h4>
+                <p className="extremo-hero__mobile-pill-desc">
+                  {active.shortDescription?.slice(0, 72)}
+                  {(active.shortDescription?.length ?? 0) > 72 ? "…" : ""}
+                </p>
+              </div>
+              <button
+                className="extremo-hero__mobile-pill-cta"
+                onClick={(e) => { e.stopPropagation(); handleExploreCta(); }}
+              >
+                <ArrowRightOutlined />
+              </button>
             </div>
           )}
         </div>
