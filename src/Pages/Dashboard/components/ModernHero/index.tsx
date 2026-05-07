@@ -6,140 +6,181 @@ import {
   FaCalendarAlt,
   FaSun,
   FaMapMarkerAlt,
+  FaHiking,
 } from "react-icons/fa";
-
-import HeroImage from "@/assets/images/hero.png";
-import StoryImage from "@/assets/images/story.png";
-import TrekImage from "@/assets/images/trek1.png";
 
 import "./ModernHero.css";
 
 import { useDebounce } from "@/components/hooks/useDebounce";
-import { useFetchGlobalTravelSearch } from "@/services/userHomepageServices/homepageServices";
-import { message } from "antd";
+import {
+  useFetchGlobalTravelSearch,
+  useFetchFeaturedHomepageAdventures,
+  type FeaturedAdventureItem,
+} from "@/services/userHomepageServices/homepageServices";
 
-const heroData = [
-  {
-    id: 1,
-    title: "Langtang",
-    slogan: "Where the Cold\nHorizons Begin",
-    videoSrc: "/videos/10264379-uhd_3840_2160_30fps.mp4",
-    altitude: "3,870m",
-    duration: "7–10 Days",
-    difficulty: "Moderate",
-    difficultyColor: "#f59e0b",
-    season: "Oct – Nov",
-    region: "Langtang, Bagmati",
-    tags: ["Routes", "Guides", "Regions"],
-    image: TrekImage,
-  },
-  {
-    id: 2,
-    title: "Everest Base Camp",
-    slogan: "Footsteps to\nthe Top of the World",
-    videoSrc: "/videos/13191880_2560_1440_30fps.mp4",
-    altitude: "5,364m",
-    duration: "14–16 Days",
-    difficulty: "Hard",
-    difficultyColor: "#ef4444",
-    season: "Mar – May",
-    region: "Khumbu, Solukhumbu",
-    tags: ["Routes", "Guides", "Regions"],
-    image: StoryImage,
-  },
-  {
-    id: 3,
-    title: "Tsho Rolpa",
-    slogan: "Serenity at\nthe Highest Peaks",
-    videoSrc: "/videos/20158879-uhd_3840_2160_60fps.mp4",
-    altitude: "4,580m",
-    duration: "10–12 Days",
-    difficulty: "Challenging",
-    difficultyColor: "#f97316",
-    season: "Apr – Jun",
-    region: "Rolwaling, Dolakha",
-    tags: ["Routes", "Guides", "Regions"],
-    image: HeroImage,
-  },
-];
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+
+const BASE_API_URL = import.meta.env.VITE_API_URL ?? "";
+const FALLBACK_IMAGE =
+  "https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=1400&auto=format&fit=crop";
+
+const resolveUrl = (path?: string | null): string => {
+  if (!path) return FALLBACK_IMAGE;
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  return `${BASE_API_URL}${path.startsWith("/") ? path : `/${path}`}`;
+};
+
+/** Hard → #ef4444, Challenging → #f97316, Moderate/Medium → #f59e0b, Easy → #22c55e */
+const difficultyColor = (difficulty?: string | null): string => {
+  switch (difficulty?.toLowerCase()) {
+    case "hard":        return "#ef4444";
+    case "challenging": return "#f97316";
+    case "moderate":
+    case "medium":     return "#f59e0b";
+    case "easy":       return "#22c55e";
+    default:           return "#2d5a5a";
+  }
+};
+
+/** Trek: "14–15 Days" | Hike: null (show trail type instead) */
+const formatDuration = (item: FeaturedAdventureItem): string | null => {
+  if (!item.isTrek || !item.averageDurationDays) return null;
+  return `${item.averageDurationDays}–${item.averageDurationDays + 1} Days`;
+};
+
+const formatAltitude = (meters?: number | null): string =>
+  meters ? `${meters.toLocaleString()}m` : "—";
+
+const formatRegion = (regions?: FeaturedAdventureItem["region"]): string =>
+  regions?.length ? regions.map((r) => r?.name).filter(Boolean).join(", ") : "—";
+
+const formatSeasons = (seasons?: string[]): string =>
+  seasons?.length ? seasons.slice(0, 2).join(" & ") : "—";
+
+const exploreLabel = (item: FeaturedAdventureItem): string =>
+  item.isTrek ? "Explore Trek" : "Explore Hike";
+
+// ─── Component ────────────────────────────────────────────────────────────────
 
 const ModernHero: React.FC = () => {
-  const [searchQuery, setSearchQuery] = useState("");
+  const [searchQuery, setSearchQuery]         = useState("");
   const [isSearchFocused, setIsSearchFocused] = useState(false);
-  const [activeIndex, setActiveIndex] = useState(0);
+  const [activeIndex, setActiveIndex]         = useState(0);
 
-  // Auto change carousel
+  const { data: adventuresResponse, isLoading: adventuresLoading } =
+    useFetchFeaturedHomepageAdventures();
+  const adventures = adventuresResponse?.data ?? [];
+
+  // Auto-advance carousel – resets whenever the list length changes
   useEffect(() => {
-    const intervalId = window.setInterval(() => {
-      setActiveIndex((currentIndex) =>
-        currentIndex === heroData.length - 1 ? 0 : currentIndex + 1,
+    if (!adventures.length) return;
+    const id = window.setInterval(() => {
+      setActiveIndex((idx) =>
+        idx === adventures.length - 1 ? 0 : idx + 1
       );
-    }, 8000); // 8 seconds per video
+    }, 8000);
+    return () => window.clearInterval(id);
+  }, [adventures.length]);
 
-    return () => window.clearInterval(intervalId);
-  }, []);
+  // Clamp active index if the API returns fewer items than expected
+  const safeIndex = adventures.length
+    ? Math.min(activeIndex, adventures.length - 1)
+    : 0;
+  const active = adventures[safeIndex];
 
+  // ─── Search ──────────────────────────────────────────────────────────────
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
 
   const { data: searchResults, isFetching } = useFetchGlobalTravelSearch(
     { q: debouncedSearchQuery },
-    { enabled: debouncedSearchQuery.trim().length > 0 },
+    { enabled: debouncedSearchQuery.trim().length > 0 }
   );
 
   const navigate = useNavigate();
-  const results = searchResults?.data || [];
+  const results  = searchResults?.data ?? [];
 
   const handleResultClick = (item: any) => {
-    const basePath =
+    const base =
       item?.contentType === "hike" ? "/explore-hikes" : "/trek-trails";
-    navigate(`${basePath}/detail/${item?.slug}`);
+    navigate(`${base}/detail/${item?.slug}`);
   };
 
-  const resolveImageUrl = (imagePath?: string) => {
-    const BASE_API_URL = import.meta.env.VITE_API_URL;
-    const FALLBACK_IMAGE =
-      "https://images.unsplash.com/photo-1501555088652-021faa106b9b?q=80&w=1400&auto=format&fit=crop";
-
-    if (!imagePath) return FALLBACK_IMAGE;
-    if (imagePath.startsWith("http://") || imagePath.startsWith("https://"))
-      return imagePath;
-
-    const normalizedPath = imagePath.startsWith("/")
-      ? imagePath
-      : `/${imagePath}`;
-    return `${BASE_API_URL}${normalizedPath}`;
+  const handleExploreCta = () => {
+    if (!active) return;
+    const base = active.isTrek ? "/trek-trails" : "/explore-hikes";
+    navigate(`${base}/detail/${active.slug}`);
   };
 
+  // ─── Per-slide background (video → image fallback) ───────────────────────
+  const renderBackground = (item: FeaturedAdventureItem, index: number) => {
+    const cls = `extremo-hero__video${index === safeIndex ? " active" : ""}`;
+
+    if (item.featuredVideo?.path) {
+      return (
+        <video
+          key={item._id}
+          autoPlay
+          loop
+          muted
+          playsInline
+          className={cls}
+          src={resolveUrl(item.featuredVideo.path)}
+        />
+      );
+    }
+
+    return (
+      <div
+        key={item._id}
+        className={cls}
+        style={{
+          backgroundImage: `url(${resolveUrl(item.featuredImage?.path)})`,
+          backgroundSize: "cover",
+          backgroundPosition: "center",
+        }}
+      />
+    );
+  };
+
+  // ─── Loading shimmer ──────────────────────────────────────────────────────
+  if (adventuresLoading) {
+    return (
+      <section className="extremo-hero-section">
+        <div className="extremo-hero-frame extremo-hero-frame--loading" />
+      </section>
+    );
+  }
+
+  // ─── Main render ─────────────────────────────────────────────────────────
   return (
     <section className="extremo-hero-section">
       <div className="extremo-hero-frame">
-        {heroData.map((data, index) => (
-          <video
-            key={data.id}
-            autoPlay
-            loop
-            muted
-            playsInline
-            className={`extremo-hero__video ${
-              index === activeIndex ? "active" : ""
-            }`}
-            src={data.videoSrc}
-          />
-        ))}
+
+        {/* Slide backgrounds */}
+        {adventures.map((item, index) => renderBackground(item, index))}
 
         <div className="extremo-hero__content-new">
+          {/* ── Left: slogan + search ──────────────────────────────────── */}
           <div className="extremo-hero__left-content">
             <h1 className="extremo-hero__title-new">
-              {heroData[activeIndex].slogan.split("\n").map((line, i) => (
-                <span key={i}>
-                  {line}
-                  <br />
-                </span>
-              ))}
+              {active?.shortDescription
+                ? active.shortDescription
+                    .split(/[.,!]/)
+                    .slice(0, 2)
+                    .map((line, i) => (
+                      <span key={i}>
+                        {line.trim()}
+                        <br />
+                      </span>
+                    ))
+                : "\u00a0"}
             </h1>
 
+            {/* Search bar */}
             <div
-              className={`extremo-hero__search-container-new ${isSearchFocused ? "focused" : ""}`}
+              className={`extremo-hero__search-container-new ${
+                isSearchFocused ? "focused" : ""
+              }`}
             >
               <div className="extremo-search-box">
                 <SearchOutlined className="extremo-search-icon" />
@@ -167,14 +208,14 @@ const ModernHero: React.FC = () => {
                   </div>
                 ) : results.length > 0 ? (
                   <div className="extremo-search-results">
-                    {results.map((item, index) => (
+                    {results.map((item, idx) => (
                       <div
-                        key={index}
+                        key={idx}
                         className="extremo-search-item"
                         onClick={() => handleResultClick(item)}
                       >
                         <img
-                          src={resolveImageUrl(item?.featuredImage?.path)}
+                          src={resolveUrl(item?.featuredImage?.path)}
                           alt={item?.title}
                         />
                         <div className="extremo-search-item-info">
@@ -185,8 +226,8 @@ const ModernHero: React.FC = () => {
                             </span>
                           </div>
                           <p className="extremo-search-item-slogan">
-                            {item?.shortSlogan ||
-                              item?.summary ||
+                            {item?.shortSlogan ??
+                              item?.summary ??
                               item?.shortNotes}
                           </p>
                         </div>
@@ -203,94 +244,116 @@ const ModernHero: React.FC = () => {
             </div>
           </div>
 
-          <div className="extremo-hero__info-card-wrapper">
-            <div className="extremo-hero__info-card">
-              {/* Header: image + trek name + difficulty badge */}
-              <div className="extremo-hero__card-header">
-                <img
-                  className="extremo-hero__card-thumb"
-                  src={heroData[activeIndex].image}
-                  alt={heroData[activeIndex].title}
-                />
-                <div className="extremo-hero__card-header-info">
-                  <span
-                    className="extremo-hero__card-difficulty"
-                    style={{
-                      background: heroData[activeIndex].difficultyColor,
-                    }}
-                  >
-                    {heroData[activeIndex].difficulty}
-                  </span>
-                  <h3 className="extremo-hero__card-title">
-                    {heroData[activeIndex].title}
-                  </h3>
-                  <p className="extremo-hero__card-region">
-                    <FaMapMarkerAlt
-                      style={{ marginRight: 4, color: "#2d5a5a" }}
-                    />
-                    {heroData[activeIndex].region}
-                  </p>
-                </div>
-              </div>
+          {/* ── Right: info card ──────────────────────────────────────── */}
+          {active && (
+            <div className="extremo-hero__info-card-wrapper">
+              <div className="extremo-hero__info-card">
 
-              {/* Stats grid */}
-              <div className="extremo-hero__card-stats">
-                <div className="extremo-hero__card-stat">
-                  <FaMountain className="extremo-hero__card-stat-icon" />
-                  <span className="extremo-hero__card-stat-value">
-                    {heroData[activeIndex].altitude}
-                  </span>
-                  <span className="extremo-hero__card-stat-label">
-                    Altitude
-                  </span>
+                {/* Header: thumb + title + difficulty badge + region */}
+                <div className="extremo-hero__card-header">
+                  <img
+                    className="extremo-hero__card-thumb"
+                    src={resolveUrl(active.featuredImage?.path)}
+                    alt={active.title}
+                  />
+                  <div className="extremo-hero__card-header-info">
+                    <span
+                      className="extremo-hero__card-difficulty"
+                      style={{ background: difficultyColor(active.difficulty) }}
+                    >
+                      {active.difficulty ?? "—"}
+                    </span>
+                    <h3 className="extremo-hero__card-title">{active.title}</h3>
+                    <p className="extremo-hero__card-region">
+                      <FaMapMarkerAlt
+                        style={{ marginRight: 4, color: "#2d5a5a" }}
+                      />
+                      {formatRegion(active.region)}
+                    </p>
+                  </div>
                 </div>
-                <div className="extremo-hero__card-stat-divider" />
-                <div className="extremo-hero__card-stat">
-                  <FaCalendarAlt className="extremo-hero__card-stat-icon" />
-                  <span className="extremo-hero__card-stat-value">
-                    {heroData[activeIndex].duration}
-                  </span>
-                  <span className="extremo-hero__card-stat-label">
-                    Duration
-                  </span>
-                </div>
-                <div className="extremo-hero__card-stat-divider" />
-                <div className="extremo-hero__card-stat">
-                  <FaSun className="extremo-hero__card-stat-icon" />
-                  <span className="extremo-hero__card-stat-value">
-                    {heroData[activeIndex].season}
-                  </span>
-                  <span className="extremo-hero__card-stat-label">
-                    Best Season
-                  </span>
-                </div>
-              </div>
 
-              {/* CTA */}
-              <button
-                className="extremo-hero__card-cta"
-                onClick={() => {
-                  message.success("Working on it, stay tuned!");
-                }}
-              >
-                Explore Trek <ArrowRightOutlined />
-              </button>
+                {/* Stats grid */}
+                <div className="extremo-hero__card-stats">
+
+                  {/* Altitude — always shown */}
+                  <div className="extremo-hero__card-stat">
+                    <FaMountain className="extremo-hero__card-stat-icon" />
+                    <span className="extremo-hero__card-stat-value">
+                      {formatAltitude(active.maxAltitudeMeter)}
+                    </span>
+                    <span className="extremo-hero__card-stat-label">
+                      Altitude
+                    </span>
+                  </div>
+
+                  <div className="extremo-hero__card-stat-divider" />
+
+                  {/* Trek → Duration | Hike → Trail Type */}
+                  <div className="extremo-hero__card-stat">
+                    {active.isTrek ? (
+                      <>
+                        <FaCalendarAlt className="extremo-hero__card-stat-icon" />
+                        <span className="extremo-hero__card-stat-value">
+                          {formatDuration(active) ?? "—"}
+                        </span>
+                        <span className="extremo-hero__card-stat-label">
+                          Duration
+                        </span>
+                      </>
+                    ) : (
+                      <>
+                        <FaHiking className="extremo-hero__card-stat-icon" />
+                        <span className="extremo-hero__card-stat-value">
+                          Day Hike
+                        </span>
+                        <span className="extremo-hero__card-stat-label">
+                          Trail Type
+                        </span>
+                      </>
+                    )}
+                  </div>
+
+                  <div className="extremo-hero__card-stat-divider" />
+
+                  {/* Best season */}
+                  <div className="extremo-hero__card-stat">
+                    <FaSun className="extremo-hero__card-stat-icon" />
+                    <span className="extremo-hero__card-stat-value">
+                      {formatSeasons(active.recommendedSeasons)}
+                    </span>
+                    <span className="extremo-hero__card-stat-label">
+                      Best Season
+                    </span>
+                  </div>
+                </div>
+
+                {/* CTA button */}
+                <button
+                  className="extremo-hero__card-cta"
+                  onClick={handleExploreCta}
+                >
+                  {exploreLabel(active)} <ArrowRightOutlined />
+                </button>
+
+              </div>
             </div>
-          </div>
+          )}
         </div>
 
-        {/* Carousel Dots */}
+        {/* Carousel dots */}
         <div className="extremo-hero__dots">
-          {heroData.map((_, index) => (
+          {adventures.map((_, index) => (
             <div
               key={index}
               className={`extremo-hero__dot ${
-                activeIndex === index ? "active" : ""
+                safeIndex === index ? "active" : ""
               }`}
               onClick={() => setActiveIndex(index)}
             />
           ))}
         </div>
+
       </div>
     </section>
   );

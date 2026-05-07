@@ -131,9 +131,71 @@ const useFetchGlobalTravelSearch = (
   });
 };
 
+// ─── Featured Homepage Adventures ────────────────────────────────────────────
+
+export interface FeaturedAdventureRegion {
+  _id: string;
+  name: string;
+  slug: string;
+}
+
+export interface FeaturedAdventureFeaturedImage {
+  _id: string;
+  path: string;
+  filename: string;
+  originalName: string;
+}
+
+export interface FeaturedAdventureFeaturedVideo {
+  _id: string;
+  url: string;
+  thumbnail?: string;
+  path: string
+}
+
+export interface FeaturedAdventureItem {
+  _id: string;
+  type: "trek" | "hike";
+  isTrek: boolean;
+  title: string;
+  slug: string;
+  featuredImage?: FeaturedAdventureFeaturedImage | null;
+  featuredVideo?: FeaturedAdventureFeaturedVideo | null;
+  shortDescription?: string | null;
+  difficulty?: string | null;
+  recommendedSeasons?: string[];
+  averageDurationDays?: number | null;
+  region?: FeaturedAdventureRegion[];
+  maxAltitudeMeter?: number | null;
+  isHomepagePriority?: boolean;
+  createdAt?: string;
+}
+
+export interface FeaturedHomepageAdventuresResponse {
+  success: boolean;
+  message: string;
+  data: FeaturedAdventureItem[];
+}
+
+const fetchFeaturedHomepageAdventures = (): Promise<AxiosResponse> => {
+  return axiosInstance.get(apiEndpoints.homepage.featuredHomepageAdventures);
+};
+
+const useFetchFeaturedHomepageAdventures = () => {
+  return useQuery({
+    queryKey: [apiEndpoints.homepage.featuredHomepageAdventures],
+    queryFn: fetchFeaturedHomepageAdventures,
+    select: (data) => data?.data as FeaturedHomepageAdventuresResponse,
+    staleTime: 5 * 60 * 1000,
+    gcTime: 30 * 60 * 1000,
+    refetchOnWindowFocus: false,
+  });
+};
+
 export {
   useFetchTrendingBlogsCategories,
   useFetchTrendingTrekBlogsByVisits,
   useFetchGlobalTravelSearch,
+  useFetchFeaturedHomepageAdventures,
   type TrendingTrekBlog,
 };
