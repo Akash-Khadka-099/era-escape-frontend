@@ -186,7 +186,7 @@ const ModernHero: React.FC = () => {
                 <SearchOutlined className="extremo-search-icon" />
                 <input
                   type="text"
-                  placeholder="Find your destination..."
+                  placeholder="Find your treks, hikes, destinations..."
                   className="extremo-search-input"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
