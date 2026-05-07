@@ -8,16 +8,14 @@ import { useFetchTrendingBlogsCategories } from "@/services/userHomepageServices
 import CategoryCard from "@/Pages/Dashboard/components/CategoryCard";
 import TrendingBlogsSection from "@/Pages/Dashboard/TrendingBlogsSection";
 import ModernHero from "@/Pages/Dashboard/components/ModernHero";
-import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 
 const Dashboard: React.FC = () => {
   const { data } = useFetchTrendingBlogsCategories({});
 
   return (
     <div className="new-dashboard">
-      <MiddleContentWrapper extraStyles={{ overflow: 'visible', position: 'relative', zIndex: 10 }}>
-        <ModernHero />
-      </MiddleContentWrapper>
+      <ModernHero />
+      <TrendingBlogsSection />
 
       {/* Explore Landscapes Section */}
       <section className="explore-landscapes-section">
@@ -38,8 +36,6 @@ const Dashboard: React.FC = () => {
           </div>
         </div>
       </section>
-
-      <TrendingBlogsSection />
 
       {/* Featured Story Section */}
       <section className="featured-story">

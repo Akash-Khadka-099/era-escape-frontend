@@ -47,6 +47,7 @@ interface ApiEndpoints {
     fetchTrendingBlogCategories: string;
     fetchTrendingBlogsByVisits: string;
     globalTravelSearch: string;
+    featuredHomepageAdventures: string;
   }
 }
 
@@ -102,5 +103,6 @@ export const apiEndpoints: ApiEndpoints = {
     fetchTrendingBlogCategories: "/api/trek-blogs-trending-categories",
     fetchTrendingBlogsByVisits: "/api/trek-blogs-trending-by-visits",
     globalTravelSearch: "/api/global-travel-search",
+    featuredHomepageAdventures: "/api/homepage-featured-adventures",
   }
 };

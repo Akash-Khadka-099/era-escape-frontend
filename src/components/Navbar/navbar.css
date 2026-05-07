@@ -1,18 +1,37 @@
 .navbar-header {
-  position: fixed !important;
+  position: sticky !important; /* Naturally takes up exact height! */
   top: 0;
   left: 0;
   z-index: 999;
   width: 100%;
   height: auto !important;
   line-height: normal !important;
-  padding: 12px 0 !important;
+  padding: 4px 0 !important;
   background: #fff !important;
   border-bottom: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.navbar-header.navbar-header--home {
+  position: fixed !important; /* Floats over hero section on homepage */
+}
+
+.navbar-header.navbar-header--transparent {
+  position: absolute !important;
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 4px 30px rgba(0, 0, 0, 0.05);
+  padding: 0 24px 0 24px !important;
 }
 
 .navbar-offset {
-  height: 88px;
+  display: none !important; /* No longer needed, sticky handles layout automatically */
+}
+
+.navbar-offset.navbar-offset--transparent {
+  display: none !important;
 }
 
 .navbar-container {
@@ -25,14 +44,16 @@
 .brand-name {
   display: flex;
   align-items: center;
-  gap: 10px;
+  gap: 8px;
   cursor: pointer;
   z-index: 10;
+  padding: 4px 0;
+  position: relative;
 }
 
 .navbar-logo {
-  width: 48px;
-  height: 48px;
+  width: 32px;
+  height: 32px;
   transition: transform 0.3s ease;
 }
 
@@ -42,7 +63,7 @@
 
 .brand-text {
   font-family: "Outfit", sans-serif;
-  font-size: 22px;
+  font-size: 18px;
   font-weight: 800;
   color: #2d5a5a;
   white-space: nowrap;
@@ -64,11 +85,43 @@
   display: none;
 }
 
+/* Remove Ant Design Menu item underline */
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu::after {
+  display: none !important;
+}
+
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item:hover::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu:hover::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item-active::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu-active::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item-open::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu-open::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-item-selected::after,
+.lg-menu-items.ant-menu-horizontal > .ant-menu-submenu-selected::after {
+  display: none !important;
+}
+
+.lg-menu-items .ant-menu-item,
+.lg-menu-items .ant-menu-submenu,
+.lg-menu-items .ant-menu-item-title {
+  text-decoration: none !important;
+}
+
 .auth-section {
   display: flex;
   align-items: center;
   gap: 16px;
   z-index: 10;
+}
+
+.navbar-header--transparent .auth-section {
+  background: rgba(255, 255, 255, 0.15);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  padding: 8px 8px;
+  border-radius: 100px;
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
 }
 
 .user-profile-trigger {
@@ -90,6 +143,7 @@
 }
 
 .user-name {
+  max-width: 100px;
   font-weight: 600;
   color: #2d5a5a;
   font-size: 14px;
@@ -123,11 +177,20 @@
 
 /* Mobile Layout (Max-width: 768px) */
 @media (max-width: 768px) {
+  .navbar-header.navbar-header--transparent {
+    border-radius: 24px;
+    padding: 12px 16px !important;
+    width: calc(100% - 32px);
+    top: 16px;
+    left: 16px;
+    right: 16px;
+  }
+
   .navbar-container {
     display: grid !important;
     grid-template-columns: 1fr auto 1fr;
     width: 100%;
-    padding: 0 16px;
+    padding: 0;
   }
 
   .hamburger-icon {
@@ -200,7 +263,7 @@
 .navbar-signin-button.ant-btn {
   border-radius: 999px;
   border: none;
-  padding: 0 22px;
+  /* padding: 0 22px; */
   box-shadow: 0 4px 12px rgba(45, 90, 90, 0.2);
 }
 
@@ -465,7 +528,10 @@
   text-align: left;
   align-items: center;
   cursor: pointer;
-  transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  transition:
+    transform 0.2s ease,
+    box-shadow 0.2s ease,
+    border-color 0.2s ease;
 }
 
 .trending-blogs-mega-card:hover {

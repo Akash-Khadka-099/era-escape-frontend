@@ -222,20 +222,6 @@
     box-shadow 0.25s ease;
 }
 
-.hike-map-preview-hint {
-  display: inline-flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px 10px 16px;
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.12);
-  color: #fff;
-  backdrop-filter: blur(12px);
-  transition:
-    transform 0.25s ease,
-    background 0.25s ease;
-}
-
 .hike-map-preview-arrow {
   width: 32px;
   height: 32px;
@@ -268,8 +254,8 @@
   box-shadow: 0 14px 30px rgba(20, 184, 166, 0.34);
 }
 
-.hike-map-preview-surface:hover .hike-map-preview-hint,
-.hike-map-preview-surface:focus-visible .hike-map-preview-hint {
+.hike-map-preview-surface:hover,
+.hike-map-preview-surface:focus-visible {
   transform: translateX(4px);
   background: rgba(255, 255, 255, 0.18);
 }
@@ -307,13 +293,6 @@
 .hike-detail-section-title {
   margin-bottom: 18px !important;
   color: #132022 !important;
-}
-
-.hike-detail-inner-card {
-  border-radius: 18px;
-  background: #f7f8f3;
-  border: 1px solid rgba(19, 32, 34, 0.06);
-  box-shadow: none;
 }
 
 .hike-detail-inner-card .ant-card-body {
@@ -415,10 +394,44 @@
   .hike-map-preview-title.ant-typography {
     font-size: 24px;
   }
+}
 
-  .hike-map-preview-button,
-  .hike-map-preview-hint {
-    width: 100%;
-    justify-content: center;
-  }
+.hike-essential-logistics-card {
+  background-color: #f5f7f2 !important;
+  border-radius: 20px;
+}
+
+.hike-essential-logistics-card .hike-detail-section-title {
+  color: #4b6154 !important;
+  font-family: "Georgia", serif;
+  font-size: 20px;
+  margin-bottom: 0 !important;
+}
+
+.hike-essential-logistics-card .ant-divider {
+  border-color: rgba(75, 97, 84, 0.15);
+}
+
+.hike-essential-logistics-item {
+  padding: 16px 0 !important;
+}
+
+.hike-essential-logistics-icon {
+  color: #4b6154;
+  font-size: 22px;
+  margin-top: 2px;
+}
+
+.hike-essential-logistics-title {
+  color: #4b6154 !important;
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+  display: block;
+}
+
+.hike-essential-logistics-desc {
+  color: #6a7c72 !important;
+  font-size: 13px;
+  line-height: 1.6;
 }

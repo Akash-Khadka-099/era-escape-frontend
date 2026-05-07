@@ -1,12 +1,11 @@
 import React from "react";
 import parse from "html-react-parser";
-import dayjs from "dayjs";
 import {
+  Alert,
   Button,
   Card,
   Col,
   Collapse,
-  Descriptions,
   Divider,
   Flex,
   Image,
@@ -33,6 +32,7 @@ import {
   FaTicketAlt,
   FaBiking,
   FaUmbrellaBeach,
+  FaSwimmer,
 } from "react-icons/fa";
 import { useNavigate, useParams } from "react-router-dom";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
@@ -40,7 +40,12 @@ import { SEO } from "@/components/SEO";
 import NoDataLottie from "@/components/Feedback/NoDataLottie";
 import SuspensePageLoader from "@/components/Loaders/SuspensePageLoader";
 import { useGetHikeBlogDetail } from "@/services/hikeServices/hikeServices";
-import { HikeBlogDetail } from "@/types/hike";
+import {
+  TrekHikeStopType,
+  STOP_MARKER_CONFIGS,
+  DEFAULT_STOP_MARKER_CONFIG,
+  formatStopTypeLabel,
+} from "@/Pages/ExploreHikes/HikeTrailMap";
 import "./HikeDetails.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -107,46 +112,18 @@ const copyTextToClipboard = async (value: string) => {
   }
 };
 
-const buildFeatureCards = (hikeDetail: HikeBlogDetail) => [
-  {
-    title: "Water Source",
-    description: hikeDetail.isWaterSourceAvailable
-      ? "Water is available on the route."
-      : "Carry enough drinking water for the full hike.",
-    icon: <FaTint />,
-  },
-  {
-    title: "Permit",
-    description: hikeDetail.isPermitRequired
-      ? hikeDetail.permitDetailDescription ||
-        "Permit is required for this hike."
-      : "No permit requirement was listed.",
-    icon: <FaTicketAlt />,
-  },
-  {
-    title: "Picnic",
-    description: hikeDetail.isPicnic
-      ? hikeDetail.picnicDescription ||
-        "Suitable spots are available for a picnic break."
-      : "This route is not marked as a picnic hike.",
-    icon: <FaUmbrellaBeach />,
-  },
-  {
-    title: "Camping",
-    description: hikeDetail.isCampingAllowed
-      ? hikeDetail.campingDescription || "Camping is allowed on this route."
-      : "Camping is not allowed on this route.",
-    icon: <FaCampground />,
-  },
-  {
-    title: "Bike Access",
-    description: hikeDetail.isBikeFriendly
-      ? hikeDetail.bikeRideDescription ||
-        "Bike-friendly sections are available."
-      : "This route is not marked as bike-friendly.",
-    icon: <FaBiking />,
-  },
-];
+const getStopConfig = (stopType?: string) => {
+  if (
+    stopType &&
+    Object.values(TrekHikeStopType).includes(stopType as TrekHikeStopType)
+  ) {
+    return (
+      STOP_MARKER_CONFIGS[stopType as TrekHikeStopType] ||
+      DEFAULT_STOP_MARKER_CONFIG
+    );
+  }
+  return DEFAULT_STOP_MARKER_CONFIG;
+};
 
 const HikeDetail: React.FC = () => {
   const { slug } = useParams();
@@ -182,7 +159,70 @@ const HikeDetail: React.FC = () => {
     hikeDetail.metaDescription ||
     hikeDetail.shortSlogan ||
     "Plan your next hike with route facts, blog sections, and trail highlights.";
-  const featureCards = buildFeatureCards(hikeDetail);
+
+  const essentialLogistics = [
+    ...(hikeDetail.isBikeFriendly
+      ? [
+          {
+            key: "bike-friendly",
+            title: "Bike Friendly",
+            description: hikeDetail.bikeRideDescription,
+            icon: <FaBiking />,
+          },
+        ]
+      : []),
+    ...(hikeDetail.isWaterSourceAvailable
+      ? [
+          {
+            key: "water-source",
+            title: "Water Source",
+            description: "Abundant water sources along the route.",
+            icon: <FaTint />,
+          },
+        ]
+      : []),
+    ...(hikeDetail?.isSwimmingAvailable
+      ? [
+          {
+            key: "swimming",
+            title: "Swimming",
+            description: hikeDetail?.swimmingDescription,
+            icon: <FaSwimmer />,
+          },
+        ]
+      : []),
+    ...(hikeDetail.isPicnic
+      ? [
+          {
+            key: "picnic",
+            title: "Picnic Areas",
+            description: hikeDetail.picnicDescription,
+            icon: <FaUmbrellaBeach />,
+          },
+        ]
+      : []),
+    ...(hikeDetail.isCampingAllowed
+      ? [
+          {
+            key: "camping",
+            title: "Camping Allowed",
+            description: hikeDetail.campingDescription,
+            icon: <FaCampground />,
+          },
+        ]
+      : []),
+    ...(hikeDetail.isPermitRequired
+      ? [
+          {
+            key: "permit",
+            title: "Permit Required",
+            description: hikeDetail.permitDetailDescription,
+            icon: <FaTicketAlt />,
+          },
+        ]
+      : []),
+  ];
+
   const heroBadges = [
     ...(hikeDetail.difficulty ? [hikeDetail.difficulty] : []),
     ...categoryTitles,
@@ -242,42 +282,6 @@ const HikeDetail: React.FC = () => {
       title: "Route Style",
       value: formatTrailType(hikeDetail.trailType),
       prefix: <FaMapMarkedAlt />,
-    },
-  ];
-  const quickFacts = [
-    {
-      key: "difficulty",
-      label: "Difficulty",
-      value: hikeDetail.difficulty || "Not specified",
-    },
-    {
-      key: "trail-type",
-      label: "Trail Type",
-      value: formatTrailType(hikeDetail.trailType),
-    },
-    {
-      key: "walked-trail",
-      label: "Walked Trail",
-      value: hikeDetail.isWalkedTrail ? "Yes" : "No",
-    },
-    {
-      key: "coordinates",
-      label: "Coordinates",
-      value: formatLatLong(hikeDetail.latLong),
-    },
-    {
-      key: "published",
-      label: "Published",
-      value: hikeDetail.createdAt
-        ? dayjs(hikeDetail.createdAt).format("MMM D, YYYY")
-        : "Not available",
-    },
-    {
-      key: "updated",
-      label: "Updated",
-      value: hikeDetail.updatedAt
-        ? dayjs(hikeDetail.updatedAt).format("MMM D, YYYY")
-        : "Not available",
     },
   ];
   const breadcrumbsSchema = {
@@ -489,113 +493,103 @@ const HikeDetail: React.FC = () => {
                 ) : null}
               </Card>
 
-              <Card className="hike-detail-panel" bordered={false}>
-                <Title level={3} className="hike-detail-section-title">
-                  Trail Conditions & Planning
-                </Title>
-                <List
-                  grid={{ gutter: 14, xs: 1, md: 2 }}
-                  dataSource={featureCards}
-                  renderItem={(feature) => (
-                    <List.Item key={feature.title}>
-                      <Card
-                        size="small"
-                        className="hike-detail-inner-card"
-                        bordered={false}
-                      >
-                        <Space
-                          direction="vertical"
-                          size={10}
-                          style={{ width: "100%" }}
-                        >
-                          <Tag
-                            bordered={false}
-                            color="green"
-                            style={{ width: "fit-content", borderRadius: 999 }}
-                          >
-                            {feature.icon} {feature.title}
-                          </Tag>
-                          <Title level={5} style={{ margin: 0 }}>
-                            {feature.title}
-                          </Title>
-                          <Paragraph
-                            type="secondary"
-                            style={{ marginBottom: 0 }}
-                          >
-                            {feature.description}
-                          </Paragraph>
-                        </Space>
-                      </Card>
-                    </List.Item>
-                  )}
-                />
-              </Card>
-
               {hikeDetail.hikingStops?.length ? (
                 <Card className="hike-detail-panel" bordered={false}>
                   <Title level={3} className="hike-detail-section-title">
                     Hiking Stops
                   </Title>
-                  <List
-                    grid={{ gutter: 14, xs: 1, md: 2 }}
-                    dataSource={hikeDetail.hikingStops}
-                    renderItem={(stop) => (
-                      <List.Item key={stop._id}>
-                        <Card
-                          size="small"
-                          className="hike-detail-inner-card"
-                          bordered={false}
-                        >
-                          <Space
-                            direction="vertical"
-                            size={12}
-                            style={{ width: "100%" }}
-                          >
-                            <Title level={5} style={{ margin: 0 }}>
-                              {stop.title}
-                            </Title>
-                            <div className="hike-html-content hike-html-content--compact">
-                              {parse(
-                                stop.htmlDescription ||
-                                  "<p>No description available.</p>",
-                              )}
-                            </div>
-                            <Flex gap={8} wrap>
-                              <Tag bordered={false} color="green">
-                                {formatTrailType(stop.stopType)}
-                              </Tag>
-                              {stop.altitude ? (
-                                <Tag bordered={false} color="gold">
-                                  {stop.altitude} m
-                                </Tag>
-                              ) : null}
-                              {stop.latLong?.length === 2 ? (
-                                <Tag bordered={false} color="cyan">
-                                  {formatLatLong(stop.latLong)}
-                                </Tag>
-                              ) : null}
-                            </Flex>
-                          </Space>
-                        </Card>
-                      </List.Item>
-                    )}
-                  />
-                </Card>
-              ) : null}
+                  <Row gutter={[14, 14]} align="stretch">
+                    {hikeDetail?.hikingStops?.map((stop) => {
+                      const stopConfig = getStopConfig(stop.stopType);
+                      const Icon = stopConfig.icon;
 
-              {hikeDetail.faqs?.length ? (
-                <Card className="hike-detail-panel" bordered={false}>
-                  <Title level={3} className="hike-detail-section-title">
-                    Frequently Asked Questions
-                  </Title>
-                  <Collapse
-                    items={hikeDetail.faqs.map((faq, index) => ({
-                      key: `${faq.question}-${index}`,
-                      label: faq.question,
-                      children: <p style={{ marginBottom: 0 }}>{faq.answer}</p>,
-                    }))}
-                    ghost
-                  />
+                      return (
+                        <Col
+                          xs={24}
+                          md={12}
+                          lg={8}
+                          xl={6}
+                          key={stop._id}
+                          style={{ display: "flex" }}
+                        >
+                          <Card
+                            size="small"
+                            className="hike-detail-inner-card"
+                            bordered={false}
+                            style={{
+                              width: "100%",
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                            bodyStyle={{
+                              flex: 1,
+                              display: "flex",
+                              flexDirection: "column",
+                            }}
+                            styles={{
+                              body: {
+                                flex: 1,
+                                display: "flex",
+                                flexDirection: "column",
+                              },
+                            }}
+                          >
+                            <Flex
+                              vertical
+                              gap={12}
+                              style={{ width: "100%", height: "100%" }}
+                            >
+                              <Flex gap={10} align="center">
+                                <div
+                                  style={{
+                                    display: "flex",
+                                    alignItems: "center",
+                                    justifyContent: "center",
+                                    width: 32,
+                                    height: 32,
+                                    borderRadius: "50%",
+                                    backgroundColor: stopConfig.accent,
+                                    color: "#fff",
+                                  }}
+                                >
+                                  <Icon />
+                                </div>
+                                <Title level={5} style={{ margin: 0 }}>
+                                  {stop.title ||
+                                    formatStopTypeLabel(stop.stopType)}
+                                </Title>
+                              </Flex>
+
+                              {stop.htmlDescription ? (
+                                <div className="hike-html-content hike-html-content--compact">
+                                  {parse(stop.htmlDescription)}
+                                </div>
+                              ) : null}
+
+                              <div style={{ marginTop: "auto" }}>
+                                <Flex gap={8} wrap>
+                                  <Tag bordered={false} color="green">
+                                    {formatStopTypeLabel(stop.stopType)}
+                                  </Tag>
+                                  {stop.altitude ? (
+                                    <Tag bordered={false} color="gold">
+                                      {stop.altitude} m
+                                    </Tag>
+                                  ) : null}
+                                </Flex>
+                              </div>
+                            </Flex>
+                          </Card>
+                        </Col>
+                      );
+                    })}
+                  </Row>
+                  <div className="m-2">
+                    <Alert
+                      type={"success"}
+                      message="You can explore the stops more precisely through  Maps."
+                    />
+                  </div>
                 </Card>
               ) : null}
             </Flex>
@@ -655,12 +649,7 @@ const HikeDetail: React.FC = () => {
                           </Paragraph>
                         </div>
 
-                        <Flex
-                          justify="space-between"
-                          align="center"
-                          gap={16}
-                          wrap
-                        >
+                        <Flex justify="center" align="center" gap={16} wrap>
                           <Button
                             type="primary"
                             size="large"
@@ -673,13 +662,6 @@ const HikeDetail: React.FC = () => {
                           >
                             Explore Hike Map
                           </Button>
-
-                          <div className="hike-map-preview-hint">
-                            <span>Open full screen map</span>
-                            <span className="hike-map-preview-arrow">
-                              <ArrowRightOutlined />
-                            </span>
-                          </div>
                         </Flex>
                       </Space>
                     </div>
@@ -687,39 +669,43 @@ const HikeDetail: React.FC = () => {
                 </Card>
               ) : null}
 
-              <Card className="hike-detail-panel" bordered={false}>
-                <Title level={3} className="hike-detail-section-title">
-                  Quick Facts
-                </Title>
-                <Descriptions
-                  column={1}
-                  colon={false}
-                  className="hike-detail-descriptions"
+              {essentialLogistics.length > 0 ? (
+                <Card
+                  className="hike-detail-panel hike-essential-logistics-card"
+                  bordered={false}
                 >
-                  {quickFacts.map((fact) => (
-                    <Descriptions.Item key={fact.key} label={fact.label}>
-                      {fact.value}
-                    </Descriptions.Item>
-                  ))}
-                </Descriptions>
-              </Card>
-
-              {hikeDetail.recommendedSeasons?.length ? (
-                <Card className="hike-detail-panel" bordered={false}>
-                  <Title level={4} className="hike-detail-section-title">
-                    Recommended Seasons
+                  <Title level={3} className="hike-detail-section-title">
+                    Trail Amenities and Accessibility
                   </Title>
-                  <Flex className="hike-detail-tag-group" gap={10} wrap>
-                    {hikeDetail.recommendedSeasons.map((season) => (
-                      <Tag
-                        key={season}
-                        bordered={false}
-                        className="hike-detail-meta-tag"
-                      >
-                        {season}
-                      </Tag>
-                    ))}
-                  </Flex>
+                  <Divider style={{ margin: "14px 0 0" }} />
+                  <List
+                    itemLayout="horizontal"
+                    dataSource={essentialLogistics}
+                    split={false}
+                    renderItem={(item) => (
+                      <List.Item className="hike-essential-logistics-item">
+                        <List.Item.Meta
+                          avatar={
+                            <div className="hike-essential-logistics-icon">
+                              {item.icon}
+                            </div>
+                          }
+                          title={
+                            <span className="hike-essential-logistics-title">
+                              {item.title}
+                            </span>
+                          }
+                          description={
+                            item.description ? (
+                              <span className="hike-essential-logistics-desc">
+                                {item.description}
+                              </span>
+                            ) : null
+                          }
+                        />
+                      </List.Item>
+                    )}
+                  />
                 </Card>
               ) : null}
 
@@ -741,43 +727,24 @@ const HikeDetail: React.FC = () => {
                   </Flex>
                 </Card>
               ) : null}
-
-              {hikeDetail.hikeRegion?.length ? (
-                <Card className="hike-detail-panel" bordered={false}>
-                  <Title level={4} className="hike-detail-section-title">
-                    Regions
-                  </Title>
-                  <List
-                    dataSource={hikeDetail.hikeRegion}
-                    renderItem={(region) => (
-                      <List.Item key={region._id}>
-                        <Space
-                          direction="vertical"
-                          size={4}
-                          style={{ width: "100%" }}
-                        >
-                          <Text strong className="hike-detail-region-title">
-                            {region.name}
-                          </Text>
-                          <Text type="secondary">
-                            {[region.location, region.country]
-                              .filter(Boolean)
-                              .join(", ") || "Nepal"}
-                          </Text>
-                          {region.description ? (
-                            <Paragraph style={{ marginBottom: 0 }}>
-                              {region.description}
-                            </Paragraph>
-                          ) : null}
-                        </Space>
-                      </List.Item>
-                    )}
-                  />
-                </Card>
-              ) : null}
             </Flex>
           </Col>
         </Row>
+        {hikeDetail.faqs?.length ? (
+          <Card className="hike-detail-panel my-4" bordered={false}>
+            <Title level={3} className="hike-detail-section-title">
+              Frequently Asked Questions
+            </Title>
+            <Collapse
+              items={hikeDetail.faqs.map((faq, index) => ({
+                key: `${faq.question}-${index}`,
+                label: faq.question,
+                children: <p style={{ marginBottom: 0 }}>{faq.answer}</p>,
+              }))}
+              ghost
+            />
+          </Card>
+        ) : null}
       </MiddleContentWrapper>
     </div>
   );
