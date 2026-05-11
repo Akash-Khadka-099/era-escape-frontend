@@ -54,6 +54,8 @@ const chunkItems = <T,>(items: T[], size: number) => {
   return chunks;
 };
 
+import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
+
 const TrendingBlogsSection: React.FC = () => {
   const [selectedMonth, setSelectedMonth] = useState<number>(1);
   const carouselRef = useRef<React.ElementRef<typeof Carousel>>(null);
@@ -82,7 +84,7 @@ const TrendingBlogsSection: React.FC = () => {
 
   return (
     <section className="trending-blogs-home-section">
-      <div className="trending-blogs-home-container">
+      <MiddleContentWrapper extraClassNames="trending-blogs-home-container">
         <div className="trending-blogs-home-header">
           <div>
             <span className="trending-blogs-home-kicker">Pulse of the Trail</span>
@@ -169,7 +171,7 @@ const TrendingBlogsSection: React.FC = () => {
             </div>
           )}
         </div>
-      </div>
+      </MiddleContentWrapper>
     </section>
   );
 };
