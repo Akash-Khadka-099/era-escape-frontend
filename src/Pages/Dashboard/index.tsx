@@ -8,6 +8,7 @@ import { useFetchTrendingBlogsCategories } from "@/services/userHomepageServices
 import CategoryCard from "@/Pages/Dashboard/components/CategoryCard";
 import TrendingBlogsSection from "@/Pages/Dashboard/TrendingBlogsSection";
 import ModernHero from "@/Pages/Dashboard/components/ModernHero";
+import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 
 const Dashboard: React.FC = () => {
   const { data } = useFetchTrendingBlogsCategories({});
@@ -19,7 +20,7 @@ const Dashboard: React.FC = () => {
 
       {/* Explore Landscapes Section */}
       <section className="explore-landscapes-section">
-        <div className="explore-container">
+        <MiddleContentWrapper extraClassNames="explore-container">
           <div className="explore-header">
             <h2>Explore Landscapes</h2>
             <p>
@@ -34,11 +35,14 @@ const Dashboard: React.FC = () => {
               <CategoryCard key={category.id} category={category} />
             ))}
           </div>
-        </div>
+        </MiddleContentWrapper>
       </section>
 
       {/* Featured Story Section */}
-      <section className="featured-story">
+      <MiddleContentWrapper
+        extraClassNames="featured-story"
+        extraStyles={{ margin: "80px auto" }}
+      >
         <div className="story-content">
           <span className="story-label">Voices from the Trail</span>
           <h2 className="story-title">The Silence of the High Atlas</h2>
@@ -67,7 +71,7 @@ const Dashboard: React.FC = () => {
         <div className="story-image">
           <img src={StoryImage} alt="High Atlas" />
         </div>
-      </section>
+      </MiddleContentWrapper>
     </div>
   );
 };

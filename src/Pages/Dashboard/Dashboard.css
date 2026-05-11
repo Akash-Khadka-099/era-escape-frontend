@@ -32,8 +32,7 @@ h4,
 }
 
 .explore-container {
-  max-width: 1400px;
-  margin: 0 auto;
+  /* max-width and margin handled by MiddleContentWrapper */
 }
 
 .explore-header {
@@ -72,8 +71,7 @@ h4,
   position: relative;
   overflow: hidden;
   isolation: isolate;
-  max-width: 1400px;
-  margin: 0 auto;
+  /* max-width and margin handled by MiddleContentWrapper */
   border-radius: 32px;
   border: 1px solid #d8e8df;
   background: linear-gradient(180deg, #f4faf7 0%, #ffffff 100%);
@@ -409,8 +407,7 @@ h4,
 
 /* Featured Story Section */
 .featured-story {
-  max-width: 1200px;
-  margin: 80px auto;
+  /* max-width and margin handled by MiddleContentWrapper */
   display: flex;
   background: #fff;
   border-radius: 32px;
