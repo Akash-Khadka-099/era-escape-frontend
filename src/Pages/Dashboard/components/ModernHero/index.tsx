@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { SearchOutlined, ArrowRightOutlined } from "@ant-design/icons";
 import {
@@ -71,22 +71,69 @@ const ModernHero: React.FC = () => {
     useFetchFeaturedHomepageAdventures();
   const adventures = adventuresResponse?.data ?? [];
 
-  // Auto-advance carousel – resets whenever the list length changes
-  useEffect(() => {
-    if (!adventures.length) return;
-    const id = window.setInterval(() => {
-      setActiveIndex((idx) =>
-        idx === adventures.length - 1 ? 0 : idx + 1
-      );
-    }, 8000);
-    return () => window.clearInterval(id);
-  }, [adventures.length]);
-
   // Clamp active index if the API returns fewer items than expected
   const safeIndex = adventures.length
     ? Math.min(activeIndex, adventures.length - 1)
     : 0;
   const active = adventures[safeIndex];
+
+  // ─── Smart carousel timing ──────────────────────────────────────────────
+  // Video slides → advance on "ended" OR 12 s cap (whichever first)
+  // Image slides → advance after 8 s
+  const videoRefs = useRef<Map<string, HTMLVideoElement>>(new Map());
+  const timerRef  = useRef<number | null>(null);
+
+  const clearTimer = useCallback(() => {
+    if (timerRef.current !== null) {
+      window.clearTimeout(timerRef.current);
+      timerRef.current = null;
+    }
+  }, []);
+
+  const advanceSlide = useCallback(() => {
+    setActiveIndex((idx) =>
+      adventures.length === 0 ? 0 : idx === adventures.length - 1 ? 0 : idx + 1
+    );
+  }, [adventures.length]);
+
+  useEffect(() => {
+    if (!adventures.length) return;
+
+    const currentItem = adventures[safeIndex];
+    const videoEl    = currentItem?._id
+      ? videoRefs.current.get(currentItem._id)
+      : undefined;
+
+    clearTimer();
+
+    // Reset every video that is NOT the active slide so it replays from the
+    // beginning next time it becomes active
+    videoRefs.current.forEach((el, id) => {
+      if (id !== currentItem?._id) {
+        el.pause();
+        el.currentTime = 0;
+      }
+    });
+
+    if (currentItem?.featuredVideo?.path && videoEl) {
+      // Restart and play the active video (autoPlay only fires on mount)
+      videoEl.currentTime = 0;
+      videoEl.play().catch(() => { /* browser may block autoplay – silent */ });
+
+      // Video: advance on natural end OR after 12 s max
+      const onEnded = () => { clearTimer(); advanceSlide(); };
+      videoEl.addEventListener("ended", onEnded, { once: true });
+      timerRef.current = window.setTimeout(() => {
+        videoEl.removeEventListener("ended", onEnded);
+        advanceSlide();
+      }, 12_000);
+      return () => { clearTimer(); videoEl.removeEventListener("ended", onEnded); };
+    }
+
+    // Image: advance after 8 s
+    timerRef.current = window.setTimeout(advanceSlide, 8_000);
+    return clearTimer;
+  }, [safeIndex, adventures.length, clearTimer, advanceSlide]);
 
   // ─── Search ──────────────────────────────────────────────────────────────
   const debouncedSearchQuery = useDebounce(searchQuery, 500);
@@ -119,8 +166,11 @@ const ModernHero: React.FC = () => {
       return (
         <video
           key={item._id}
+          ref={(el) => {
+            if (el) videoRefs.current.set(item._id, el);
+            else videoRefs.current.delete(item._id);
+          }}
           autoPlay
-          loop
           muted
           playsInline
           className={cls}
@@ -246,7 +296,10 @@ const ModernHero: React.FC = () => {
 
           {/* ── Right: info card (desktop only) ────────────────────── */}
           {active && (
-            <div className="extremo-hero__info-card-wrapper">
+            <div
+              className="extremo-hero__info-card-wrapper"
+              style={isSearchFocused && searchQuery ? { zIndex: 5 } : undefined}
+            >
               <div className="extremo-hero__info-card">
 
                 {/* Header: thumb + title + difficulty badge + region */}
@@ -342,7 +395,11 @@ const ModernHero: React.FC = () => {
 
           {/* ── Mobile mini-pill card (≤ 900px only) ────────────────── */}
           {active && (
-            <div className="extremo-hero__mobile-pill" onClick={handleExploreCta}>
+            <div
+              className="extremo-hero__mobile-pill"
+              onClick={handleExploreCta}
+              style={isSearchFocused && searchQuery ? { zIndex: 5 } : undefined}
+            >
               <img
                 className="extremo-hero__mobile-pill-img"
                 src={resolveUrl(active.featuredImage?.path)}
