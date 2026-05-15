@@ -53,6 +53,7 @@ import { apiEndpoints } from "@/services/apiEndpoints";
 import { useParams } from "react-router-dom";
 import ItineraryTimeline from "../components/ItineraryTimeline";
 import { useQueryClient } from "@tanstack/react-query";
+import { trekStopTypes } from "@/constant/constant";
 
 type TrekTrail3DMapProps = {
   hideWrapper?: boolean;
@@ -85,6 +86,8 @@ type MarkerData = {
   travelTimeToNext?: string;
   hasMultipleNextDestination?: boolean;
   routeTimes: MarkerRouteTime[];
+  destinationTypes: string[];
+  altitude?: number;
 };
 
 type PathData = {
@@ -107,6 +110,8 @@ type TrekDestination = {
   hasMultipleNextDestination?: boolean;
   multipleDestinationRouteTime?: DestinationRouteTime[];
   routeTimes?: DestinationRouteTime[];
+  destinationTypes?: string[];
+  altitude?: number;
 };
 
 type TrekDetailData = {
@@ -116,8 +121,9 @@ type TrekDetailData = {
   destinations?: TrekDestination[];
 };
 
-type ItineraryDestination =
-  React.ComponentProps<typeof ItineraryTimeline>["destinations"][number];
+type ItineraryDestination = React.ComponentProps<
+  typeof ItineraryTimeline
+>["destinations"][number];
 
 const SATELLITE_STYLE: StyleSpecification = {
   version: 8,
@@ -255,7 +261,177 @@ const hoverRouteLineLayer: LineLayerSpecification = {
 
 const TREK_MARKER_ICON_ID = "trek-marker-pin";
 
-const createTrekMarkerIcon = (): ImageData | null => {
+const PIN_COLOR = "#34d399";
+
+const getPrimaryDestinationType = (types?: string[]) => {
+  if (!types || types.length === 0) return "tea_houses";
+
+  for (const stopType of trekStopTypes) {
+    if (types.includes(stopType.value)) {
+      return stopType.value;
+    }
+  }
+
+  return types[0];
+};
+
+const drawIconSymbol = (ctx: CanvasRenderingContext2D, type: string) => {
+  ctx.save();
+  ctx.fillStyle = "#ffffff";
+  ctx.strokeStyle = "#ffffff";
+  ctx.lineWidth = 2;
+  ctx.lineCap = "round";
+  ctx.lineJoin = "round";
+
+  switch (type) {
+    case "final_destination": {
+      // Flag on a pole
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(30, 33);
+      ctx.lineTo(30, 14);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(30, 14);
+      ctx.lineTo(43, 18);
+      ctx.lineTo(30, 22);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    case "hotel_stays": {
+      // House / building
+      // Roof triangle
+      ctx.beginPath();
+      ctx.moveTo(25, 24);
+      ctx.lineTo(36, 14);
+      ctx.lineTo(47, 24);
+      ctx.closePath();
+      ctx.fill();
+      // Body
+      ctx.fillRect(28, 24, 16, 10);
+      // Door cutout
+      ctx.fillStyle = PIN_COLOR;
+      ctx.fillRect(34, 27, 5, 7);
+      // Window
+      ctx.fillRect(30, 26, 3, 3);
+      break;
+    }
+    case "lake": {
+      // Water waves (3 horizontal wavy lines)
+      ctx.lineWidth = 2.5;
+      for (let i = 0; i < 3; i += 1) {
+        const y = 18 + i * 6;
+        ctx.beginPath();
+        ctx.moveTo(26, y);
+        ctx.quadraticCurveTo(31, y - 4, 36, y);
+        ctx.quadraticCurveTo(41, y + 4, 46, y);
+        ctx.stroke();
+      }
+      break;
+    }
+    case "religious_place": {
+      // Temple / pagoda silhouette
+      // Spire
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.moveTo(36, 12);
+      ctx.lineTo(36, 16);
+      ctx.stroke();
+      // Upper roof
+      ctx.beginPath();
+      ctx.moveTo(29, 21);
+      ctx.lineTo(36, 16);
+      ctx.lineTo(43, 21);
+      ctx.closePath();
+      ctx.fill();
+      // Pillar area
+      ctx.fillRect(32, 21, 8, 4);
+      // Lower roof
+      ctx.beginPath();
+      ctx.moveTo(27, 29);
+      ctx.lineTo(36, 25);
+      ctx.lineTo(45, 29);
+      ctx.closePath();
+      ctx.fill();
+      // Base
+      ctx.fillRect(30, 29, 12, 4);
+      break;
+    }
+    case "tea_houses": {
+      // Tea cup with steam
+      ctx.lineWidth = 2.5;
+      // Cup body
+      ctx.beginPath();
+      ctx.moveTo(27, 21);
+      ctx.lineTo(29, 33);
+      ctx.lineTo(41, 33);
+      ctx.lineTo(43, 21);
+      ctx.stroke();
+      // Handle
+      ctx.beginPath();
+      ctx.arc(44, 27, 4, -Math.PI / 2, Math.PI / 2);
+      ctx.stroke();
+      // Steam wisps
+      ctx.lineWidth = 1.5;
+      ctx.beginPath();
+      ctx.moveTo(32, 19);
+      ctx.quadraticCurveTo(31, 15, 33, 13);
+      ctx.stroke();
+      ctx.beginPath();
+      ctx.moveTo(38, 19);
+      ctx.quadraticCurveTo(37, 15, 39, 13);
+      ctx.stroke();
+      break;
+    }
+    case "waterfalls": {
+      // Falling water streams (vertical wavy lines)
+      ctx.lineWidth = 2.5;
+      for (let i = 0; i < 3; i += 1) {
+        const x = 30 + i * 6;
+        ctx.beginPath();
+        ctx.moveTo(x, 14);
+        ctx.quadraticCurveTo(x - 3, 20, x, 24);
+        ctx.quadraticCurveTo(x + 3, 28, x, 34);
+        ctx.stroke();
+      }
+      break;
+    }
+    case "viewpoint": {
+      // Mountain peaks
+      ctx.lineWidth = 2.5;
+      ctx.beginPath();
+      ctx.moveTo(24, 33);
+      ctx.lineTo(32, 17);
+      ctx.lineTo(37, 25);
+      ctx.lineTo(43, 15);
+      ctx.lineTo(48, 33);
+      ctx.stroke();
+      // Snow cap on taller peak
+      ctx.fillStyle = "#ffffff";
+      ctx.beginPath();
+      ctx.moveTo(43, 15);
+      ctx.lineTo(40, 21);
+      ctx.lineTo(46, 21);
+      ctx.closePath();
+      ctx.fill();
+      break;
+    }
+    default: {
+      // Fallback: simple dot
+      ctx.beginPath();
+      ctx.arc(36, 24, 6, 0, Math.PI * 2);
+      ctx.fill();
+      break;
+    }
+  }
+
+  ctx.restore();
+};
+
+const createTrekMarkerIcon = (
+  destinationType: string = "tea_houses",
+): ImageData | null => {
   if (typeof document === "undefined") {
     return null;
   }
@@ -271,28 +447,36 @@ const createTrekMarkerIcon = (): ImageData | null => {
 
   context.clearRect(0, 0, canvas.width, canvas.height);
 
+  // Drop shadow
   context.shadowColor = "rgba(15, 23, 42, 0.28)";
   context.shadowBlur = 10;
   context.shadowOffsetX = 0;
   context.shadowOffsetY = 8;
 
-  context.fillStyle = "#ef4444";
+  // Pin circle
+  context.fillStyle = PIN_COLOR;
   context.beginPath();
   context.arc(36, 24, 18, 0, Math.PI * 2);
   context.fill();
 
-  context.lineWidth = 6;
+  // White border
+  context.lineWidth = 4;
   context.strokeStyle = "#ffffff";
   context.stroke();
 
+  // Pin pointer triangle
   context.beginPath();
   context.moveTo(36, 62);
-  context.lineTo(21, 36);
-  context.lineTo(51, 36);
+  context.lineTo(23, 36);
+  context.lineTo(49, 36);
   context.closePath();
   context.fill();
 
+  // Turn off shadow before drawing the icon symbol
   context.shadowColor = "transparent";
+
+  // Draw the type-specific symbol inside the circle
+  drawIconSymbol(context, destinationType);
 
   return context.getImageData(0, 0, canvas.width, canvas.height);
 };
@@ -302,16 +486,11 @@ const trekMarkerIconLayer: SymbolLayerSpecification = {
   type: "symbol",
   source: "trek-markers-source",
   layout: {
-    "icon-image": TREK_MARKER_ICON_ID,
+    "icon-image": ["get", "iconId"],
     "icon-anchor": "bottom",
     "icon-allow-overlap": true,
     "icon-ignore-placement": true,
-    "icon-size": [
-      "case",
-      ["boolean", ["get", "isHovered"], false],
-      1.08,
-      1,
-    ],
+    "icon-size": ["case", ["boolean", ["get", "isHovered"], false], 1.08, 1],
   },
 };
 
@@ -635,7 +814,9 @@ const createBounds = (
   paths: PathData[],
 ): LngLatBounds | null => {
   const points = [
-    ...markers.map((marker) => [marker.position[1], marker.position[0]] as LngLat),
+    ...markers.map(
+      (marker) => [marker.position[1], marker.position[0]] as LngLat,
+    ),
     ...paths.flatMap((path) => path.coordinates),
   ];
 
@@ -693,9 +874,14 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
         hasMultipleNextDestination: destination.hasMultipleNextDestination,
         multipleDestinationRouteTime:
           destination.multipleDestinationRouteTime as ItineraryDestination["multipleDestinationRouteTime"],
-        routeTimes: destination.routeTimes as ItineraryDestination["routeTimes"],
+        routeTimes:
+          destination.routeTimes as ItineraryDestination["routeTimes"],
         latLong:
-          typeof destination.latLong === "string" ? destination.latLong : undefined,
+          typeof destination.latLong === "string"
+            ? destination.latLong
+            : undefined,
+        destinationTypes: destination.destinationTypes ?? [],
+        altitude: destination.altitude,
       })),
     [trekData?.destinations],
   );
@@ -767,35 +953,37 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
   const skyConfig: MapProps["sky"] =
     viewMode === "3d" && isTerrainSourceReady ? THREE_D_SKY : undefined;
 
-  const ensureTrekMarkerIcon = useCallback(async () => {
+  const ensureTrekMarkerIcons = useCallback(async () => {
     const map = mapRef.current?.getMap();
     if (!map) {
       return;
     }
 
-    if (map.hasImage(TREK_MARKER_ICON_ID)) {
-      setIsMarkerIconReady(true);
-      return;
-    }
+    for (const stopType of trekStopTypes) {
+      const iconId = `${TREK_MARKER_ICON_ID}-${stopType.value}`;
 
-    const imageData = createTrekMarkerIcon();
-    if (!imageData) {
-      setIsMarkerIconReady(false);
-      return;
-    }
-
-    try {
-      if (!map.hasImage(TREK_MARKER_ICON_ID)) {
-        map.addImage(TREK_MARKER_ICON_ID, imageData, {
-          pixelRatio: 2,
-        });
+      if (map.hasImage(iconId)) {
+        continue;
       }
 
-      setIsMarkerIconReady(true);
-    } catch (error) {
-      console.error("Unable to register trek marker icon", error);
-      setIsMarkerIconReady(false);
+      const imageData = createTrekMarkerIcon(stopType.value);
+      if (imageData) {
+        try {
+          if (!map.hasImage(iconId)) {
+            map.addImage(iconId, imageData, {
+              pixelRatio: 2,
+            });
+          }
+        } catch (error) {
+          console.error(
+            `Unable to register trek marker icon for ${stopType.value}`,
+            error,
+          );
+        }
+      }
     }
+
+    setIsMarkerIconReady(true);
   }, []);
 
   const handleOpenHotelsDrawer = useCallback(
@@ -828,8 +1016,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           typeof error === "object" &&
           error !== null &&
           "response" in error &&
-          typeof (error as { response?: { status?: number } }).response?.status ===
-            "number"
+          typeof (error as { response?: { status?: number } }).response
+            ?.status === "number"
             ? (error as { response?: { status?: number } }).response?.status
             : undefined;
 
@@ -884,16 +1072,19 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
       });
     }
 
-    window.setTimeout(() => {
-      map.fitBounds(bounds, {
-        padding: 80,
-        duration: viewMode === "3d" ? 4200 : 2600,
-        maxZoom: 13,
-        pitch: viewMode === "3d" ? THREE_D_DEFAULT_PITCH : 0,
-        bearing: viewMode === "3d" ? THREE_D_DEFAULT_BEARING : 0,
-        essential: true,
-      });
-    }, viewMode === "3d" ? 260 : 0);
+    window.setTimeout(
+      () => {
+        map.fitBounds(bounds, {
+          padding: 80,
+          duration: viewMode === "3d" ? 4200 : 2600,
+          maxZoom: 13,
+          pitch: viewMode === "3d" ? THREE_D_DEFAULT_PITCH : 0,
+          bearing: viewMode === "3d" ? THREE_D_DEFAULT_BEARING : 0,
+          essential: true,
+        });
+      },
+      viewMode === "3d" ? 260 : 0,
+    );
   }, [displayPaths, markers, viewMode]);
 
   const handleFocusToStart = useCallback(() => {
@@ -959,6 +1150,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           : undefined,
         hasMultipleNextDestination: destination.hasMultipleNextDestination,
         routeTimes: processedRouteTimes,
+        destinationTypes: destination.destinationTypes ?? [],
+        altitude: destination.altitude,
       };
     });
 
@@ -1029,8 +1222,8 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
       return;
     }
 
-    void ensureTrekMarkerIcon();
-  }, [ensureTrekMarkerIcon, isMapLoaded]);
+    void ensureTrekMarkerIcons();
+  }, [ensureTrekMarkerIcons, isMapLoaded]);
 
   useEffect(() => {
     const map = mapRef.current?.getMap();
@@ -1082,7 +1275,13 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
     }, 800);
 
     return () => window.clearTimeout(timeout);
-  }, [displayPaths.length, handleInitialFlyToTrail, isMapLoaded, kmlUrl, markers]);
+  }, [
+    displayPaths.length,
+    handleInitialFlyToTrail,
+    isMapLoaded,
+    kmlUrl,
+    markers,
+  ]);
 
   useEffect(() => {
     const map = mapRef.current?.getMap();
@@ -1150,83 +1349,80 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
     [displayPaths],
   );
 
-  const hoveredRouteLineGeoJson = useMemo(
-    (): FeatureCollection<LineString> => {
-      if (hoveredMarkerIndex === null || !markers[hoveredMarkerIndex]) {
-        return {
-          type: "FeatureCollection",
-          features: [],
-        };
-      }
+  const hoveredRouteLineGeoJson = useMemo((): FeatureCollection<LineString> => {
+    if (hoveredMarkerIndex === null || !markers[hoveredMarkerIndex]) {
+      return {
+        type: "FeatureCollection",
+        features: [],
+      };
+    }
 
-      const marker = markers[hoveredMarkerIndex];
-      const markerLngLat: LngLat = [marker.position[1], marker.position[0]];
-      const features: Array<Feature<LineString>> = [];
+    const marker = markers[hoveredMarkerIndex];
+    const markerLngLat: LngLat = [marker.position[1], marker.position[0]];
+    const features: Array<Feature<LineString>> = [];
 
-      if (marker.hasMultipleNextDestination && marker.routeTimes.length > 0) {
-        marker.routeTimes.forEach((route, routeIndex) => {
-          if (
-            route.timeToTravel === null ||
-            route.timeToTravel === undefined ||
-            route.timeToTravel === ""
-          ) {
-            return;
-          }
+    if (marker.hasMultipleNextDestination && marker.routeTimes.length > 0) {
+      marker.routeTimes.forEach((route, routeIndex) => {
+        if (
+          route.timeToTravel === null ||
+          route.timeToTravel === undefined ||
+          route.timeToTravel === ""
+        ) {
+          return;
+        }
 
-          const destinationLngLat: LngLat = [
-            route.toPosition[1],
-            route.toPosition[0],
-          ];
+        const destinationLngLat: LngLat = [
+          route.toPosition[1],
+          route.toPosition[0],
+        ];
 
-          features.push({
-            type: "Feature",
-            id: `route-line-${hoveredMarkerIndex}-${routeIndex}`,
-            properties: {},
-            geometry: {
-              type: "LineString",
-              coordinates: [markerLngLat, destinationLngLat],
-            },
-          });
+        features.push({
+          type: "Feature",
+          id: `route-line-${hoveredMarkerIndex}-${routeIndex}`,
+          properties: {},
+          geometry: {
+            type: "LineString",
+            coordinates: [markerLngLat, destinationLngLat],
+          },
         });
-
-        return {
-          type: "FeatureCollection",
-          features,
-        };
-      }
-
-      const nextMarker = markers[hoveredMarkerIndex + 1];
-      if (
-        !nextMarker ||
-        !marker.travelTimeToNext ||
-        marker.travelTimeToNext === ""
-      ) {
-        return {
-          type: "FeatureCollection",
-          features: [],
-        };
-      }
-
-      features.push({
-        type: "Feature",
-        id: `route-line-${hoveredMarkerIndex}`,
-        properties: {},
-        geometry: {
-          type: "LineString",
-          coordinates: [
-            markerLngLat,
-            [nextMarker.position[1], nextMarker.position[0]],
-          ],
-        },
       });
 
       return {
         type: "FeatureCollection",
         features,
       };
-    },
-    [hoveredMarkerIndex, markers],
-  );
+    }
+
+    const nextMarker = markers[hoveredMarkerIndex + 1];
+    if (
+      !nextMarker ||
+      !marker.travelTimeToNext ||
+      marker.travelTimeToNext === ""
+    ) {
+      return {
+        type: "FeatureCollection",
+        features: [],
+      };
+    }
+
+    features.push({
+      type: "Feature",
+      id: `route-line-${hoveredMarkerIndex}`,
+      properties: {},
+      geometry: {
+        type: "LineString",
+        coordinates: [
+          markerLngLat,
+          [nextMarker.position[1], nextMarker.position[0]],
+        ],
+      },
+    });
+
+    return {
+      type: "FeatureCollection",
+      features,
+    };
+  }, [hoveredMarkerIndex, markers]);
 
   const hoveredRouteLabelGeoJson = useMemo((): FeatureCollection<Point> => {
     if (hoveredMarkerIndex === null || !markers[hoveredMarkerIndex]) {
@@ -1330,6 +1526,7 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           name: marker.name,
           destinationSlug: marker.destinationSlug,
           isHovered: hoveredMarkerIndex === index,
+          iconId: `${TREK_MARKER_ICON_ID}-${getPrimaryDestinationType(marker.destinationTypes)}`,
         },
         geometry: {
           type: "Point",
@@ -1422,15 +1619,11 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           mapLib={maplibregl}
           mapStyle={SATELLITE_STYLE}
           initialViewState={initialViewState}
-          interactiveLayerIds={
-            viewMode === "3d"
-              ? [
-                  trekMarkerHitAreaLayer.id,
-                  trekMarkerIconLayer.id,
-                  trekMarkerLabelLayer.id,
-                ]
-              : undefined
-          }
+          interactiveLayerIds={[
+            trekMarkerHitAreaLayer.id,
+            trekMarkerIconLayer.id,
+            trekMarkerLabelLayer.id,
+          ]}
           terrain={terrainConfig}
           projection={projectionConfig}
           sky={skyConfig}
@@ -1439,10 +1632,6 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
           maxZoom={maxMapZoom}
           style={{ width: "100%", height: "100%" }}
           onMouseMove={(event) => {
-            if (viewMode !== "3d") {
-              return;
-            }
-
             const markerIndex = getMarkerIndexFromFeatures(event.features);
             setHoveredMarkerIndex(markerIndex);
 
@@ -1452,10 +1641,6 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
             }
           }}
           onMouseLeave={() => {
-            if (viewMode !== "3d") {
-              return;
-            }
-
             setHoveredMarkerIndex(null);
 
             const canvas = mapRef.current?.getMap().getCanvas();
@@ -1464,10 +1649,6 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
             }
           }}
           onClick={(event) => {
-            if (viewMode !== "3d") {
-              return;
-            }
-
             const markerIndex = getMarkerIndexFromFeatures(event.features);
             if (markerIndex === null) {
               return;
@@ -1485,7 +1666,7 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
             setIsTerrainSourceReady(
               Boolean(mapRef.current?.getMap().getSource("terrain-dem")),
             );
-            void ensureTrekMarkerIcon();
+            void ensureTrekMarkerIcons();
           }}
           onSourceData={(event) => {
             if (
@@ -1538,133 +1719,16 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
             </Source>
           )}
 
-          {viewMode === "3d" ? (
-            markerGeoJson.features.length > 0 && isMarkerIconReady && (
-              <Source id="trek-markers-source" type="geojson" data={markerGeoJson}>
-                <Layer {...trekMarkerIconLayer} />
-                <Layer {...trekMarkerLabelLayer} />
-                <Layer {...trekMarkerHitAreaLayer} />
-              </Source>
-            )
-          ) : (
-            markers.map((marker, index) => (
-              <React.Fragment key={`marker-${index}`}>
-                <Marker
-                  longitude={marker.position[1]}
-                  latitude={marker.position[0]}
-                  anchor="bottom"
-                  offset={[0, -28]}
-                  rotationAlignment="viewport"
-                  pitchAlignment="viewport"
-                  subpixelPositioning
-                  style={{ willChange: "transform" }}
-                >
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => {
-                      void handleOpenHotelsDrawer(marker.destinationSlug);
-                    }}
-                    onMouseEnter={() => setHoveredMarkerIndex(index)}
-                    onMouseLeave={() =>
-                      setHoveredMarkerIndex((current) => {
-                        if (current !== index) {
-                          return current;
-                        }
-                        return null;
-                      })
-                    }
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        void handleOpenHotelsDrawer(marker.destinationSlug);
-                      }
-                    }}
-                    style={{
-                      padding: "4px 8px",
-                      borderRadius: "999px",
-                      background: "rgba(15, 23, 42, 0.78)",
-                      color: "#ffffff",
-                      fontSize: "12px",
-                      fontWeight: 600,
-                      whiteSpace: "nowrap",
-                      boxShadow: "0 10px 24px rgba(15, 23, 42, 0.28)",
-                      border: "1px solid rgba(255,255,255,0.12)",
-                      cursor: "pointer",
-                      outline: "none",
-                      transform: hoveredMarkerIndex === index ? "scale(1.04)" : "",
-                      transition: "transform 0.18s ease",
-                    }}
-                  >
-                    {marker.name}
-                  </div>
-                </Marker>
-
-                <Marker
-                  longitude={marker.position[1]}
-                  latitude={marker.position[0]}
-                  anchor="bottom"
-                  rotationAlignment="viewport"
-                  pitchAlignment="viewport"
-                  subpixelPositioning
-                  style={{ willChange: "transform" }}
-                >
-                  <div
-                    role="button"
-                    tabIndex={0}
-                    onClick={() => {
-                      void handleOpenHotelsDrawer(marker.destinationSlug);
-                    }}
-                    onMouseEnter={() => setHoveredMarkerIndex(index)}
-                    onMouseLeave={() =>
-                      setHoveredMarkerIndex((current) => {
-                        if (current !== index) {
-                          return current;
-                        }
-                        return null;
-                      })
-                    }
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" || event.key === " ") {
-                        event.preventDefault();
-                        void handleOpenHotelsDrawer(marker.destinationSlug);
-                      }
-                    }}
-                    style={{
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      cursor: "pointer",
-                      outline: "none",
-                      transform: hoveredMarkerIndex === index ? "scale(1.04)" : "",
-                      transition: "transform 0.18s ease",
-                    }}
-                  >
-                    <div
-                      style={{
-                        width: "18px",
-                        height: "18px",
-                        borderRadius: "50%",
-                        background: "#ef4444",
-                        border: "3px solid #fff",
-                        boxShadow: "0 10px 20px rgba(239, 68, 68, 0.35)",
-                      }}
-                    />
-                    <div
-                      style={{
-                        width: 0,
-                        height: 0,
-                        marginTop: "-2px",
-                        borderLeft: "7px solid transparent",
-                        borderRight: "7px solid transparent",
-                        borderTop: "14px solid #ef4444",
-                        filter: "drop-shadow(0 8px 12px rgba(15,23,42,0.28))",
-                      }}
-                    />
-                  </div>
-                </Marker>
-              </React.Fragment>
-            ))
+          {markerGeoJson.features.length > 0 && isMarkerIconReady && (
+            <Source
+              id="trek-markers-source"
+              type="geojson"
+              data={markerGeoJson}
+            >
+              <Layer {...trekMarkerIconLayer} />
+              <Layer {...trekMarkerLabelLayer} />
+              <Layer {...trekMarkerHitAreaLayer} />
+            </Source>
           )}
 
           {hoveredMarker && (
@@ -1680,14 +1744,54 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
             >
               <div
                 style={{
-                  minWidth: "170px",
-                  color: "#0f172a",
+                  minWidth: "160px",
+                  color: "#ffffff",
+                  padding: "2px 0",
                 }}
               >
-                <div style={{ fontWeight: 700 }}>{hoveredMarker.name}</div>
-                <div style={{ fontSize: "11px", opacity: 0.8 }}>
-                  {hoveredMarker.position[0].toFixed(4)}°N,{" "}
-                  {hoveredMarker.position[1].toFixed(4)}°E
+                <div
+                  style={{
+                    fontWeight: 600,
+                    fontSize: "14px",
+                    marginBottom: "4px",
+                    letterSpacing: "0.01em",
+                  }}
+                >
+                  {hoveredMarker.name}
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    opacity: 0.6,
+                    fontFamily: "monospace",
+                    display: "flex",
+                    flexDirection: "column",
+                    gap: "2px",
+                  }}
+                >
+                  <div>
+                    {hoveredMarker.position[0].toFixed(5)}°,{" "}
+                    {hoveredMarker.position[1].toFixed(5)}°
+                  </div>
+                  {hoveredMarker.altitude && hoveredMarker.altitude !== 0 ? (
+                    <div style={{ color: "rgba(255, 255, 255, 0.8)" }}>
+                      Altitude: {hoveredMarker.altitude}m
+                    </div>
+                  ) : (
+                    ""
+                  )}
+                </div>
+                <div
+                  style={{
+                    fontSize: "10.5px",
+                    marginTop: "10px",
+                    color: "rgba(255, 255, 255, 0.5)",
+                    borderTop: "1px solid rgba(255, 255, 255, 0.1)",
+                    paddingTop: "8px",
+                    fontWeight: 400,
+                  }}
+                >
+                  Click to view hotels &amp; stays
                 </div>
               </div>
             </Popup>

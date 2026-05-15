@@ -36,3 +36,38 @@ export const hotelTypeOptions: OptionType[] = [
   { label: "Guest House / Home Stay", value: "GUEST_HOUSE_HOME_STAY" },
 ];
 
+
+
+
+export const trekStopTypes = [
+  {
+    value: "final_destination",
+    label: "Final Destination",
+  },
+  {
+    value: "hotel_stays",
+    label: "Hotel Stays",
+  },
+  {
+    value: "lake",
+    label: "Lake",
+  },
+  {
+    value: "religious_place",
+    label: "Religious Place",
+  },
+  {
+    value: "tea_houses",
+    label: "Tea Houses",
+  },
+
+  {
+    value: "waterfalls",
+    label: "Waterfalls",
+  },
+
+  {
+    value: "viewpoint",
+    label: "Viewpoint",
+  },
+];
