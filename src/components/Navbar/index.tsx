@@ -41,7 +41,9 @@ const resolveImageUrl = (imagePath?: string) => {
     return imagePath;
   }
 
-  const normalizedPath = imagePath.startsWith("/") ? imagePath : `/${imagePath}`;
+  const normalizedPath = imagePath.startsWith("/")
+    ? imagePath
+    : `/${imagePath}`;
   return `${BASE_API_URL}${normalizedPath}`;
 };
 
@@ -153,7 +155,9 @@ const TrendingBlogsMegaMenu: React.FC<{
 
         <div className="trending-blogs-mega-grid">
           {isLoading ? (
-            <div className="trending-blogs-loading">Loading trending blogs...</div>
+            <div className="trending-blogs-loading">
+              Loading trending blogs...
+            </div>
           ) : topBlogs.length ? (
             topBlogs.map((item) => (
               <button
@@ -187,7 +191,9 @@ const TrendingBlogsMegaMenu: React.FC<{
               </button>
             ))
           ) : (
-            <div className="trending-blogs-empty">No trending blogs available.</div>
+            <div className="trending-blogs-empty">
+              No trending blogs available.
+            </div>
           )}
         </div>
 
@@ -221,7 +227,7 @@ const Navbar: React.FC = () => {
     const handleScroll = () => {
       setIsScrolled(window.scrollY > 50);
     };
-    
+
     // Check initial scroll
     handleScroll();
 
@@ -353,7 +359,9 @@ const Navbar: React.FC = () => {
 
   return (
     <>
-      <Header className={`navbar-header ${isHomePage ? "navbar-header--home" : ""} ${isTransparentHero ? "navbar-header--transparent" : ""}`}>
+      <Header
+        className={`navbar-header ${isHomePage ? "navbar-header--home" : ""} ${isTransparentHero ? "navbar-header--transparent" : ""}`}
+      >
         <div className="navbar-container margin-container">
           {/* Mobile Hamburger - Left */}
           <div className="hamburger-icon" onClick={showDrawer}>
@@ -398,7 +406,7 @@ const Navbar: React.FC = () => {
               >
                 <div className="user-profile-trigger">
                   <div className="user-info">
-                    <span className="user-name">{user?.name} </span>
+                    <span className="user-name">{`${user?.firstName} ${user?.lastName}`} </span>
                   </div>
                   <Avatar
                     size="large"

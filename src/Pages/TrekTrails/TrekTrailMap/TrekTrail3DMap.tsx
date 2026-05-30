@@ -7,7 +7,6 @@ import React, {
 } from "react";
 import Map, {
   Layer,
-  Marker,
   Popup,
   Source,
   type MapProps,
@@ -1328,26 +1327,28 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
     }),
     [displayPaths],
   );
+// below function displays the trail labels on the map,
+//  it is commented for now in the implementation part in map jsx as well
 
-  const trailLabelGeoJson = useMemo(
-    (): FeatureCollection<Point> => ({
-      type: "FeatureCollection",
-      features: displayPaths
-        .filter((path) => path.midpoint !== null && path.name)
-        .map((path, index) => ({
-          type: "Feature",
-          id: `trail-label-${index}`,
-          properties: {
-            label: [path.name, path.distance].filter(Boolean).join(" • "),
-          },
-          geometry: {
-            type: "Point",
-            coordinates: path.midpoint as LngLat,
-          },
-        })),
-    }),
-    [displayPaths],
-  );
+  // const trailLabelGeoJson = useMemo(
+  //   (): FeatureCollection<Point> => ({
+  //     type: "FeatureCollection",
+  //     features: displayPaths
+  //       .filter((path) => path.midpoint !== null && path.name)
+  //       .map((path, index) => ({
+  //         type: "Feature",
+  //         id: `trail-label-${index}`,
+  //         properties: {
+  //           label: [path.name, path.distance].filter(Boolean).join(" • "),
+  //         },
+  //         geometry: {
+  //           type: "Point",
+  //           coordinates: path.midpoint as LngLat,
+  //         },
+  //       })),
+  //   }),
+  //   [displayPaths],
+  // );
 
   const hoveredRouteLineGeoJson = useMemo((): FeatureCollection<LineString> => {
     if (hoveredMarkerIndex === null || !markers[hoveredMarkerIndex]) {
@@ -1551,6 +1552,7 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
     return Number.isInteger(markerIndex) ? markerIndex : null;
   }, []);
 
+
   const mapContent = (
     <>
       <div
@@ -1689,7 +1691,7 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
             </Source>
           )}
 
-          {trailLabelGeoJson.features.length > 0 && (
+          {/* {trailLabelGeoJson.features.length > 0 && (
             <Source
               id="trail-label-source"
               type="geojson"
@@ -1697,7 +1699,7 @@ const TrekTrail3DMap: React.FC<TrekTrail3DMapProps> = ({
             >
               <Layer {...trailLabelLayer} />
             </Source>
-          )}
+          )} */}
 
           {hoveredRouteLineGeoJson.features.length > 0 && (
             <Source
