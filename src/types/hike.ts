@@ -14,8 +14,8 @@ export interface HikeCategory {
 
 export interface HikeRegion {
   _id: string;
-  name: string;
-  slug: string;
+  name?: string;
+  slug?: string;
   tags?: string[];
   country?: string;
   location?: string;
@@ -103,6 +103,27 @@ export interface HikeBlogDetail extends HikeBlogListItem {
   picnicDescription?: string;
   isSwimmingAvailable?: boolean;
   swimmingDescription?: string;
+  waterSourceDescription?: string;
+  weatherConditions?: {
+    _id: string;
+    hikeBlogId: string;
+    latitude: number;
+    longitude: number;
+    weatherData: {
+      timezone: string;
+      hourly: {
+        time: string;
+        temperature: number;
+        humidity: number;
+        precipitation: number;
+        windSpeed: number;
+        _id: string;
+      }[];
+    };
+    source: string;
+    createdAt: string;
+    updatedAt: string;
+  };
 }
 
 export interface HikeBlogDetailResponse {

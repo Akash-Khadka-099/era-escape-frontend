@@ -6,7 +6,9 @@ interface RegisterFormProps {
   handleCloseLoginModal: () => void;
 }
 
-const RegisterForm: React.FC<RegisterFormProps> = ({ handleCloseLoginModal }) => {
+const RegisterForm: React.FC<RegisterFormProps> = ({
+  handleCloseLoginModal,
+}) => {
   const [passwordVisible, setPasswordVisible] = useState(false);
   const [confirmPasswordVisible, setConfirmPasswordVisible] = useState(false);
   const [form] = Form.useForm();
@@ -25,7 +27,11 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ handleCloseLoginModal }) =>
 
   const onSubmitHandler = async (values: any) => {
     try {
-      const userResponse = await mutateAsync({ ...values, role: "user" });
+      const userResponse = await mutateAsync({
+        ...values,
+        phone: values?.phone || null,
+        role: "user",
+      });
       if (userResponse.status == 201) {
         message.success("users created successfully");
         form.resetFields();
@@ -53,13 +59,22 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ handleCloseLoginModal }) =>
         <Row gutter={16}>
           <Col span={12}>
             <Form.Item
-              label="Full Name"
-              name="name"
-              rules={[{ required: true, message: "Full name  is required" }]}
+              label="First Name"
+              name="firstName"
+              rules={[{ required: true, message: "First name is required" }]}
             >
-              <Input placeholder="Enter your full name" />
+              <Input placeholder="Enter your first name" />
             </Form.Item>
-          </Col>{" "}
+          </Col>
+          <Col span={12}>
+            <Form.Item
+              label="Last Name"
+              name="lastName"
+              rules={[{ required: true, message: "Last name is required" }]}
+            >
+              <Input placeholder="Enter your last name" />
+            </Form.Item>
+          </Col>
           <Col span={12}>
             <Form.Item
               label="Username"
@@ -79,11 +94,7 @@ const RegisterForm: React.FC<RegisterFormProps> = ({ handleCloseLoginModal }) =>
             </Form.Item>
           </Col>
           <Col span={12}>
-            <Form.Item
-              label="Phone number"
-              name="phone"
-              rules={[{ required: true, message: "Phone number is required" }]}
-            >
+            <Form.Item label="Phone number" name="phone">
               <Input placeholder="Enter your phone number" />
             </Form.Item>
           </Col>

@@ -7,6 +7,8 @@ import useAuthStore from "@/store/authStore";
 interface GoogleTokenPayload {
     email: string;
     name: string;
+    given_name?: string;
+    family_name?: string;
     sub: string;
     picture: string;
     email_verified: boolean;
@@ -26,7 +28,8 @@ export const useGoogleAuth = (handleCloseLoginModal?: () => void) => {
 
             const payload = {
                 email: decoded.email,
-                name: decoded.name,
+                firstName: decoded.given_name || decoded.name?.split(" ")[0] || "",
+                lastName: decoded.family_name || decoded.name?.split(" ").slice(1).join(" ") || "",
                 username: decoded.email.split("@")[0],
                 role: "user",
                 google: {

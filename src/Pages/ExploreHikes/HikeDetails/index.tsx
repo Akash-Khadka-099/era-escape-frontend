@@ -12,16 +12,11 @@ import {
   List,
   Row,
   Space,
-  Statistic,
   Tag,
   Typography,
   message,
 } from "antd";
-import {
-  ArrowRightOutlined,
-  EnvironmentOutlined,
-  ShareAltOutlined,
-} from "@ant-design/icons";
+import { ShareAltOutlined } from "@ant-design/icons";
 import {
   FaMountain,
   FaRoute,
@@ -46,6 +41,7 @@ import {
   DEFAULT_STOP_MARKER_CONFIG,
   formatStopTypeLabel,
 } from "@/Pages/ExploreHikes/HikeTrailMap";
+import HikeWeather from "./HikeWeather";
 import "./HikeDetails.css";
 
 const { Title, Text, Paragraph } = Typography;
@@ -78,14 +74,6 @@ const formatTrailType = (value?: string) => {
     .split("_")
     .map((chunk) => chunk.charAt(0).toUpperCase() + chunk.slice(1))
     .join(" ");
-};
-
-const formatLatLong = (latLong?: number[]) => {
-  if (!latLong || latLong.length < 2) {
-    return "Not available";
-  }
-
-  return `${latLong[0].toFixed(3)}, ${latLong[1].toFixed(3)}`;
 };
 
 const copyTextToClipboard = async (value: string) => {
@@ -148,10 +136,13 @@ const HikeDetail: React.FC = () => {
   }
 
   const regionNames =
-    hikeDetail.hikeRegion?.map((region) => region.name).filter(Boolean) || [];
+    (hikeDetail.hikeRegion
+      ?.map((region) => region.name)
+      .filter(Boolean) as string[]) || [];
   const categoryTitles =
-    hikeDetail.categories?.map((category) => category.title).filter(Boolean) ||
-    [];
+    (hikeDetail.categories
+      ?.map((category) => category.title)
+      .filter(Boolean) as string[]) || [];
   const seoTitle =
     hikeDetail.metaTitle ||
     `${hikeDetail.title} Hike | ${hikeDetail.difficulty || "Scenic"} route in ${regionNames[0] || "Nepal"}`;
@@ -176,7 +167,7 @@ const HikeDetail: React.FC = () => {
           {
             key: "water-source",
             title: "Water Source",
-            description: "Abundant water sources along the route.",
+            description: hikeDetail?.waterSourceDescription,
             icon: <FaTint />,
           },
         ]
@@ -226,34 +217,8 @@ const HikeDetail: React.FC = () => {
   const heroBadges = [
     ...(hikeDetail.difficulty ? [hikeDetail.difficulty] : []),
     ...categoryTitles,
-    ...regionNames,
   ];
-  const summaryItems = [
-    {
-      key: "altitude",
-      icon: <FaMountain />,
-      label: hikeDetail.maxAltitudeMeter
-        ? `${hikeDetail.maxAltitudeMeter} m max altitude`
-        : "Altitude not specified",
-    },
-    {
-      key: "distance",
-      icon: <FaRoute />,
-      label: hikeDetail.trailDistanceKm
-        ? `${hikeDetail.trailDistanceKm} km trail`
-        : "Distance not specified",
-    },
-    {
-      key: "trail-type",
-      icon: <FaMapMarkedAlt />,
-      label: formatTrailType(hikeDetail.trailType),
-    },
-    {
-      key: "region",
-      icon: <EnvironmentOutlined />,
-      label: regionNames.join(" • ") || "Nepal",
-    },
-  ];
+
   const statCards = [
     {
       key: "trail-distance",
@@ -390,19 +355,33 @@ const HikeDetail: React.FC = () => {
                 "A practical overview of the route, trail character, and essential planning details."}
             </Paragraph>
 
-            <Flex className="hike-detail-summary" gap={12} wrap>
-              {summaryItems?.map((item) => (
-                <Tag
-                  key={item.key}
-                  bordered={false}
-                  className="hike-detail-summary__item"
-                >
-                  {item.icon}
-                  {item.label}
-                </Tag>
-              ))}
-            </Flex>
-
+            <div
+              style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: "12px",
+                alignItems: "center",
+              }}
+            >
+              <FaMapMarkedAlt style={{ color: "#2ecc71", fontSize: "20px" }} />
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+                {hikeDetail?.hikeRegion?.map((region: any, idx: number) => (
+                  <Text
+                    key={region?._id}
+                    style={{
+                      color: "#eee",
+                      fontSize: "18px",
+                      fontWeight: 500,
+                    }}
+                  >
+                    {region?.name}
+                    {idx < (hikeDetail?.hikeRegion?.length || 0) - 1
+                      ? " • "
+                      : ""}
+                  </Text>
+                ))}
+              </div>
+            </div>
             <Flex className="hike-detail-actions" gap={12} wrap>
               <Button icon={<ShareAltOutlined />} onClick={handleShare}>
                 Share Hike
@@ -413,22 +392,53 @@ const HikeDetail: React.FC = () => {
       </section>
 
       <MiddleContentWrapper>
-        <Row gutter={[18, 18]} className="hike-detail-stats">
-          {statCards.map((stat) => (
-            <Col xs={24} sm={12} xl={6} key={stat.key}>
+        <div className="stats-grid" style={{ margin: "20px 0px 40px 0px" }}>
+          {statCards.map((stat, i) => (
+            <div key={i}>
               <Card
-                className="hike-detail-panel hike-detail-stat-card"
                 bordered={false}
+                className="stat-card"
+                style={{
+                  borderRadius: "16px",
+                  boxShadow: "0 4px 20px rgba(0,0,0,0.04)",
+                  height: "100%",
+                  transition: "all 0.3s ease",
+                }}
               >
-                <Statistic
-                  title={stat.title}
-                  value={stat.value}
-                  prefix={stat.prefix}
-                />
+                <div
+                  style={{
+                    color: "#2ecc71",
+                    fontSize: "24px",
+                    marginBottom: "12px",
+                  }}
+                >
+                  {stat.prefix}
+                </div>
+                <div
+                  style={{
+                    fontSize: "11px",
+                    color: "#A0AEC0",
+                    fontWeight: "700",
+                    letterSpacing: "1.2px",
+                    marginBottom: "4px",
+                    textTransform: "uppercase",
+                  }}
+                >
+                  {stat.title}
+                </div>
+                <div
+                  style={{
+                    fontSize: "18px",
+                    fontWeight: "700",
+                    color: "#2D3748",
+                  }}
+                >
+                  {stat.value}
+                </div>
               </Card>
-            </Col>
+            </div>
           ))}
-        </Row>
+        </div>
 
         <Row gutter={[24, 24]} align="stretch">
           <Col xs={24} xl={16}>
@@ -565,19 +575,6 @@ const HikeDetail: React.FC = () => {
                                   {parse(stop.htmlDescription)}
                                 </div>
                               ) : null}
-
-                              <div style={{ marginTop: "auto" }}>
-                                <Flex gap={8} wrap>
-                                  <Tag bordered={false} color="green">
-                                    {formatStopTypeLabel(stop.stopType)}
-                                  </Tag>
-                                  {stop.altitude ? (
-                                    <Tag bordered={false} color="gold">
-                                      {stop.altitude} m
-                                    </Tag>
-                                  ) : null}
-                                </Flex>
-                              </div>
                             </Flex>
                           </Card>
                         </Col>
@@ -709,6 +706,17 @@ const HikeDetail: React.FC = () => {
                 </Card>
               ) : null}
 
+              {hikeDetail?.weatherConditions && (
+                <HikeWeather
+                  weather={{
+                    weatherData: hikeDetail?.weatherConditions?.weatherData,
+                    source: hikeDetail?.weatherConditions?.source,
+                    updatedAt: hikeDetail?.weatherConditions?.updatedAt,
+                  }}
+                  locationName={hikeDetail.title}
+                />
+              )}
+
               {hikeDetail.tags?.length ? (
                 <Card className="hike-detail-panel" bordered={false}>
                   <Title level={4} className="hike-detail-section-title">
@@ -746,6 +754,18 @@ const HikeDetail: React.FC = () => {
           </Card>
         ) : null}
       </MiddleContentWrapper>
+
+      <style>{`
+        .stats-grid {
+          display: grid;
+          grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+          gap: 16px;
+        }
+        .stat-card:hover {
+          transform: translateY(-5px);
+          box-shadow: 0 8px 30px rgba(0,0,0,0.08) !important;
+        }
+      `}</style>
     </div>
   );
 };
