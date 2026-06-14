@@ -379,7 +379,7 @@ const Navbar: React.FC = () => {
           </div>
 
           {/* Desktop Menu - Center */}
-          <div className="desktop-menu-wrapper">
+          <div className="desktop-menu-wrapper ">
             <Menu
               className="lg-menu-items"
               mode="horizontal"
@@ -406,7 +406,9 @@ const Navbar: React.FC = () => {
               >
                 <div className="user-profile-trigger">
                   <div className="user-info">
-                    <span className="user-name">{`${user?.firstName} ${user?.lastName}`} </span>
+                    <span className="user-name">
+                      {`${user?.firstName} ${user?.lastName}`}{" "}
+                    </span>
                   </div>
                   <Avatar
                     size="large"

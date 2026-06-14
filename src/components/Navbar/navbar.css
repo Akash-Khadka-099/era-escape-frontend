@@ -81,7 +81,8 @@
   font-family: "Inter", sans-serif;
   font-size: 15px;
   font-weight: 500;
-  min-width: 400px;
+  width: 100%;
+  justify-content: center;
   display: none;
 }
 
@@ -257,6 +258,27 @@
 
   .lg-menu-items {
     display: flex;
+  }
+
+  .navbar-container {
+    display: grid;
+    grid-template-columns: 20% 60% 20%;
+    align-items: center;
+  }
+
+  .brand-name {
+    justify-self: start;
+  }
+
+  .desktop-menu-wrapper {
+    justify-self: center;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+  }
+
+  .auth-section {
+    justify-self: end;
   }
 }
 

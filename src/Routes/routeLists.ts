@@ -5,4 +5,5 @@ export const routeLists = {
   trekTrails: "/trek-trails",
   exploreHikes: "/explore-hikes",
   savedTrekBlogs: "/saved-trek-blogs",
+  outings: "/outings",
 };
