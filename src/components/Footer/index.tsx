@@ -111,7 +111,7 @@ const CustomFooter: React.FC = () => {
           </Title>
           <Flex vertical gap={12}>
             <Link href="#!" style={{ color: "#666" }}>
-              Novice Routes
+              ABC Routes
             </Link>
             <Link href="#!" style={{ color: "#666" }}>
               Technical Peaks
