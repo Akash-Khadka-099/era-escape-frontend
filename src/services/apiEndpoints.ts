@@ -39,6 +39,10 @@ interface ApiEndpoints {
     searchHikeBlogs: string;
     getHikeBlogDetail: string;
   };
+  outings: {
+    listOutings: string;
+    getOutingDetail: string;
+  };
   savedTrekBlogs: {
     fetchPost: string;
     byId: string;
@@ -94,6 +98,10 @@ export const apiEndpoints: ApiEndpoints = {
   hikeBlogs: {
     searchHikeBlogs: "/api/hike-blogs-listing",
     getHikeBlogDetail: "/api/users-hike-blogs/{slug}",
+  },
+  outings: {
+    listOutings: "/api/outing-blogs-listing",
+    getOutingDetail: "/api/users-outing-blogs/{slug}",
   },
   savedTrekBlogs: {
     fetchPost: "/api/saved-trek-blogs",
