@@ -27,6 +27,7 @@ import {
   FaMoon,
   FaClock,
   FaGem,
+  FaMountain,
 } from "react-icons/fa";
 import { MdMyLocation } from "react-icons/md";
 import { useNavigate } from "react-router-dom";
@@ -90,6 +91,8 @@ interface Destination {
   isNightOutPlace?: boolean;
   isHiddenGem?: boolean;
   isUnescoSite?: boolean;
+  contentType?: "outing" | "hike" | "trek";
+  maxAltitudeMeter?: number;
 }
 
 interface CategoryConfig {
@@ -129,7 +132,7 @@ const SATELLITE_STYLE: StyleSpecification = {
       ],
       tileSize: 256,
       maxzoom: 18,
-      attribution: "Tiles © Esri",
+      attribution: "Era Escape",
     },
   },
   layers: [
@@ -433,6 +436,8 @@ const Outings: React.FC = () => {
         isNightOutPlace: item.isNightOut?.isNightOutPlace,
         isHiddenGem: item.isHiddenGem,
         isUnescoSite: item.isUnescoSite,
+        contentType: item.contentType,
+        maxAltitudeMeter: item.altitude,
       };
     });
   }, [data, searchLocation]);
@@ -1037,7 +1042,11 @@ const Outings: React.FC = () => {
                         </button>
                         <button
                           onClick={() => {
-                            navigate(`/outings-detail/${dest.slug}`);
+                            if (dest.contentType === "hike") {
+                              navigate(`/explore-hikes/detail/${dest.slug}`);
+                            } else {
+                              navigate(`/outings-detail/${dest.slug}`);
+                            }
                             if (window.innerWidth <= 1024)
                               setSidebarOpen(false);
                           }}
@@ -1211,7 +1220,7 @@ const Outings: React.FC = () => {
                 offset={[0, -48] as [number, number]}
                 closeOnClick={false}
                 onClose={() => setSelectedDestination(null)}
-                maxWidth="320px"
+                maxWidth={window.innerWidth <= 768 ? "260px" : "320px"}
                 className="outing-popup"
               >
                 <DestinationPopupCard
@@ -1305,17 +1314,31 @@ const DestinationPopupCard: React.FC<PopupCardProps> = ({
             marginBottom: 8,
           }}
         >
-          <span
-            className={styles.popupCategory}
-            style={{
-              background: config.accent,
-              color: config.color,
-              marginBottom: 0,
-            }}
-          >
-            <config.icon style={{ fontSize: 11 }} />
-            {config.label}
-          </span>
+          {destination.contentType === "hike" ? (
+            <span
+              className={styles.popupCategory}
+              style={{
+                background: "#e0f2fe",
+                color: "#0284c7",
+                marginBottom: 0,
+              }}
+            >
+              <FaMountain style={{ fontSize: 11, marginRight: 4 }} />
+              Max Altitude: {destination.maxAltitudeMeter ? `${destination.maxAltitudeMeter}m` : "N/A"}
+            </span>
+          ) : (
+            <span
+              className={styles.popupCategory}
+              style={{
+                background: config.accent,
+                color: config.color,
+                marginBottom: 0,
+              }}
+            >
+              <config.icon style={{ fontSize: 11 }} />
+              {config.label}
+            </span>
+          )}
           {destination.isNightOutPlace && (
             <span
               className={styles.popupCategory}
@@ -1333,7 +1356,7 @@ const DestinationPopupCard: React.FC<PopupCardProps> = ({
         <h3 className={styles.popupName}>{destination.name}</h3>
         <p className={styles.popupDescription}>{destination.description}</p>
 
-        {destination.nearestTown && (
+        {destination.contentType !== "hike" && destination.nearestTown && (
           <div
             style={{
               fontSize: 12,
@@ -1355,7 +1378,23 @@ const DestinationPopupCard: React.FC<PopupCardProps> = ({
           </div>
         )}
 
-        {destination.isHiddenGem || destination.isUnescoSite ? (
+        {destination.contentType === "hike" ? (
+          <div style={{ display: "flex", gap: "8px", marginTop: "12px" }}>
+            <button
+              className={styles.popupViewBtn}
+              style={{
+                flex: 1,
+                margin: 0,
+                padding: "8px 0",
+                textAlign: "center",
+              }}
+              id={`outing-view-${destination.id}`}
+              onClick={() => navigate(`/explore-hikes/detail/${destination.slug}`)}
+            >
+              View Details
+            </button>
+          </div>
+        ) : destination.isHiddenGem || destination.isUnescoSite ? (
           <>
             <div className={styles.popupFooter}>
               {destination.isHiddenGem ? (
