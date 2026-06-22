@@ -147,6 +147,10 @@ const ModernHero: React.FC = () => {
   const results  = searchResults?.data ?? [];
 
   const handleResultClick = (item: any) => {
+    if (item?.contentType === "outing") {
+      navigate(`/outings-detail/${item?.slug}`);
+      return;
+    }
     const base =
       item?.contentType === "hike" ? "/explore-hikes" : "/trek-trails";
     navigate(`${base}/detail/${item?.slug}`);
