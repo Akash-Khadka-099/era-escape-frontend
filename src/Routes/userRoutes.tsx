@@ -28,6 +28,7 @@ const HikeDetail = lazy(() => import("@/Pages/ExploreHikes/HikeDetails"));
 const SavedTrekBlogs = lazy(() => import("@/Pages/SavedTrekBlogs"));
 const Outings = lazy(() => import("@/Pages/Outings"));
 const OutingDetails = lazy(() => import("@/Pages/Outings/OutingDetails"));
+const VirtualTour = lazy(() => import("@/Pages/VirtualTour"));
 
 export interface RouteItem {
   path: string;
@@ -103,5 +104,9 @@ export const userRoutes: RouteItem[] = [
   {
     path: routeLists.savedTrekBlogs,
     element: <SavedTrekBlogs />,
+  },
+  {
+    path: "/virtual-tour",
+    element: <VirtualTour />,
   },
 ];

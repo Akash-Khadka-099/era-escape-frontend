@@ -1,0 +1,208 @@
+[
+    {
+        "destinationPointerNumber": 1,
+        "hasMultipleNextDestination": false,
+        "travelTimeToNext": 1,
+        "slug": "panchpokhari-chhimti",
+        "__v": 0,
+        "createdAt": "2026-03-11T02:58:41.955Z",
+        "updatedAt": "2026-03-11T14:24:39.403Z",
+        "name": "Chhimti",
+        "altitude": 1900,
+        "latLong": [
+            27.9799309,
+            85.6593453
+        ],
+        "description": null,
+        "featuredImage": null,
+        "tags": [],
+        "facilities": [],
+        "destinationTypes": [
+            "hotel_stays"
+        ],
+        "otherDestinationType": null,
+        "multipleDestinationRouteTime": [],
+        "routeTimes": []
+    },
+    {
+        "destinationPointerNumber": 2,
+        "hasMultipleNextDestination": false,
+        "travelTimeToNext": 2,
+        "slug": "panchpokhari-deurali",
+        "__v": 0,
+        "createdAt": "2026-03-11T02:58:41.955Z",
+        "updatedAt": "2026-04-08T01:53:05.208Z",
+        "name": "Deurali",
+        "altitude": 2020,
+        "latLong": [
+            27.98798009989988,
+            85.66306253676994
+        ],
+        "description": null,
+        "featuredImage": null,
+        "tags": [],
+        "facilities": [],
+        "destinationTypes": [
+            "hotel_stays"
+        ],
+        "otherDestinationType": null,
+        "multipleDestinationRouteTime": [],
+        "routeTimes": []
+    },
+    {
+        "destinationPointerNumber": 3,
+        "hasMultipleNextDestination": false,
+        "travelTimeToNext": 1.5,
+        "slug": "panchpokhari-tuppi-danda",
+        "__v": 0,
+        "createdAt": "2026-03-11T02:58:41.955Z",
+        "updatedAt": "2026-03-11T14:34:41.704Z",
+        "name": "Tuppi Danda",
+        "altitude": 2750,
+        "latLong": [
+            27.9925005,
+            85.6881351
+        ],
+        "description": null,
+        "featuredImage": null,
+        "tags": [],
+        "facilities": [],
+        "destinationTypes": [
+            "hotel_stays"
+        ],
+        "otherDestinationType": null,
+        "multipleDestinationRouteTime": [],
+        "routeTimes": []
+    },
+    {
+        "destinationPointerNumber": 4,
+        "hasMultipleNextDestination": false,
+        "travelTimeToNext": 1,
+        "slug": "panchpokhari-rato-mato",
+        "__v": 0,
+        "createdAt": "2026-03-11T02:58:41.955Z",
+        "updatedAt": "2026-04-08T01:57:24.566Z",
+        "name": "Rato Mato",
+        "altitude": 3081,
+        "latLong": [
+            27.99482040748837,
+            85.71343539782889
+        ],
+        "description": null,
+        "featuredImage": null,
+        "tags": [],
+        "facilities": [],
+        "destinationTypes": [
+            "hotel_stays"
+        ],
+        "otherDestinationType": null,
+        "multipleDestinationRouteTime": [],
+        "routeTimes": []
+    },
+    {
+        "destinationPointerNumber": 5,
+        "hasMultipleNextDestination": false,
+        "travelTimeToNext": 2.5,
+        "slug": "panchpokhari-chokar-danda",
+        "__v": 0,
+        "createdAt": "2026-03-11T02:58:41.955Z",
+        "updatedAt": "2026-04-08T01:57:55.185Z",
+        "name": "Chokar Danda",
+        "altitude": 3230,
+        "latLong": [
+            27.9981076,
+            85.7154601
+        ],
+        "description": null,
+        "featuredImage": null,
+        "tags": [],
+        "facilities": [],
+        "destinationTypes": [
+            "hotel_stays"
+        ],
+        "otherDestinationType": null,
+        "multipleDestinationRouteTime": [],
+        "routeTimes": []
+    },
+    {
+        "destinationPointerNumber": 6,
+        "hasMultipleNextDestination": false,
+        "travelTimeToNext": 3.5,
+        "slug": "panchpokhari-noshyampati",
+        "__v": 0,
+        "createdAt": "2026-03-11T02:58:41.955Z",
+        "updatedAt": "2026-04-08T01:58:48.324Z",
+        "name": "Noshyampati",
+        "altitude": 3660,
+        "latLong": [
+            28.0094986,
+            85.72895989999999
+        ],
+        "description": null,
+        "featuredImage": null,
+        "tags": [],
+        "facilities": [],
+        "destinationTypes": [
+            "hotel_stays"
+        ],
+        "otherDestinationType": null,
+        "multipleDestinationRouteTime": [],
+        "routeTimes": []
+    },
+    {
+        
+        "destinationPointerNumber": 7,
+        "hasMultipleNextDestination": false,
+        "travelTimeToNext": 1,
+        "slug": "panchpokhari-panchpokhari",
+        "__v": 0,
+        "createdAt": "2026-03-11T02:58:41.955Z",
+        "updatedAt": "2026-04-08T01:59:27.799Z",
+        "name": "Panchpokhari",
+        "altitude": 4100,
+        "latLong": [
+            28.04242942982093,
+            85.71330484956933
+        ],
+        "description": null,
+        "featuredImage": null,
+        "tags": [],
+        "facilities": [],
+        "destinationTypes": [
+            "lake"
+        ],
+        "otherDestinationType": null,
+        "multipleDestinationRouteTime": [],
+        "routeTimes": [],
+        "panaromicView": {
+            "googleMapsSrc":"https://www.google.com/maps/embed?pb=!4v1788331773880!6m8!1m7!1sCAoSFkNJSE0wb2dLRUlDQWdJRGUzcHlKTEE.!2m2!1d28.0415936244545!2d85.71675869668344!3f27.46979598011207!4f-15.164704263147996!5f0.7820865974627469",
+            "panaromicImageSrc": "/images/dummyPanaromic/testPanaromic.jpg"
+         
+        }
+    },
+    {
+        "destinationPointerNumber": 8,
+        "hasMultipleNextDestination": false,
+        "travelTimeToNext": null,
+        "slug": "panchpokhari-view-point",
+        "__v": 0,
+        "createdAt": "2026-03-11T02:58:41.955Z",
+        "updatedAt": "2026-03-11T02:58:41.955Z",
+        "name": "View Point",
+        "altitude": 4217,
+        "latLong": [
+            28.04406219747954,
+            85.72310336518203
+        ],
+        "description": null,
+        "featuredImage": null,
+        "tags": [],
+        "facilities": [],
+        "destinationTypes": [
+            "viewpoint"
+        ],
+        "otherDestinationType": null,
+        "multipleDestinationRouteTime": [],
+        "routeTimes": []
+    }
+]
