@@ -35,7 +35,7 @@ export const virtualTourData: TrekData = {
         latLong: [27.9799309, 85.6593453],
         description: "The starting point of the Panchpokhari trek.",
         shortDescription: "Starting village of the trek.",
-        featuredImage: "https://images.unsplash.com/photo-1626082896492-766af4eb65ed?q=80&w=2000&auto=format&fit=crop",
+        featuredImage: "https://img.magnific.com/premium-photo/prayer-wheels-buddhist-temple_1610355-2847.jpg?semt=ais_test_b&w=740&q=80",
         terrainType: "Forest and village path",
         difficultyRating: "Easy",
         trailCondition: "Dirt road, clear path",
@@ -49,7 +49,7 @@ export const virtualTourData: TrekData = {
           {
             id: "chhimti-1",
             type: "image",
-            src: "https://images.unsplash.com/photo-1626082896492-766af4eb65ed?q=80&w=2000&auto=format&fit=crop",
+            src: "https://img.magnific.com/premium-photo/prayer-wheels-buddhist-temple_1610355-2847.jpg?semt=ais_test_b&w=740&q=80",
             thumbnail: "https://images.unsplash.com/photo-1626082896492-766af4eb65ed?q=80&w=300&auto=format&fit=crop",
             caption: "Chhimti Village",
             category: "village"

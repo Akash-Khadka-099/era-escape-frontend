@@ -3,7 +3,6 @@ import { Viewer } from '@photo-sphere-viewer/core';
 import '@photo-sphere-viewer/core/index.css';
 import { LeftOutlined, RightOutlined, FullscreenOutlined, FullscreenExitOutlined, ZoomInOutlined, ZoomOutOutlined, VideoCameraOutlined, PictureOutlined, GlobalOutlined } from '@ant-design/icons';
 import { Destination, ViewMode } from '@/Pages/VirtualTour/types';
-import { EnvironmentOutlined } from '@ant-design/icons';
 
 interface MainViewerProps {
   destination: Destination;
@@ -108,10 +107,6 @@ const MainViewer: React.FC<MainViewerProps> = ({ destination, viewMode, setViewM
 
   return (
     <div className="vt-viewer-container">
-      <div className="vt-location-badge">
-        <EnvironmentOutlined /> {destination.name}
-      </div>
-
       {/* Main Display Area */}
       <div style={{ width: '100%', height: '100%', position: 'absolute', top: 0, left: 0 }}>
         {viewMode === 'image' && (

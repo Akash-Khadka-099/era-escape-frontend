@@ -2,14 +2,17 @@ import React from 'react';
 import { Typography, Row, Col, Card, Tag, Divider, Rate, Space } from 'antd';
 import { CloudOutlined, ArrowUpOutlined, SwapOutlined, WarningOutlined, RightOutlined } from '@ant-design/icons';
 import { Destination } from '@/Pages/VirtualTour/types';
+import ElevationProfile from './ElevationProfile';
 
 const { Title, Text } = Typography;
 
 interface InfoPanelProps {
   destination: Destination;
+  allDestinations: Destination[];
+  activeIndex: number;
 }
 
-const InfoPanel: React.FC<InfoPanelProps> = ({ destination }) => {
+const InfoPanel: React.FC<InfoPanelProps> = ({ destination, allDestinations, activeIndex }) => {
   return (
     <div style={{ color: 'white' }}>
       <Title level={2} style={{ color: 'white', margin: 0 }}>
@@ -52,6 +55,9 @@ const InfoPanel: React.FC<InfoPanelProps> = ({ destination }) => {
         </Col>
       </Row>
 
+      <div style={{ marginBottom: 16 }}>
+        <ElevationProfile destinations={allDestinations} activeIndex={activeIndex} />
+      </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
         <Text type="secondary" style={{ fontSize: 10, textTransform: 'uppercase', letterSpacing: 1 }}>Difficulty</Text>
         <Text style={{ color: destination.difficultyRating === 'Extreme' ? '#ff4d4f' : destination.difficultyRating === 'Challenging' ? '#faad14' : '#52c41a', fontWeight: 'bold' }}>

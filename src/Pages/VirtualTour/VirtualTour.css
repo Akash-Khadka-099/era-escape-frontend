@@ -52,21 +52,6 @@
   overflow: hidden;
 }
 
-.vt-location-badge {
-  position: absolute;
-  top: 20px;
-  left: 20px;
-  z-index: 10;
-  background: rgba(0, 0, 0, 0.6);
-  backdrop-filter: blur(8px);
-  padding: 10px 16px;
-  border-radius: 20px;
-  border: 1px solid rgba(255, 255, 255, 0.1);
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: white;
-}
 
 .vt-controls-bar {
   position: absolute;
