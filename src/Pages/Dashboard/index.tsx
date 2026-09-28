@@ -9,6 +9,7 @@ import CategoryCard from "@/Pages/Dashboard/components/CategoryCard";
 import TrendingBlogsSection from "@/Pages/Dashboard/TrendingBlogsSection";
 import ModernHero from "@/Pages/Dashboard/components/ModernHero";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
+import Chatbox from "./components/ChatBox";
 
 const Dashboard: React.FC = () => {
   const { data } = useFetchTrendingBlogsCategories({});
@@ -72,6 +73,8 @@ const Dashboard: React.FC = () => {
           <img src={StoryImage} alt="High Atlas" />
         </div>
       </MiddleContentWrapper>
+
+      <Chatbox />
     </div>
   );
 };
