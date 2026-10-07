@@ -24,6 +24,9 @@ export default defineConfig(({ mode }) => {
         },
       },
     },
+    build: {
+      outDir: `dist/${mode}`,
+    },
     plugins: [react()],
     resolve: {
       alias: {

@@ -9,9 +9,13 @@
   },
   "scripts": {
     "dev": "vite --host=0.0.0.0",
-    "build": "vite build",
+    "build:local": "vite build --mode local",
+    "build:staging": "NODE_OPTIONS=--max-old-space-size=4096 vite build --mode staging",
+    "build:production": "NODE_OPTIONS=--max-old-space-size=4096 vite build --mode production",
     "lint": "eslint .",
-    "preview": "vite preview"
+    "preview:local": "vite preview --mode local",
+    "preview:staging": "vite preview --mode staging",
+    "preview:production": "vite preview --mode production"
   },
   "dependencies": {
     "@ant-design/icons": "^5.6.0",
