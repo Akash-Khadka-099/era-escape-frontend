@@ -28,6 +28,8 @@ interface ElevationChartProps {
       } | null;
     }[];
   }[];
+  height?: number | string;
+  scrollWidth?: number | string;
 }
 
 const CustomTooltip = ({ active, payload, label }: any) => {
@@ -83,10 +85,14 @@ const CustomTooltip = ({ active, payload, label }: any) => {
   return null;
 };
 
-const ElevationChart: React.FC<ElevationChartProps> = ({ data }) => {
+const ElevationChart: React.FC<ElevationChartProps> = ({
+  data,
+  height = "350px",
+  scrollWidth = 700,
+}) => {
   return (
-    <div style={{ width: "100%", height: "350px", overflowX: "auto" }}>
-      <div style={{ width: 700, minWidth: "100%", height: "100%" }}>
+    <div style={{ width: "100%", height, overflowX: "auto" }}>
+      <div style={{ width: scrollWidth, minWidth: "100%", height: "100%" }}>
         <ResponsiveContainer width="100%" height="100%">
           <AreaChart
             data={data}

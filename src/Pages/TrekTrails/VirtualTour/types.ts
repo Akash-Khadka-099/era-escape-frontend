@@ -1,5 +1,28 @@
 export interface TrekData {
   trek: Trek;
+  tourSummary?: TourSummary;
+  elevationProfile?: ElevationProfilePoint[];
+}
+
+export interface TourSummary {
+  totalStops: number;
+  total360Scenes: number;
+  totalSpherical360Images: number;
+  totalGoogleStreetView360s: number;
+  totalVideos: number;
+  totalGalleryImages: number;
+  minAltitude: number;
+  maxAltitude: number;
+}
+
+export interface ElevationProfilePoint {
+  destinationPointerNumber: number;
+  name: string;
+  altitude: number;
+  latLong: [number, number];
+  destinationSlug: string;
+  has360?: boolean;
+  hasVideo?: boolean;
 }
 
 export interface Trek {
@@ -14,7 +37,7 @@ export interface Trek {
   totalAscentUnit: string;
   maxAltitude: number;
   duration: string;
-  difficulty: "Easy" | "Moderate" | "Challenging" | "Extreme";
+  difficulty: "Easy" | "Moderate" | "Challenging" | "Extreme" | string;
   bestSeason: string;
   startingPoint: string;
   endingPoint: string;
@@ -22,6 +45,10 @@ export interface Trek {
   permitRequired: boolean;
   permitDetails?: string;
   estimatedCost: string;
+  highlights?: string[];
+  shortNotes?: string;
+  featuredVideo?: string;
+  youtubeLink?: string;
   destinations: Destination[];
 }
 
@@ -46,13 +73,47 @@ export interface Destination {
   tags: string[];
   facilities: Facility[];
   destinationTypes: string[];
+  otherDestinationType?: string | null;
   gallery: GalleryItem[];
   panoramicViews: PanoramicView[];
+  videos: VideoItem[];
+  navigation?: NavigationData;
   stays: Stay[];
   weather: Weather;
   specialties: Specialty[];
   tips: string[];
   emergencyInfo: EmergencyInfo;
+}
+
+export interface VideoItem {
+  id: string;
+  src: string;
+  title: string;
+  thumbnail?: string;
+  filename?: string;
+  originalName?: string;
+}
+
+export interface NavigationStop {
+  destinationPointerNumber: number;
+  name: string;
+  destinationSlug: string;
+}
+
+export interface OutgoingRoute {
+  timeToTravel: number | null;
+  note: string;
+  toDestinationPointerNumber: number;
+  toDestinationSlug: string;
+  toDestinationName: string;
+}
+
+export interface NavigationData {
+  travelTimeToNext: number | null;
+  hasMultipleNextDestination: boolean;
+  previousStop: NavigationStop | null;
+  nextStop: NavigationStop | null;
+  outgoingRoutes: OutgoingRoute[];
 }
 
 export interface Facility {
@@ -73,12 +134,21 @@ export interface GalleryItem {
 }
 
 export interface PanoramicView {
+  id?: string;
   type: "google_embed" | "uploaded_360";
   title: string;
   googleMapsSrc?: string;
   imageSrc?: string;
   thumbnail: string;
   initialViewDirection?: { yaw: number; pitch: number };
+  panoData?: {
+    panoId?: string;
+    latitude?: number;
+    longitude?: number;
+    heading?: number;
+    pitch?: number;
+    fov?: number;
+  };
 }
 
 export interface Stay {

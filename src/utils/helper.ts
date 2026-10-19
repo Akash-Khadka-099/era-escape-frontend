@@ -121,3 +121,19 @@ export function getLocationIdFromHtml(htmlString: string | null | undefined): st
 
   return element?.dataset?.locationId ?? null;
 }
+
+/**
+ * Builds a full URL from a relative API path (e.g., 'uploads/images/file.jpg').
+ * Resolves against VITE_API_URL, process.env.VITE_API_URL, or defaults to http://localhost:5555.
+ */
+export function buildImageUrl(path?: string): string {
+  if (!path) return "";
+  if (path.startsWith("http://") || path.startsWith("https://")) return path;
+  const baseUrl = (
+    import.meta.env.VITE_API_URL ||
+    (typeof process !== "undefined" && process.env?.VITE_API_URL) ||
+    "http://localhost:5555"
+  ).replace(/\/$/, "");
+  return `${baseUrl}/${path.replace(/^\//, "")}`;
+}
+

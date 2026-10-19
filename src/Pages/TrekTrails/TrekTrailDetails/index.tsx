@@ -22,6 +22,7 @@ import {
   FaShare,
   FaBookmark,
   FaCalendarAlt,
+  FaVrCardboard,
 } from "react-icons/fa";
 import { LeftOutlined, RightOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
@@ -37,6 +38,7 @@ import TrekWeather from "./TrekWeather";
 import { SEO } from "@/components/SEO";
 import TrailLocationDrawer from "../TrailLocationDrawer";
 import TrekIntineraryPlans from "../TrekIntineraryPlans";
+import VirtualTour from "@/Pages/TrekTrails/VirtualTour";
 import SuspensePageLoader from "@/components/Loaders/SuspensePageLoader";
 import useAuthStore from "@/store/authStore";
 import useAuthModalStore from "@/store/authModalStore";
@@ -92,6 +94,7 @@ const PrevArrow = (props: any) => {
 
 const TrekTrailDetail: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
+  const [isVirtualTourOpen, setIsVirtualTourOpen] = useState(false);
 
   const navigate = useNavigate();
   const { slug } = useParams();
@@ -101,6 +104,8 @@ const TrekTrailDetail: React.FC = () => {
   const { data: trekDetailResponse, isLoading } = useGetTrekBlogDetail(
     slug || "",
   );
+
+  console.log("trekDetailResponse",trekDetailResponse)
   const { mutateAsync: createSavedTrekBlog, isPending: isCreatingSavedTrekBlog } =
     useCreateSavedTrekBlog();
   const { mutateAsync: deleteSavedTrekBlog, isPending: isDeletingSavedTrekBlog } =
@@ -123,6 +128,11 @@ const TrekTrailDetail: React.FC = () => {
   const isSaveActionLoading =
     isCreatingSavedTrekBlog || isDeletingSavedTrekBlog || isSavedTrekBlogsLoading;
 
+  const isVirtualTourAvailable = Boolean(
+    trekDetail?.isVirtualTourAvailable ??
+      (trekDetailResponse as any)?.isVirtualTourAvailable,
+  );
+
   // Preload the current MapLibre map component in background.
   useEffect(() => {
     const preloadMap = () =>
@@ -144,6 +154,10 @@ const TrekTrailDetail: React.FC = () => {
   const handleOpenTrailMap = () => {
     if (!slug) return;
     navigate(`/trek-trails/map/${slug}`);
+  };
+
+  const handleOpenVirtualTour = () => {
+    setIsVirtualTourOpen(true);
   };
 
   const handleMapCardKeyDown = (event: React.KeyboardEvent<HTMLDivElement>) => {
@@ -538,6 +552,34 @@ const TrekTrailDetail: React.FC = () => {
                 flexWrap: "wrap",
               }}
             >
+              {isVirtualTourAvailable && (
+                <Button
+                  icon={
+                    <FaVrCardboard
+                      style={{ fontSize: "16px", color: "#5eead4" }}
+                    />
+                  }
+                  onClick={handleOpenVirtualTour}
+                  className="virtual-tour-hero-btn"
+                  style={{
+                    height: "42px",
+                    borderRadius: "12px",
+                    border: "1px solid rgba(94, 234, 212, 0.4)",
+                    background:
+                      "linear-gradient(140deg, rgba(20, 83, 65, 0.85), rgba(15, 45, 38, 0.78))",
+                    boxShadow:
+                      "0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
+                    backdropFilter: "blur(8px)",
+                    color: "#f8fafc",
+                    fontWeight: 700,
+                    fontSize: "14px",
+                    padding: "0 14px",
+                    minWidth: "135px",
+                  }}
+                >
+                  Virtual Tour
+                </Button>
+              )}
               <Button
                 icon={
                   <FaBookmark color={isSaved ? "#fde68a" : "#f8fafc"} style={{ fontSize: "14px" }} />
@@ -788,36 +830,6 @@ const TrekTrailDetail: React.FC = () => {
               </ul>
             </Card>
 
-            {/* Elevation Profile */}
-            <Card
-              bordered={false}
-              style={{
-                borderRadius: "12px",
-                marginBottom: "24px",
-                boxShadow: "0 2px 8px rgba(0,0,0,0.05)",
-              }}
-            >
-              <div
-                style={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  marginBottom: "20px",
-                }}
-              >
-                <Title level={3} style={{ margin: 0 }}>
-                  Elevation Profile
-                </Title>
-                <Text type="secondary">
-                  Max Elevation:{" "}
-                  <strong style={{ color: "#000" }}>
-                    {trekDetail?.maxAltitudeMeter}m
-                  </strong>
-                </Text>
-              </div>
-
-              <ElevationChart data={trekDetail?.destinations || []} />
-            </Card>
           </Col>
 
           {/* Sidebar Column */}
@@ -936,6 +948,38 @@ const TrekTrailDetail: React.FC = () => {
               </div>
             </Card>
 
+            {/* Elevation Profile (Trends of Elevation in Right Panel) */}
+            <Card
+              bordered={false}
+              style={{
+                borderRadius: "16px",
+                marginBottom: "24px",
+                boxShadow: "0 4px 20px rgba(0,0,0,0.06)",
+                padding: "20px",
+              }}
+            >
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  marginBottom: "16px",
+                }}
+              >
+                <Title level={4} style={{ margin: 0, fontSize: "18px" }}>
+                  Elevation Profile
+                </Title>
+                <Text type="secondary" style={{ fontSize: "13px" }}>
+                  Max:{" "}
+                  <strong style={{ color: "#2d3748" }}>
+                    {trekDetail?.maxAltitudeMeter}m
+                  </strong>
+                </Text>
+              </div>
+
+              <ElevationChart data={trekDetail?.destinations || []} />
+            </Card>
+
             {/* Weather Section */}
             {trekDetail?.weatherConditions && (
               <TrekWeather
@@ -1044,6 +1088,13 @@ const TrekTrailDetail: React.FC = () => {
         <TrailLocationDrawer
           open={drawerOpen}
           onClose={() => setDrawerOpen(false)}
+        />
+
+        <VirtualTour
+          open={isVirtualTourOpen}
+          onClose={() => setIsVirtualTourOpen(false)}
+          trekDetail={trekDetail}
+          slug={slug || trekDetail?.slug}
         />
       </MiddleContentWrapper>
       <style>{`
@@ -1215,6 +1266,15 @@ const TrekTrailDetail: React.FC = () => {
           justify-content: space-between;
           gap: 16px;
           flex-wrap: wrap;
+        }
+        .virtual-tour-hero-btn {
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
+        }
+        .virtual-tour-hero-btn:hover {
+          transform: translateY(-2px);
+          border-color: rgba(94, 234, 212, 0.75) !important;
+          box-shadow: 0 12px 28px rgba(20, 83, 65, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+          color: #ffffff !important;
         }
         .map-preview-button {
           height: 48px;
