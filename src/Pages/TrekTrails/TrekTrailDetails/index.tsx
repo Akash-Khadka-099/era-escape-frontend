@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import {
   Button,
   Tag,
@@ -24,7 +24,7 @@ import {
   FaCalendarAlt,
   FaVrCardboard,
 } from "react-icons/fa";
-import { LeftOutlined, RightOutlined } from "@ant-design/icons";
+import { LeftOutlined, RightOutlined, CloseOutlined } from "@ant-design/icons";
 import { useNavigate, useParams } from "react-router-dom";
 import MiddleContentWrapper from "@/components/ContentWrappers/MiddleContentWrapper";
 import {
@@ -95,6 +95,9 @@ const PrevArrow = (props: any) => {
 const TrekTrailDetail: React.FC = () => {
   const [drawerOpen, setDrawerOpen] = useState(false);
   const [isVirtualTourOpen, setIsVirtualTourOpen] = useState(false);
+  const [showFloatingTourBtn, setShowFloatingTourBtn] = useState(false);
+  const [isFloatingPillDismissed, setIsFloatingPillDismissed] = useState(false);
+  const midPageBannerRef = useRef<HTMLDivElement>(null);
 
   const navigate = useNavigate();
   const { slug } = useParams();
@@ -105,11 +108,14 @@ const TrekTrailDetail: React.FC = () => {
     slug || "",
   );
 
-  console.log("trekDetailResponse",trekDetailResponse)
-  const { mutateAsync: createSavedTrekBlog, isPending: isCreatingSavedTrekBlog } =
-    useCreateSavedTrekBlog();
-  const { mutateAsync: deleteSavedTrekBlog, isPending: isDeletingSavedTrekBlog } =
-    useDeleteSavedTrekBlog();
+  const {
+    mutateAsync: createSavedTrekBlog,
+    isPending: isCreatingSavedTrekBlog,
+  } = useCreateSavedTrekBlog();
+  const {
+    mutateAsync: deleteSavedTrekBlog,
+    isPending: isDeletingSavedTrekBlog,
+  } = useDeleteSavedTrekBlog();
 
   const trekDetail = trekDetailResponse?.data;
   const { data: savedTrekBlogsResponse, isLoading: isSavedTrekBlogsLoading } =
@@ -123,15 +129,45 @@ const TrekTrailDetail: React.FC = () => {
     return savedTrekBlogId === trekDetail?._id;
   });
 
-  const savedTrekBlogEntryId = savedTrekBlogEntry?._id || savedTrekBlogEntry?.id;
+  const savedTrekBlogEntryId =
+    savedTrekBlogEntry?._id || savedTrekBlogEntry?.id;
   const isSaved = Boolean(savedTrekBlogEntryId);
   const isSaveActionLoading =
-    isCreatingSavedTrekBlog || isDeletingSavedTrekBlog || isSavedTrekBlogsLoading;
+    isCreatingSavedTrekBlog ||
+    isDeletingSavedTrekBlog ||
+    isSavedTrekBlogsLoading;
 
   const isVirtualTourAvailable = Boolean(
     trekDetail?.isVirtualTourAvailable ??
-      (trekDetailResponse as any)?.isVirtualTourAvailable,
+    (trekDetailResponse as any)?.isVirtualTourAvailable ??
+    trekDetail?.destinations?.some(
+      (dest: any) =>
+        dest?.media?.spherical360Images?.length > 0 ||
+        dest?.media?.googleStreetView360s?.length > 0 ||
+        dest?.panoramicViews?.length > 0,
+    ),
   );
+
+  // Monitor scroll position: floating Virtual Tour pill appears only after the mid-page banner has scrolled completely out of view
+  useEffect(() => {
+    const handleScroll = () => {
+      if (midPageBannerRef.current) {
+        const rect = midPageBannerRef.current.getBoundingClientRect();
+        // Visible only when the mid-page banner has scrolled completely past the top of the viewport
+        if (rect.bottom < 0) {
+          setShowFloatingTourBtn(true);
+        } else {
+          setShowFloatingTourBtn(false);
+        }
+      } else {
+        setShowFloatingTourBtn(window.scrollY > 900);
+      }
+    };
+
+    window.addEventListener("scroll", handleScroll, { passive: true });
+    handleScroll();
+    return () => window.removeEventListener("scroll", handleScroll);
+  }, [isVirtualTourAvailable]);
 
   // Preload the current MapLibre map component in background.
   useEffect(() => {
@@ -207,12 +243,18 @@ const TrekTrailDetail: React.FC = () => {
     try {
       if (isSaved && savedTrekBlogEntryId) {
         const response = await deleteSavedTrekBlog(savedTrekBlogEntryId);
-        message.success(response?.data?.message || "Trek blog removed from saved list");
+        message.success(
+          response?.data?.message || "Trek blog removed from saved list",
+        );
         return;
       }
 
-      const response = await createSavedTrekBlog({ trekBlogId: trekDetail._id });
-      message.success(response?.data?.message || "Trek blog saved successfully");
+      const response = await createSavedTrekBlog({
+        trekBlogId: trekDetail._id,
+      });
+      message.success(
+        response?.data?.message || "Trek blog saved successfully",
+      );
     } catch (error: any) {
       const errorMessage =
         error?.response?.data?.message ||
@@ -450,6 +492,7 @@ const TrekTrailDetail: React.FC = () => {
               display: "flex",
               flexWrap: "wrap",
               gap: "12px",
+              alignItems: "center",
             }}
           >
             {trekDetail?.country && (
@@ -548,41 +591,17 @@ const TrekTrailDetail: React.FC = () => {
             <div
               style={{
                 display: "flex",
-                gap: "8px",
+                gap: "10px",
                 flexWrap: "wrap",
+                alignItems: "center",
               }}
             >
-              {isVirtualTourAvailable && (
-                <Button
-                  icon={
-                    <FaVrCardboard
-                      style={{ fontSize: "16px", color: "#5eead4" }}
-                    />
-                  }
-                  onClick={handleOpenVirtualTour}
-                  className="virtual-tour-hero-btn"
-                  style={{
-                    height: "42px",
-                    borderRadius: "12px",
-                    border: "1px solid rgba(94, 234, 212, 0.4)",
-                    background:
-                      "linear-gradient(140deg, rgba(20, 83, 65, 0.85), rgba(15, 45, 38, 0.78))",
-                    boxShadow:
-                      "0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.1)",
-                    backdropFilter: "blur(8px)",
-                    color: "#f8fafc",
-                    fontWeight: 700,
-                    fontSize: "14px",
-                    padding: "0 14px",
-                    minWidth: "135px",
-                  }}
-                >
-                  Virtual Tour
-                </Button>
-              )}
               <Button
                 icon={
-                  <FaBookmark color={isSaved ? "#fde68a" : "#f8fafc"} style={{ fontSize: "14px" }} />
+                  <FaBookmark
+                    color={isSaved ? "#fde68a" : "#f8fafc"}
+                    style={{ fontSize: "14px" }}
+                  />
                 }
                 style={{
                   height: "42px",
@@ -593,7 +612,8 @@ const TrekTrailDetail: React.FC = () => {
                   background: isSaved
                     ? "linear-gradient(140deg, rgba(68, 92, 66, 0.82), rgba(48, 76, 52, 0.74))"
                     : "linear-gradient(140deg, rgba(64, 85, 66, 0.78), rgba(44, 63, 49, 0.72))",
-                  boxShadow: "0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  boxShadow:
+                    "0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255,255,255,0.08)",
                   backdropFilter: "blur(8px)",
                   color: "#f8fafc",
                   fontWeight: 700,
@@ -607,7 +627,9 @@ const TrekTrailDetail: React.FC = () => {
                 {isSaved ? "Saved Expedition" : "Save Expedition"}
               </Button>
               <Button
-                icon={<FaShare style={{ fontSize: "14px", color: "#f8fafc" }} />}
+                icon={
+                  <FaShare style={{ fontSize: "14px", color: "#f8fafc" }} />
+                }
                 onClick={handleShareTrekBlog}
                 style={{
                   height: "42px",
@@ -615,7 +637,8 @@ const TrekTrailDetail: React.FC = () => {
                   border: "1px solid rgba(255, 255, 255, 0.22)",
                   background:
                     "linear-gradient(140deg, rgba(64, 85, 66, 0.78), rgba(44, 63, 49, 0.72))",
-                  boxShadow: "0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255,255,255,0.08)",
+                  boxShadow:
+                    "0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255,255,255,0.08)",
                   backdropFilter: "blur(8px)",
                   color: "#f8fafc",
                   fontWeight: 700,
@@ -716,6 +739,69 @@ const TrekTrailDetail: React.FC = () => {
         <Row gutter={[24, 24]} style={{ marginBottom: "40px" }}>
           {/* Main Content Column */}
           <Col xs={24} lg={16}>
+            {/* Mid-Page 360 Virtual Tour Teaser Banner */}
+            {isVirtualTourAvailable && (
+              <div
+                ref={midPageBannerRef}
+                className="vt-midpage-banner"
+                role="button"
+                tabIndex={0}
+                onClick={handleOpenVirtualTour}
+                onKeyDown={(e) => {
+                  if (e.key === "Enter" || e.key === " ") {
+                    e.preventDefault();
+                    handleOpenVirtualTour();
+                  }
+                }}
+              >
+                <div className="vt-midpage-glow" />
+                <div className="vt-midpage-content">
+                  <div className="vt-midpage-left">
+                    <div className="vt-midpage-badge">
+                      <span className="vt-chip-dot" />
+                      360° VIRTUAL TOUR
+                    </div>
+                    <Title
+                      level={3}
+                      style={{
+                        color: "#ffffff",
+                        margin: "8px 0 6px 0",
+                        fontSize: "22px",
+                        fontWeight: 700,
+                      }}
+                    >
+                      Explore {trekDetail?.title} Virtual Tour
+                    </Title>
+                    <Paragraph
+                      style={{
+                        color: "rgba(226, 232, 240, 0.9)",
+                        margin: 0,
+                        fontSize: "14px",
+                        lineHeight: 1.6,
+                        maxWidth: "540px",
+                      }}
+                    >
+                      Step directly into 360° spherical viewpoints, inspect
+                      trail milestones, and explore panoramic Himalayan views.
+                    </Paragraph>
+                  </div>
+                  <div className="vt-midpage-right">
+                    <Button
+                      type="primary"
+                      size="large"
+                      icon={<FaVrCardboard style={{ fontSize: "16px" }} />}
+                      className="vt-midpage-button"
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleOpenVirtualTour();
+                      }}
+                    >
+                      Start Virtual Tour
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            )}
             {/* About Section */}
             <Card
               bordered={false}
@@ -829,7 +915,6 @@ const TrekTrailDetail: React.FC = () => {
                 )}
               </ul>
             </Card>
-
           </Col>
 
           {/* Sidebar Column */}
@@ -846,7 +931,7 @@ const TrekTrailDetail: React.FC = () => {
                 marginBottom: "24px",
                 boxShadow: "0 18px 40px rgba(15, 23, 42, 0.12)",
               }}
-              bodyStyle={{ padding: 0 }}
+              styles={{ body: { padding: 0 } }}
             >
               <div
                 className="map-preview-surface"
@@ -1096,6 +1181,52 @@ const TrekTrailDetail: React.FC = () => {
           trekDetail={trekDetail}
           slug={slug || trekDetail?.slug}
         />
+
+        {/* Floating Virtual Tour Quick-Access Pill (Active after Mid-Page Banner is scrolled past) */}
+        {isVirtualTourAvailable &&
+          showFloatingTourBtn &&
+          !isFloatingPillDismissed && (
+            <div
+              className="vt-floating-pill"
+              role="button"
+              tabIndex={0}
+              onClick={handleOpenVirtualTour}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  handleOpenVirtualTour();
+                }
+              }}
+              title="Launch Virtual Tour"
+            >
+              <div className="vt-floating-pill-inner">
+                <span className="vt-floating-beacon">
+                  <span className="vt-floating-beacon-dot" />
+                  <span className="vt-floating-beacon-ring" />
+                </span>
+                <FaVrCardboard className="vt-floating-icon" />
+                <div className="vt-floating-text-group">
+                  <span className="vt-floating-title">Virtual Tour</span>
+                  <span className="vt-floating-sub">360° View</span>
+                </div>
+                <span className="vt-floating-arrow">
+                  <RightOutlined style={{ fontSize: "11px" }} />
+                </span>
+              </div>
+              <button
+                type="button"
+                className="vt-floating-close-btn"
+                title="Dismiss for now"
+                aria-label="Dismiss Virtual Tour pill"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  setIsFloatingPillDismissed(true);
+                }}
+              >
+                <CloseOutlined style={{ fontSize: "10px" }} />
+              </button>
+            </div>
+          )}
       </MiddleContentWrapper>
       <style>{`
         .blog-html-content {
@@ -1267,7 +1398,44 @@ const TrekTrailDetail: React.FC = () => {
           gap: 16px;
           flex-wrap: wrap;
         }
+        /* 360 Virtual Tour UI Highlights & Animations */
+        @keyframes vtPulseBeacon {
+          0% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(45, 212, 191, 0.7);
+          }
+          70% {
+            transform: scale(1);
+            box-shadow: 0 0 0 10px rgba(45, 212, 191, 0);
+          }
+          100% {
+            transform: scale(0.95);
+            box-shadow: 0 0 0 0 rgba(45, 212, 191, 0);
+          }
+        }
+        @keyframes vtDotPulse {
+          0%, 100% {
+            opacity: 1;
+            transform: scale(1);
+          }
+          50% {
+            opacity: 0.5;
+            transform: scale(0.85);
+          }
+        }
+
         .virtual-tour-hero-btn {
+          height: 42px !important;
+          border-radius: 12px !important;
+          border: 1px solid rgba(94, 234, 212, 0.4) !important;
+          background: linear-gradient(140deg, rgba(20, 83, 65, 0.85), rgba(15, 45, 38, 0.78)) !important;
+          box-shadow: 0 10px 24px rgba(0, 0, 0, 0.24), inset 0 1px 0 rgba(255, 255, 255, 0.1) !important;
+          backdrop-filter: blur(8px) !important;
+          color: #f8fafc !important;
+          font-weight: 700 !important;
+          font-size: 14px !important;
+          padding: 0 14px !important;
+          min-width: 135px !important;
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1) !important;
         }
         .virtual-tour-hero-btn:hover {
@@ -1275,6 +1443,187 @@ const TrekTrailDetail: React.FC = () => {
           border-color: rgba(94, 234, 212, 0.75) !important;
           box-shadow: 0 12px 28px rgba(20, 83, 65, 0.45), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
           color: #ffffff !important;
+        }
+
+        /* Mid-Page Teaser Banner */
+        .vt-midpage-banner {
+          position: relative;
+          border-radius: 18px;
+          padding: 24px 28px;
+          margin-bottom: 24px;
+          background: linear-gradient(135deg, #042f2e 0%, #064e3b 55%, #065f46 100%);
+          border: 1px solid rgba(94, 234, 212, 0.3);
+          box-shadow: 0 14px 34px rgba(4, 47, 46, 0.16);
+          cursor: pointer;
+          overflow: hidden;
+          transition: all 0.3s ease;
+        }
+        .vt-midpage-banner:hover {
+          transform: translateY(-2px);
+          border-color: rgba(94, 234, 212, 0.65);
+          box-shadow: 0 18px 42px rgba(13, 148, 136, 0.28);
+        }
+        .vt-midpage-glow {
+          position: absolute;
+          top: -50px;
+          right: -50px;
+          width: 220px;
+          height: 220px;
+          border-radius: 50%;
+          background: radial-gradient(circle, rgba(45, 212, 191, 0.22) 0%, transparent 70%);
+          pointer-events: none;
+        }
+        .vt-midpage-content {
+          position: relative;
+          z-index: 1;
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 20px;
+          flex-wrap: wrap;
+        }
+        .vt-midpage-badge {
+          display: inline-flex;
+          align-items: center;
+          gap: 6px;
+          font-size: 11px;
+          font-weight: 700;
+          color: #5eead4;
+          letter-spacing: 0.8px;
+          text-transform: uppercase;
+        }
+        .vt-midpage-button {
+          height: 46px !important;
+          padding-inline: 22px !important;
+          border-radius: 999px !important;
+          border: none !important;
+          background: linear-gradient(135deg, #14b8a6 0%, #22c55e 100%) !important;
+          box-shadow: 0 8px 22px rgba(20, 184, 166, 0.35) !important;
+          color: #ffffff !important;
+          font-weight: 700 !important;
+          transition: all 0.25s ease !important;
+        }
+        .vt-midpage-banner:hover .vt-midpage-button {
+          transform: scale(1.03);
+          box-shadow: 0 12px 28px rgba(20, 184, 166, 0.5) !important;
+        }
+
+        /* Floating 360 Quick-Access Pill */
+        .vt-floating-pill {
+          position: fixed;
+          bottom: 28px;
+          right: 28px;
+          z-index: 850;
+          display: flex;
+          align-items: center;
+          gap: 6px;
+          background: rgba(4, 47, 46, 0.94);
+          border: 1px solid rgba(94, 234, 212, 0.5);
+          backdrop-filter: blur(16px);
+          box-shadow: 0 16px 36px rgba(0, 0, 0, 0.35), 0 0 24px rgba(20, 184, 166, 0.3);
+          border-radius: 999px;
+          padding: 8px 10px 8px 16px;
+          cursor: pointer;
+          user-select: none;
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .vt-floating-pill:hover {
+          transform: translateY(-3px) scale(1.03);
+          border-color: rgba(94, 234, 212, 0.85);
+          box-shadow: 0 20px 42px rgba(0, 0, 0, 0.4), 0 0 32px rgba(45, 212, 191, 0.45);
+        }
+        .vt-floating-pill-inner {
+          display: flex;
+          align-items: center;
+          gap: 10px;
+        }
+        .vt-floating-beacon {
+          position: relative;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 10px;
+          height: 10px;
+        }
+        .vt-floating-beacon-dot {
+          width: 8px;
+          height: 8px;
+          border-radius: 50%;
+          background: #2dd4bf;
+          animation: vtDotPulse 2s infinite ease-in-out;
+        }
+        .vt-floating-beacon-ring {
+          position: absolute;
+          inset: -3px;
+          border-radius: 50%;
+          border: 1px solid #2dd4bf;
+          animation: vtPulseBeacon 2s infinite ease-in-out;
+        }
+        .vt-floating-icon {
+          font-size: 18px;
+          color: #5eead4;
+        }
+        .vt-floating-text-group {
+          display: flex;
+          flex-direction: column;
+        }
+        .vt-floating-title {
+          font-size: 13px;
+          font-weight: 700;
+          color: #ffffff;
+          line-height: 1.2;
+        }
+        .vt-floating-sub {
+          font-size: 10px;
+          color: #99f6e4;
+          line-height: 1.1;
+          font-weight: 500;
+        }
+        .vt-floating-arrow {
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          width: 22px;
+          height: 22px;
+          border-radius: 50%;
+          background: rgba(255, 255, 255, 0.14);
+          color: #5eead4;
+          margin-left: 2px;
+        }
+        .vt-floating-close-btn {
+          border: none;
+          background: transparent;
+          color: rgba(255, 255, 255, 0.55);
+          cursor: pointer;
+          padding: 4px;
+          border-radius: 50%;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          margin-left: 2px;
+          transition: all 0.2s ease;
+        }
+        .vt-floating-close-btn:hover {
+          color: #ffffff;
+          background: rgba(255, 255, 255, 0.15);
+        }
+
+        @media (max-width: 768px) {
+          .vt-midpage-content {
+            flex-direction: column;
+            align-items: flex-start;
+          }
+          .vt-midpage-button {
+            width: 100%;
+          }
+          .vt-floating-pill {
+            bottom: 20px;
+            right: 16px;
+            padding: 8px 10px 8px 14px;
+          }
+          .vt-floating-sub {
+            display: none;
+          }
         }
         .map-preview-button {
           height: 48px;
