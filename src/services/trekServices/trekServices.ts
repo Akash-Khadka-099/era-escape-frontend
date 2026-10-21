@@ -86,14 +86,14 @@ const useFetchDestinationHotels = ({
 
 const fetchTrekBlogItineraryPlans =
   ({ trekBlogSlug }: { trekBlogSlug: string }) =>
-  (): Promise<AxiosResponse> => {
-    return axiosInstance.get(
-      apiEndpoints.trekBlogs.fetchTrekBlogItineraryPlans.replace(
-        "{trekBlogSlug}",
-        trekBlogSlug,
-      ),
-    );
-  };
+    (): Promise<AxiosResponse> => {
+      return axiosInstance.get(
+        apiEndpoints.trekBlogs.fetchTrekBlogItineraryPlans.replace(
+          "{trekBlogSlug}",
+          trekBlogSlug,
+        ),
+      );
+    };
 
 const useFetchTrekBlogItineraryPlans = ({
   trekBlogSlug,
@@ -169,6 +169,27 @@ const useDeleteSavedTrekBlog = () => {
   });
 };
 
+
+
+const fetchVirtualTourBySlug =
+  (slug: string, query?: any) => (): Promise<AxiosResponse> => {
+    return axiosInstance.get(
+      apiEndpoints.trekBlogs.fetchVirtualTrekTour.replace("{slug}", slug),
+      {
+        params: query,
+      },
+    );
+  };
+
+const useFetchVirtualTourBySlug = (slug: string, query?: any) => {
+  return useQuery({
+    queryKey: [apiEndpoints.trekBlogs.fetchVirtualTrekTour, slug, query],
+    queryFn: fetchVirtualTourBySlug(slug, query),
+    select: (data) => data?.data,
+    enabled: !!slug,
+  });
+};
+
 export {
   useSearchTrekBlogLists,
   useGetTrekBlogDetail,
@@ -178,4 +199,5 @@ export {
   useCreateSavedTrekBlog,
   useFetchSavedTrekBlogs,
   useDeleteSavedTrekBlog,
+  useFetchVirtualTourBySlug
 };
